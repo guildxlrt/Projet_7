@@ -70,31 +70,46 @@ exports.signup = (req, res, next) => {
     })();
 };
 
-//------methode pour ajouter un utilisateur
 exports.login = async (req, res, next) => {
-    await prisma.test.findUnique()
+    await prisma.user.findUnique({ 
+        where : {
+            email : req.body.email
+        }
+    })
     .then(user => {
         // mauvais utilisateur
         if (!user) {
             // le message d'erreur est volontairement flou (fuite d'erreur)
             return res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
         }
-        // bon utilisateur
-        bcrypt.compare(req.body.password, user.password)
-        .then(valid => {
-            if (!valid) {
-                res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
-            };
-            res.status(200).json({
-                userId : user._id,
-                token : jwt.sign(
-                    {userId : user._id},
-                    process.env.RANDOM_TOKEN,
-                    { expiresIn : '24h'}
-                )
-            });
-        })
-        .catch(error => res.status(500).json({error}));
+        else {
+            // bon utilisateur
+            bcrypt.compare(req.body.password, user.password)
+            .then(valid => {
+                if (!valid) {
+                    res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
+                }
+                else {
+                    res.status(200).json({
+                        userId : user.id,
+                        token : jwt.sign(
+                            {userId : user.id},
+                            process.env.RANDOM_TOKEN,
+                            { expiresIn : '24h'}
+                        )
+                    })
+                }
+            })
+            .catch(error => res.status(500).json({error}));
+        }
     })
     .catch(error => res.status(500).json({error}));
 };
+
+exports.update = async (req, res, next) => {
+    res.status(400).json({message : "Test Update"})
+}
+
+exports.disable = async (req, res, next) => {
+    res.status(400).json({message : "Test Disable"})
+}

@@ -5,13 +5,12 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 
-// AFFICHER TOUT
 exports.getAllPosts = async (req, res, next) => {
     await prisma.post.findMany()
     .then(posts => res.status(200).json(posts))
     .catch(error => res.status(400).json({error}));
 };
-// AFFICHER UNE SEULE
+
 exports.getOnePost = async (req, res, next) => {
     await prisma.post.findUnique({
         where : {
@@ -33,19 +32,17 @@ exports.createPost = async (req, res, next) => {
         userId : req.auth.userId
     };
 
-    //---Enregistrement    
-    try {
-        await prisma.post.create({data : content})
-        .then(async () => {
-            await prisma.$disconnect()
-        })
-        .then(() => res.status(201).json({ message : 'Post cree !'}))
-    }
-    catch (e) {
-        console.error(e) || res.status(400).json({error : e })
+    //---Enregistrement
+    await prisma.post.create({data : content})
+    .then(async () => {
+        await prisma.$disconnect()
+    })
+    .then(() => res.status(201).json({ message : 'Post cree !'}))
+    .catch (async e => {
+        console.error(e) || res.status(400).json({error : e})
         await prisma.$disconnect()
         process.exit(1)
-    }
+    })
 };
 
 // MODIFIER

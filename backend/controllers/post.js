@@ -103,8 +103,6 @@ exports.deletePost = async (req, res, next) => {
     .catch(error => res.status(500).json({ message : error }));
 };
 
-// anti-autolike    : Ok
-// anti-multilike   : No
 // LIKER
 exports.likePost = async (req, res, next) => {
     //---RECHERCHES

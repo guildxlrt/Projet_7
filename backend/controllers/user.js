@@ -109,7 +109,7 @@ exports.update = async (req, res, next) => {
             id : req.auth.userId
         }
     })
-    .then(async (user) => {
+    .then(async user => {
         // verification utilisateur
         if (user.id === req.auth.userId) {
             // verification pass
@@ -151,11 +151,49 @@ exports.password = async (req, res, next) => {
             id : req.auth.userId
         }
     })
-    .then(async (user) => {
-        // verification utilisateur
+    //-----VERIFICATION
+    .then(async user => {
+        // utilisateur
         if (user.id === req.auth.userId) {
-            // verification pass
-            
+            // ancient pass
+            await bcrypt.compare(req.body.password, user.password)
+            .then(async valid => {
+                if (valid) {
+                    // nouveau pass
+                    if (req.body.password != req.body.newPass && req.body.newPass === req.body.passConfirm && pwValSchema.validate(req.body.newPass)) {
+                        bcrypt.hash(req.body.passConfirm, 10)
+                        .then(async hash => {
+                            // enregistrement du nouveau mot de passe
+                            await prisma.user.update({
+                                where : {
+                                    id : req.auth.userId
+                                },
+                                data : {
+                                    password : hash
+                                }
+                            })
+                            .then(async () => { await prisma.$disconnect() })
+                            .then(() => res.status(200).json({ message : 'mot de passe modifie !' }))
+                            .catch(error => console.log(error) || res.status(401).json({ message : error }));
+                        })
+                    }
+                    // RENOUVELLEMENT
+                    else if (req.body.password === req.body.newPass) {
+                        return res.status(400).json({ message : "Le nouveau mot de passe doit differer du nouveau." });
+                    }
+                    // CONCORDANCE
+                    else if (req.body.newPass != req.body.passConfirm) {
+                        return res.status(400).json({ message : "Les saisies du mot de passe doivent correspondre." });
+                    }
+                    // FORCE
+                    else if (!(pwValSchema.validate(req.body.newPass))) {
+                        return res.status(400).json({ message : "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres." });
+                    }
+                } else {
+                    res.status(401).json({ message : 'Acces non authorisE' })
+                }
+            })
+            .catch(error => console.log(error) || res.status(500).json({ message : error }));
         } else {
             return res.status(401).json({ message : 'Acces non authorise' });
         }

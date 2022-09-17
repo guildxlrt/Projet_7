@@ -8,6 +8,7 @@ const multer = require('../middlewares/multer-config');
 router.post('/signup', userCtrl.signup);
 router.post('/login', userCtrl.login);
 router.put('/update', auth, userCtrl.update);
+router.put('/password', auth, userCtrl.password);
 router.put('/avatar', auth, multer, userCtrl.avatar);
 router.put('/disable', auth, userCtrl.disable);
 

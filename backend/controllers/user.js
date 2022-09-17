@@ -143,6 +143,26 @@ exports.update = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }
 
+// CHANGER MDP
+exports.password = async (req, res, next) => {
+    // Recherche de l'utilisateur
+    await prisma.user.findUnique({
+        where : {
+            id : req.auth.userId
+        }
+    })
+    .then(async (user) => {
+        // verification utilisateur
+        if (user.id === req.auth.userId) {
+            // verification pass
+            
+        } else {
+            return res.status(401).json({ message : 'Acces non authorise' });
+        }
+    })
+    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+}
+
 // CHANGER AVATAR
 exports.avatar = (req, res, next) => {
     res.status(400).json({message : "Test avatar"})

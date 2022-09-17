@@ -107,15 +107,26 @@ exports.deletePost = async (req, res, next) => {
 // anti-multilike   : No
 // LIKER
 exports.likePost = async (req, res, next) => {
-    // Recherche du post
-    await prisma.post.findUnique({
+    //---RECHERCHES
+    // doublon
+    const doublon = await prisma.like.findFirst({
+        where : {
+            userId : req.auth.userId,
+            postId : Number(req.params.id)
+        }
+    })
+    // publication
+    const postUser = await prisma.post.findUnique({
         where : {
             id : Number(req.params.id)
         }
     })
-    .then( async (post) => {
+
+    // CONDITIONS
+    // Aucun doublon : Ajouter
+    if (!Boolean(doublon)) {
         // empecher les auto-like
-        if (post.userId != req.auth.userId) {
+        if (!(postUser.userId === req.auth.userId)) {            
             // enregistrement
             await prisma.like.create({
                 data : {
@@ -129,8 +140,19 @@ exports.likePost = async (req, res, next) => {
         }
         else {
             return res.status(401).json({ message : 'auto-like interdit' })
-        } 
-    })
+        }
+    }
+    // Doublon : Retirer
+    else {
+        await prisma.like.delete({
+            where : {
+                id : doublon.id,
+            }
+        })
+        .then(async () => { await prisma.$disconnect() })
+        .then(() => res.status(200).json({ message : 'like supprime !' }))
+        .catch(error => res.status(401).json({ message : error }))
+    }
 };
 
 // COMMENTER

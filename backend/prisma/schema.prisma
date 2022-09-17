@@ -41,7 +41,7 @@ model Post {
 model Comment {
   id     Int      @id @default(autoincrement())
   text   String
-  date   DateTime
+  date   DateTime @default(now())
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
   post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -50,8 +50,7 @@ model Comment {
 
 model Like {
   id     Int      @id @default(autoincrement())
-  title  String
-  date   DateTime
+  date   DateTime @default(now())
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
   post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)

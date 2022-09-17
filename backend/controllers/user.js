@@ -24,6 +24,7 @@ pwValSchema
 //----------------------------------------------------------------------//
 //------------PROGRAMS-------------------------------------------------//
 
+// NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
         //---ACCEPT
@@ -40,17 +41,11 @@ exports.signup = (req, res, next) => {
                         birthday : req.body.birthday,
                     }
                 })
-                .then(async () => {
-                    await prisma.$disconnect()
-                })
+                .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(201).json({ message : 'utilisateur cree !' }))
-                .catch (async e => {
-                    console.error(e) || res.status(400).json({error : e})
-                    await prisma.$disconnect()
-                    process.exit(1)
-                })
+                .catch(error => console.log(error) || res.status(400).json({message : error}))
             })
-            .catch(error => res.status(500).json({error}));
+            .catch(error => console.log(error) || res.status(500).json({ message : error }));
         }
         //---REJET
         // Email
@@ -68,6 +63,8 @@ exports.signup = (req, res, next) => {
     })();
 };
 
+
+// CONNEXION
 exports.login = async (req, res, next) => {
     await prisma.user.findUnique({ 
         where : {
@@ -94,16 +91,17 @@ exports.login = async (req, res, next) => {
                     res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
                 }
             })
-            .catch(error => res.status(500).json({error}));
+            .catch(error => console.log(error) || res.status(500).json({ message : error }));
         }
         else {
             // le message d'erreur est volontairement flou (fuite d'erreur)
             return res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
         }
     })
-    .catch(error => res.status(500).json({error}));
+    .catch(error => console.log(error) || res.status(500).json({ message : error }));
 };
 
+// MODIFICATIONS
 exports.update = async (req, res, next) => {
     // Recherche de l'utilisateur
     await prisma.user.findUnique({
@@ -113,9 +111,7 @@ exports.update = async (req, res, next) => {
     })
     .then(async (user) => {
         // verification utilisateur
-        if (user.id != req.auth.userId) {
-            return res.status(401).json({ message : 'Acces non authorise' });
-        } else {
+        if (user.id === req.auth.userId) {
             // verification pass
             await bcrypt.compare(req.body.password, user.password)
             .then(async valid => {
@@ -132,22 +128,27 @@ exports.update = async (req, res, next) => {
                             birthday : req.body.updates.bithday
                         }
                     })
-                    .then(() => res.status(200).json({ message : 'objet modifie !' }))
-                    .catch(error => res.status(401).json({error}));
+                    .then(async () => { await prisma.$disconnect() })
+                    .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
+                    .catch(error => console.log(error) || res.status(401).json({ message : error }));
                 } else {
                     res.status(401).json({ message : 'Acces non authorise' });
                 }
             })
-            .catch(error => res.status(500).json({error}));
+            .catch(error => console.log(error) || res.status(500).json({ message : error }));
+        } else {
+            return res.status(401).json({ message : 'Acces non authorise' });
         }
     })
-    .catch(error => res.status(500).json({error}));
+    .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }
 
+// CHANGER AVATAR
 exports.avatar = (req, res, next) => {
     res.status(400).json({message : "Test avatar"})
 }
 
+// DESACTIVER
 exports.disable = async (req, res, next) => {
     // Recherche de l'utilisateur
     await prisma.user.findUnique({
@@ -173,11 +174,12 @@ exports.disable = async (req, res, next) => {
                                 isActive : false
                             }
                         })
+                        .then(async () => { await prisma.$disconnect() })
                         .then(() => res.status(200).json({ message : 'Compte desactive' }))
-                        .catch(error => res.status(401).json({error}))
+                        .catch(error => console.log(error) || res.status(401).json({ message : error }))
                     }
                 })
-                .catch(error => res.status(500).json({error}));
+                .catch(error => console.log(error) || res.status(500).json({ message : error }));
             } else {
                 res.status(401).json({ message : "l'email ne correspond pas" })
             }
@@ -185,5 +187,5 @@ exports.disable = async (req, res, next) => {
             res.status(401).json({ message : 'Acces non authorise' });
         }
     })
-    .catch(error => res.status(500).json({ error }));
+    .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }

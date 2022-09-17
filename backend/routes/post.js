@@ -14,7 +14,7 @@ router.delete('/:id', auth, postsCtrl.deletePost);
 // sur les likes
 router.post('/:id/like', auth, postsCtrl.likePost);
 // sur les commentaires
-router.post('/:id/like', auth, postsCtrl.commentPost);
+router.post('/:id/comment', auth, postsCtrl.commentPost);
 
 
 //---EXPORT

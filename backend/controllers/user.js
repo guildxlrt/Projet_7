@@ -80,8 +80,12 @@ exports.login = async (req, res, next) => {
                 if (valid) {
                     res.status(200).json({
                         userId : user.id,
+                        isAdmin : user.isAdmin,
                         token : jwt.sign(
-                            {userId : user.id},
+                            {
+                                userId : user.id,
+                                isAdmin : user.isAdmin
+                            },
                             process.env.RANDOM_TOKEN,
                             { expiresIn : '24h'}
                         )
@@ -203,30 +207,32 @@ exports.password = async (req, res, next) => {
 
 // CHANGER AVATAR
 exports.avatar = (req, res, next) => {
-    res.status(400).json({message : "Test avatar"})
+    console.log("Test avatar")
 }
 
 // DESACTIVER
 exports.disable = async (req, res, next) => {
-    // Recherche de l'utilisateur
-    await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        }
-    })
-    .then(async user => {
-        // verification utilisateur
-        if ((req.auth.userId === user.id) && (user.isActive === true)) {
-            // saisie email
-            if (req.body.email === user.email) {
+    //---Quel utilisateur ?
+    //------ADMINISTRATEUR
+    if (req.auth.isAdmin === true) {
+        await prisma.user.findUnique({
+            where : {
+                id : req.auth.userId
+            }
+        })
+        //---Verifications
+        .then(async admin => {
+            // administrateur
+            if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
                 // mot de passe
-                await bcrypt.compare(req.body.password, user.password)
-                .then(valid => {
+                await bcrypt.compare(req.body.password, admin.password)
+                .then( valid => {
                     if (valid) {
-                        // enregistrement
+                        console.log(typeof req.params.id)
+                        //---Enregistrement
                         prisma.user.update({
                             where : {
-                                id : req.auth.userId
+                                id : Number(req.params.id)
                             },
                             data : {
                                 isActive : false
@@ -237,13 +243,52 @@ exports.disable = async (req, res, next) => {
                         .catch(error => console.log(error) || res.status(401).json({ message : error }))
                     }
                 })
-                .catch(error => console.log(error) || res.status(500).json({ message : error }));
             } else {
-                res.status(401).json({ message : "l'email ne correspond pas" })
+                res.status(401).json({ message : 'Acces non authorise' });
             }
-        } else {
-            res.status(401).json({ message : 'Acces non authorise' });
-        }
-    })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+        })
+        .catch(error => console.log(error) || res.status(500).json({ message : error }));
+    }
+    //------UTILISATEUR NORMAL
+    else {
+        // Recherche de l'utilisateur
+        await prisma.user.findUnique({
+            where : {
+                id : req.auth.userId
+            } 
+        })
+        //---Verifications
+        .then(async user => {
+            // utilisateur
+            if ((req.auth.userId === user.id) && (user.isActive === true)) {
+                // saisie email
+                if ((req.body.email === user.email) && (req.body.email === req.body.emailConfirm)) {
+                    // mot de passe
+                    await bcrypt.compare(req.body.password, user.password)
+                    .then(valid => {
+                        if (valid) {
+                            //---Enregistrement
+                            prisma.user.update({
+                                where : {
+                                    id : req.auth.userId
+                                },
+                                data : {
+                                    isActive : false
+                                }
+                            })
+                            .then(async () => { await prisma.$disconnect() })
+                            .then(() => res.status(200).json({ message : 'Compte desactive' }))
+                            .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                        }
+                    })
+                    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+                } else {
+                    res.status(401).json({ message : "l'email ne correspond pas" })
+                }
+            } else {
+                res.status(401).json({ message : 'Acces non authorise' });
+            }
+        })
+        .catch(error => console.log(error) || res.status(500).json({ message : error }));
+    }
 }

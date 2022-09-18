@@ -9,6 +9,7 @@ const app = express();
 app.use(express.json());
 const userRoutes = require('./routes/user');
 const postRoutes = require('./routes/post');
+const commentRoutes = require('./routes/comment');
 app.use(cors());
   
 
@@ -27,6 +28,7 @@ app.use(express.static('images'));
 //---Endpoints
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/comment', commentRoutes);
 
 const testRoutes = require('./routes/test');
 app.use('/api/test', testRoutes);

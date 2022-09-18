@@ -10,7 +10,7 @@ router.post('/login', userCtrl.login);
 router.put('/update', auth, userCtrl.update);
 router.put('/password', auth, userCtrl.password);
 router.put('/avatar', auth, multer, userCtrl.avatar);
-router.put('/disable', auth, userCtrl.disable);
+router.put('/:id/disable', auth, userCtrl.disable);
 
 
 

@@ -4,17 +4,16 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-//========//POST//========//
+//================//POST//================//
 
 //========//NOUVEAU
-// ?????????????? FILE ????????????????? 
 exports.createPost = async (req, res, next) => {
     // Condition Fichier
     const content = req.file ? {
         ...JSON.parse(req.body),
         imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
         userId : req.auth.userId
-    } : { 
+    } : {
         ...req.body,
         userId : req.auth.userId
     };
@@ -54,7 +53,6 @@ exports.getOnePost = async (req, res, next) => {
 
 
 //========//MODIFIER
-// ?????????????? FILE ????????????????? 
 exports.modifyPost = async (req, res, next) => {
     // Recherche
     await prisma.post.findUnique({
@@ -64,17 +62,39 @@ exports.modifyPost = async (req, res, next) => {
     })
     .then(async (post) => {
         // verification utilisateur
+        const user = await prisma.user.findUnique({
+            where : {
+                id : req.auth.userId
+            }
+        })
         if ((post.userId === req.auth.userId) && (user.isActive)) {
 
-            // enregistrement
+            //---Recherche fichier
+            const content = req.file ? {
+                ...JSON.parse(req.body),
+                imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+            } : { 
+                ...req.body
+            };
+
+            //---Suppression ancien fichier
+            if (req.file) {
+                const filename = post.imageUrl.split('/images/')[1];
+                fs.unlink(`images/${filename}`, (err) => {
+                    if (err) {
+                        console.log("Echec lors de la suppression de l'ancienne image : "+err)
+                    } else {
+                        console.log("le fichier de l'ancienne image a ete supprime")
+                    }
+                })
+            }
+
+            //---Enregistrement
             await prisma.post.update({
                 where : {
                     id : Number(req.params.id)
                 },
-                data : {
-                    title : req.body.modify.title,
-                    text : req.body.modify.text
-                }
+                data : content
             })
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(200).json({ message : 'Publication modifie !' }))
@@ -101,7 +121,24 @@ exports.deletePost = async (req, res, next) => {
             // verification administrateur
             if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
                 
-                // enregistrement
+                //---Suppression fichier
+                await prisma.post.findUnique({
+                    where : {
+                        id : req.params.id
+                    }
+                })
+                .then(post => {
+                    const filename = post.imageUrl.split('/images/')[1];
+                    fs.unlink(`images/${filename}`, (err) => {
+                        if (err) {
+                            console.log("Echec lors de la suppression de l'avatar : " + err);
+                        } else {
+                            console.log("le fichier de l'avatar a ete supprime")
+                        }
+                    })
+                })
+
+                //---Suppression dans la BDD
                 await prisma.post.delete({
                     where : {
                         id : Number(req.params.id)
@@ -126,9 +163,24 @@ exports.deletePost = async (req, res, next) => {
         })
         .then(async post => {
             // verification utilisateur
+            const user = await prisma.user.findUnique({
+                where : {
+                    id : req.auth.userId
+                }
+            })
             if ((post.userId === req.auth.userId) && (user.isActive)) {
                 
-                // enregistrement
+                //---Suppression fichier
+                const filename = post.imageUrl.split('/images/')[1];
+                fs.unlink(`images/${filename}`, (err) => {
+                    if (err) {
+                        console.log("Echec lors de la suppression de l'avatar : " + err);
+                    } else {
+                        console.log("le fichier de l'avatar a ete supprime")
+                    }
+                })
+
+                //---Suppression dans la BDD
                 await prisma.post.delete({
                     where : {
                         id : Number(req.params.id)
@@ -146,7 +198,7 @@ exports.deletePost = async (req, res, next) => {
     }
 };
 
-//========//LIKER//========//
+//================//LIKER//================//
 
 exports.likePost = async (req, res, next) => {
     //---RECHERCHES
@@ -173,7 +225,7 @@ exports.likePost = async (req, res, next) => {
 
     if (findUser.isActive) {
         // CONDITIONS
-        // Aucun doublon : Ajouter
+        //---Aucun doublon : Ajouter
         if (!Boolean(doublon)) {
             // empecher les auto-like
             if (!(postUser.userId === req.auth.userId)) {            
@@ -194,7 +246,7 @@ exports.likePost = async (req, res, next) => {
                 return res.status(401).json({ message : 'auto-like interdit' })
             }
         }
-        // Doublon : Retirer
+        //---Doublon : Retirer
         else {
             await prisma.like.delete({
                 where : {

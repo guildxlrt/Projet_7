@@ -7,7 +7,7 @@ const pwVal = require("password-validator");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-//========//CONFIG//========//
+//================//CONFIG//================//
 //----EMAIL
 const emailValidator = new RegExp(/^([a-z0-9._-]+)@([a-z0-9]+)\.([a-z]{2,8})(\.[a-z]{2,8})?$/, 'g');
         
@@ -22,30 +22,41 @@ pwValSchema
 .has().not().spaces()                           // Should not have spaces
 .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
 
-//========//UTILISATEURS//========//
+//================//UTILISATEURS//================//
 
 //========//NOUVEAU
-// ?????????????? FILE ????????????????? 
-
 exports.signup = (req, res, next) => {
     (function reqValidation() {
         //---ACCEPT
         if ((emailValidator.test(req.body.email)) && (pwValSchema.validate(req.body.password))) {
             bcrypt.hash(req.body.password, 10)
             .then(async hash => {
+
+                // mot de pass
+                req.body.password = hash;
+
+                // formatage date
+                req.body.birthday ? req.body.birthday = new Date(req.body.birthday) : null
+
+                // recherche de fichier
+                const newUser = req.file ? {
+                    ...JSON.parse(req.body),
+                    imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+                } : { 
+                    ...req.body
+                };
+                
                 // enregistrement
-                await prisma.user.create({
-                    data : {
-                        email : req.body.email,
-                        password : hash,
-                        name : req.body.name,
-                        surname : req.body.surname,
-                        birthday : req.body.birthday,
-                    }
-                })
+                await prisma.user.create({ data : newUser })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(201).json({ message : 'utilisateur cree !' }))
-                .catch(error => console.log(error) || res.status(400).json({message : error}))
+                .catch(error => {
+                    if (error.code === "P2002") {
+                        console.log("l'email est deja utilise") || res.status(500).json({ message : "l'email est deja utilise" })
+                    } else {
+                        console.log(error) || res.status(400).json({message : error})
+                    }
+                })
             })
             .catch(error => console.log(error) || res.status(500).json({ message : error }));
         }
@@ -111,6 +122,8 @@ exports.login = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 };
 
+//================//MANAGE//================//
+
 //========//MODIFICATIONS
 exports.update = async (req, res, next) => {
     // Recherche de l'utilisateur
@@ -126,21 +139,44 @@ exports.update = async (req, res, next) => {
             await bcrypt.compare(req.body.password, user.password)
             .then(async valid => {
                 if (valid) {
-                    // enregistrement
-                    await prisma.user.update({
-                        where : {
-                            id : req.auth.userId
-                        },
-                        data : {
-                            email : req.body.updates.email,
-                            name : req.body.updates.name,
-                            surname : req.body.updates.surname,
-                            birthday : req.body.updates.bithday
+                    // Donnees a soumettre
+                    const updateUser = {
+                        email : req.body.updates.email,
+                        name : req.body.updates.name,
+                        surname : req.body.updates.surname,
+                        birthday : req.body.updates.bithday
+                    }
+                    const authToken = req.auth.userId;
+
+                    async function sendUpdates(req, res, next) {
+                        // formatage date
+                        updateUser.birthday ? updateUser.birthday = new Date(updateUser.birthday) : null
+
+                        // Enregistrement dans la BDD
+                        await prisma.user.update({
+                            where : {
+                                id : authToken
+                            },
+                            data : updateUser
+                        })
+                        .then(async () => { await prisma.$disconnect() })
+                        .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
+                        .catch(error => console.log(error) || res.status(401).json({ message : error }));
+                    }
+
+                    function emailChecker(req, res, next) {
+                        if (emailValidator.test(req.body.updates.email)) {
+                            sendUpdates(req, res, next)
+                        } else {
+                            return res.status(400).json({ message : "l'email doit etre au format email : jack.nicholson@laposte.fr, sasha93.dupont@yahoo.fr, kanap-service_client@kanap.co.fr ..." })
                         }
-                    })
-                    .then(async () => { await prisma.$disconnect() })
-                    .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
-                    .catch(error => console.log(error) || res.status(401).json({ message : error }));
+                    }
+
+                    // modification de l'email
+                    req.body.updates.email ? emailChecker(req, res, next) : sendUpdates(req, res, next)
+
+                    // verification mail
+                    
                 } else {
                     res.status(401).json({ message : 'Acces non authorise' });
                 }
@@ -209,12 +245,6 @@ exports.password = async (req, res, next) => {
         }
     })
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
-}
-
-//========//CHANGER AVATAR
-// ?????????????? FILE ????????????????? 
-exports.avatar = (req, res, next) => {
-    console.log("Test avatar")
 }
 
 //========//DESACTIVER
@@ -391,4 +421,79 @@ exports.disable = async (req, res, next) => {
         })
         .catch(error => console.log(error) || res.status(500).json({ message : error }));
     }
+}
+
+//================//AVATAR//================//
+
+//========//CHANGER AVATAR
+exports.avatar = async (req, res, next) => {
+    await prisma.user.findUnique({
+        where : {
+            id : req.auth.userId
+        } 
+    })
+    .then(async user => {
+        //---Suppression ancienne
+        const filename = user.avatarUrl.split('/images/')[1];
+        fs.unlink(`images/${filename}`, (err) => {
+            if (err) {
+                console.log("Echec lors de la suppression de l'ancienne avatar : " + err)
+            } else {
+                console.log("le fichier de l'ancienne avatar a ete supprime")
+            }
+        })
+    })
+    .then(async () => {
+        //---Generer URL nouvelle
+        const newImageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+
+        //---Enregistrer
+        await prisma.user.update({
+            where : {
+                id : req.auth.userId
+            },
+            data : {
+                avatarUrl : newImageUrl
+            }
+        })
+        .then(async () => { await prisma.$disconnect() })
+        .then(() => res.status(200).json({ message : 'Avatar change !' }))
+        .catch(error => console.log(error) || res.status(401).json({ message : error }));
+    })
+    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+}
+
+//========//SUPPRIMER AVATAR
+exports.delAvatar = async (req, res, next) => {
+    await prisma.user.findUnique({
+        where : {
+            id : req.auth.userId
+        } 
+    })
+    .then(async user => {
+        //---Suppression fichier
+        const filename = user.avatarUrl.split('/images/')[1];
+        fs.unlink(`images/${filename}`, (err) => {
+            if (err) {
+                console.log("Echec lors de la suppression de l'avatar : " + err);
+            } else {
+                console.log("le fichier de l'avatar a ete supprime")
+            }
+        })
+    })
+    .then(async () => {
+        //---Supression URL dans BDD
+        await prisma.user.update({
+            where : {
+                id : req.auth.userId
+            },
+            data : {
+                avatarUrl : null
+            }
+        })
+        .then(async () => { await prisma.$disconnect() })
+        .then(() => res.status(200).json({ message : 'Avatar supprime !' }))
+        .catch(error => console.log(error) || res.status(401).json({ message : error }));
+    })
+    .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }

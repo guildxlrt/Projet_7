@@ -3,7 +3,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-//========//COMMENTAIRES//========//
+//================//COMMENTAIRES//================//
 
 //========//CREER
 exports.commentPost = async (req, res, next) => {
@@ -58,6 +58,11 @@ exports.modifyComment = async (req, res, next) => {
     })
     .then(async comment => {
         // verification utilisateur
+        const user = await prisma.user.findUnique({
+            where : {
+                id : req.auth.userId
+            }
+        })
         if ((comment.userId === req.auth.userId) && (user.isActive)) {
             
             // enregistrement
@@ -119,6 +124,11 @@ exports.delComment = async (req, res, next) => {
         })
         .then(async comment => {
             // verification utilisateur
+            const user = await prisma.user.findUnique({
+                where : {
+                    id : req.auth.userId
+                }
+            })
             if ((comment.userId === req.auth.userId) && (user.isActive)) {
                 // enregistrement
                 await prisma.comment.delete({

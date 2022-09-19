@@ -1,10 +1,13 @@
-//---IMPORTS
+//========//IMPORTS//========//
 //const fs = require('fs')
-// prisma
+//----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// NOUVEAU
+//========//POST//========//
+
+//========//NOUVEAU
+// ?????????????? FILE ????????????????? 
 exports.createPost = async (req, res, next) => {
     // Condition Fichier
     const content = req.file ? {
@@ -23,16 +26,20 @@ exports.createPost = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(400).json({ message : error }))
 };
 
-// TOUT AFFICHER
+//========//TOUT AFFICHER
 exports.getAllPosts = async (req, res, next) => {
     // recherche
-    await prisma.post.findMany()
+    await prisma.post.findMany({
+        where : {
+            isActive : true
+        }
+    })
     .then(posts => res.status(200).json(posts))
     .then(async () => { await prisma.$disconnect() })
     .catch(error => console.log(error) || res.status(400).json({ message : error }));
 };
 
-// UN SEUL
+//========//UN SEUL
 exports.getOnePost = async (req, res, next) => {
     // recherche
     await prisma.post.findUnique({
@@ -45,7 +52,9 @@ exports.getOnePost = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(404).json({ message : error }));
 };
 
-// MODIFIER
+
+//========//MODIFIER
+// ?????????????? FILE ????????????????? 
 exports.modifyPost = async (req, res, next) => {
     // Recherche
     await prisma.post.findUnique({
@@ -55,7 +64,8 @@ exports.modifyPost = async (req, res, next) => {
     })
     .then(async (post) => {
         // verification utilisateur
-        if (post.userId === req.auth.userId) {
+        if ((post.userId === req.auth.userId) && (user.isActive)) {
+
             // enregistrement
             await prisma.post.update({
                 where : {
@@ -69,6 +79,7 @@ exports.modifyPost = async (req, res, next) => {
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(200).json({ message : 'Publication modifie !' }))
             .catch(error => console.log(error) || res.status(401).json({ message : error }));
+
         } else {
             return res.status(401).json({ message : 'Acces non authorise' })
         }
@@ -76,7 +87,7 @@ exports.modifyPost = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 };
 
-// SUPPRIMER
+//========//SUPPRIMER
 exports.deletePost = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
@@ -89,6 +100,7 @@ exports.deletePost = async (req, res, next) => {
         .then(async admin => {
             // verification administrateur
             if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
+                
                 // enregistrement
                 await prisma.post.delete({
                     where : {
@@ -98,6 +110,7 @@ exports.deletePost = async (req, res, next) => {
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
                 .catch(error => res.status(401).json({ message : error }))
+
             } else {
                 return res.status(401).json({ message : 'Acces non authorise' })
             }
@@ -113,7 +126,8 @@ exports.deletePost = async (req, res, next) => {
         })
         .then(async post => {
             // verification utilisateur
-            if (post.userId === req.auth.userId) {
+            if ((post.userId === req.auth.userId) && (user.isActive)) {
+                
                 // enregistrement
                 await prisma.post.delete({
                     where : {
@@ -123,6 +137,7 @@ exports.deletePost = async (req, res, next) => {
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
                 .catch(error => res.status(401).json({ message : error }))
+
             } else {
                 return res.status(401).json({ message : 'Acces non authorise' })
             }
@@ -131,7 +146,8 @@ exports.deletePost = async (req, res, next) => {
     }
 };
 
-// LIKER
+//========//LIKER//========//
+
 exports.likePost = async (req, res, next) => {
     //---RECHERCHES
     // doublon
@@ -148,75 +164,48 @@ exports.likePost = async (req, res, next) => {
         }
     })
 
-    // CONDITIONS
-    // Aucun doublon : Ajouter
-    if (!Boolean(doublon)) {
-        // empecher les auto-like
-        if (!(postUser.userId === req.auth.userId)) {            
-            // enregistrement
-            await prisma.like.create({
-                data : {
-                    postId : Number(req.params.id),
-                    userId : req.auth.userId
+    // utilisateur
+    const findUser = await prisma.user.findUnique({
+        where : {
+            id : req.auth.userId
+        }
+    })
+
+    if (findUser.isActive) {
+        // CONDITIONS
+        // Aucun doublon : Ajouter
+        if (!Boolean(doublon)) {
+            // empecher les auto-like
+            if (!(postUser.userId === req.auth.userId)) {            
+                
+                // enregistrement
+                await prisma.like.create({
+                    data : {
+                        postId : Number(req.params.id),
+                        userId : req.auth.userId
+                    }
+                })
+                .then(async () => { await prisma.$disconnect() })
+                .then(() => res.status(201).json({ message : 'publication likee !'}))
+                .catch(error => console.log(error) || res.status(400).json({ message : error }))
+
+            }
+            else {
+                return res.status(401).json({ message : 'auto-like interdit' })
+            }
+        }
+        // Doublon : Retirer
+        else {
+            await prisma.like.delete({
+                where : {
+                    id : doublon.id,
                 }
             })
             .then(async () => { await prisma.$disconnect() })
-            .then(() => res.status(201).json({ message : 'publication likee !'}))
-            .catch(error => console.log(error) || res.status(400).json({ message : error }))
+            .then(() => res.status(200).json({ message : 'like supprime !' }))
+            .catch(error => res.status(401).json({ message : error }))
         }
-        else {
-            return res.status(401).json({ message : 'auto-like interdit' })
-        }
-    }
-    // Doublon : Retirer
-    else {
-        await prisma.like.delete({
-            where : {
-                id : doublon.id,
-            }
-        })
-        .then(async () => { await prisma.$disconnect() })
-        .then(() => res.status(200).json({ message : 'like supprime !' }))
-        .catch(error => res.status(401).json({ message : error }))
+    } else {
+        return res.status(401).json({ message : 'Acces non authorise' });
     }
 };
-
-//----------COMMENTAIRE
-
-// CREER
-exports.commentPost = async (req, res, next) => {
-    // enregistrement
-    await prisma.comment.create({
-        data : {
-            text : req.body.text,
-            postId : Number(req.params.id),
-            userId : req.auth.userId
-        }
-    })
-    .then(async () => { await prisma.$disconnect() })
-    .then(() => res.status(201).json({ message : 'commentaire publie !'}))
-    .catch(error => console.log(error) || res.status(400).json({ message : error }))
-};
-
-// AFFICHER
-exports.getPostComments = async (req, res, next) => {
-    // recherche
-    await prisma.comment.findMany({
-        where : {
-            postId : Number(req.params.id)
-        }
-    })
-    .then(posts => res.status(200).json(posts))
-    .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(400).json({ message : error }));
-}
-
-// MODIFIER
-exports.modifyComment = async (req, res, next) => {
-    //
-}
-
-// SUPRIMMER
-exports.delComment = async (req, res, next) => {
-    //
-}

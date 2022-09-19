@@ -1,16 +1,17 @@
-//---IMPORTS
+//========//IMPORTS//========//
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pwVal = require("password-validator");
-// prisma
+//const fs = require('fs')
+//----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-//--------CONFIG
-// EMAIL
+//========//CONFIG//========//
+//----EMAIL
 const emailValidator = new RegExp(/^([a-z0-9._-]+)@([a-z0-9]+)\.([a-z]{2,8})(\.[a-z]{2,8})?$/, 'g');
         
-// PASSWORD
+//----PASSWORD
 const pwValSchema = new pwVal();
 pwValSchema
 .is().min(8)                                    // Minimum length 8
@@ -21,10 +22,11 @@ pwValSchema
 .has().not().spaces()                           // Should not have spaces
 .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
 
-//----------------------------------------------------------------------//
-//------------PROGRAMS-------------------------------------------------//
+//========//UTILISATEURS//========//
 
-// NOUVEAU
+//========//NOUVEAU
+// ?????????????? FILE ????????????????? 
+
 exports.signup = (req, res, next) => {
     (function reqValidation() {
         //---ACCEPT
@@ -64,7 +66,7 @@ exports.signup = (req, res, next) => {
 };
 
 
-// CONNEXION
+//========//CONNEXION
 exports.login = async (req, res, next) => {
     await prisma.user.findUnique({ 
         where : {
@@ -72,40 +74,44 @@ exports.login = async (req, res, next) => {
         }
     })
     .then(async user => {
-        // mauvais utilisateur
         if (user) {
-            // bon utilisateur
-            await bcrypt.compare(req.body.password, user.password)
-            .then(valid => {
-                if (valid) {
-                    res.status(200).json({
-                        userId : user.id,
-                        isAdmin : user.isAdmin,
-                        token : jwt.sign(
-                            {
-                                userId : user.id,
-                                isAdmin : user.isAdmin
-                            },
-                            process.env.RANDOM_TOKEN,
-                            { expiresIn : '24h'}
-                        )
-                    })
-                }
-                else {
-                    res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
-                }
-            })
+            // Compte actif
+            if (user.isActive) {
+                // mot de passe
+                await bcrypt.compare(req.body.password, user.password)
+                .then(valid => {
+                    if (valid) {
+                        // Connexion
+                        res.status(200).json({
+                            userId : user.id,
+                            isAdmin : user.isAdmin,
+                            token : jwt.sign(
+                                {
+                                    userId : user.id,
+                                    isAdmin : user.isAdmin
+                                },
+                                process.env.RANDOM_TOKEN,
+                                { expiresIn : '24h'}
+                            )
+                        })
+                    }
+                    else {
+                        res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
+                    }
+                })
             .catch(error => console.log(error) || res.status(500).json({ message : error }));
+            } else {
+                return res.status(401).json({ message : 'compte non actif' });
+            }
         }
         else {
-            // le message d'erreur est volontairement flou (fuite d'erreur)
             return res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
         }
     })
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 };
 
-// MODIFICATIONS
+//========//MODIFICATIONS
 exports.update = async (req, res, next) => {
     // Recherche de l'utilisateur
     await prisma.user.findUnique({
@@ -115,7 +121,7 @@ exports.update = async (req, res, next) => {
     })
     .then(async user => {
         // verification utilisateur
-        if (user.id === req.auth.userId) {
+        if ((user.id === req.auth.userId) && (user.isActive)) {
             // verification pass
             await bcrypt.compare(req.body.password, user.password)
             .then(async valid => {
@@ -147,7 +153,7 @@ exports.update = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }
 
-// CHANGER MDP
+//========//CHANGER MDP
 exports.password = async (req, res, next) => {
     // Recherche de l'utilisateur
     await prisma.user.findUnique({
@@ -158,7 +164,7 @@ exports.password = async (req, res, next) => {
     //-----VERIFICATION
     .then(async user => {
         // utilisateur
-        if (user.id === req.auth.userId) {
+        if ((user.id === req.auth.userId) && (user.isActive)) {
             // ancient pass
             await bcrypt.compare(req.body.password, user.password)
             .then(async valid => {
@@ -194,7 +200,7 @@ exports.password = async (req, res, next) => {
                         return res.status(400).json({ message : "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres." });
                     }
                 } else {
-                    res.status(401).json({ message : 'Acces non authorisE' })
+                    res.status(401).json({ message : 'Mot de passe incorrect' })
                 }
             })
             .catch(error => console.log(error) || res.status(500).json({ message : error }));
@@ -205,12 +211,13 @@ exports.password = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }
 
-// CHANGER AVATAR
+//========//CHANGER AVATAR
+// ?????????????? FILE ????????????????? 
 exports.avatar = (req, res, next) => {
     console.log("Test avatar")
 }
 
-// DESACTIVER
+//========//DESACTIVER
 exports.disable = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
@@ -223,24 +230,95 @@ exports.disable = async (req, res, next) => {
         //---Verifications
         .then(async admin => {
             // administrateur
-            if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
+            if ((req.auth.userId === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
                 // mot de passe
                 await bcrypt.compare(req.body.password, admin.password)
-                .then( valid => {
+                .then( async valid => {
                     if (valid) {
-                        console.log(typeof req.params.id)
-                        //---Enregistrement
-                        prisma.user.update({
+                        // recherche de l'utilisateur cible
+                        await prisma.user.findUnique({
                             where : {
                                 id : Number(req.params.id)
-                            },
-                            data : {
-                                isActive : false
                             }
                         })
-                        .then(async () => { await prisma.$disconnect() })
-                        .then(() => res.status(200).json({ message : 'Compte desactive' }))
-                        .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                        .then( async user => {
+
+                            // DESACTIVER
+                            if (user.isActive === true) {
+                                //---Enregistrement
+                                await prisma.user.update({
+                                    where : {
+                                        id : Number(req.params.id)
+                                    },
+                                    data : {
+                                        isActive : false
+                                    }
+                                })
+                                .then(async () => {
+                                    await prisma.post.updateMany({
+                                        where : {
+                                            userId : user.id
+                                        },
+                                        data : {
+                                            isActive : false
+                                        }
+                                    })
+                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                                })
+                                .then(async () => {
+                                    await prisma.comment.updateMany({
+                                        where : {
+                                            userId : user.id
+                                        },
+                                        data : {
+                                            isActive : false
+                                        }
+                                    })
+                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                                })
+                                .then(async () => { await prisma.$disconnect() })
+                                .then(() => res.status(200).json({ message : 'Compte desactive' }))
+                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                            }
+                            
+                            // REACTIVER 
+                            else {
+                                //---Enregistrement
+                                await prisma.user.update({
+                                    where : {
+                                        id : Number(req.params.id)
+                                    },
+                                    data : {
+                                        isActive : true
+                                    }
+                                })
+                                .then(async () => {
+                                    await prisma.post.updateMany({
+                                        where : {
+                                            userId : user.id
+                                        },
+                                        data : {
+                                            isActive : true
+                                        }
+                                    })
+                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                                })
+                                .then(async () => {
+                                    await prisma.comment.updateMany({
+                                        where : {
+                                            userId : user.id
+                                        },
+                                        data : {
+                                            isActive : true
+                                        }
+                                    })
+                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                                })
+                                .then(async () => { await prisma.$disconnect() })
+                                .then(() => res.status(200).json({ message : 'Compte Re-active' }))
+                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                            }
+                        })
                     }
                 })
             } else {
@@ -260,21 +338,43 @@ exports.disable = async (req, res, next) => {
         //---Verifications
         .then(async user => {
             // utilisateur
-            if ((req.auth.userId === user.id) && (user.isActive === true)) {
+            if ((req.auth.userId === user.id ) && (user.isActive)) {
                 // saisie email
                 if ((req.body.email === user.email) && (req.body.email === req.body.emailConfirm)) {
                     // mot de passe
                     await bcrypt.compare(req.body.password, user.password)
-                    .then(valid => {
+                    .then( async valid => {
                         if (valid) {
                             //---Enregistrement
-                            prisma.user.update({
+                            await prisma.user.update({
                                 where : {
                                     id : req.auth.userId
                                 },
                                 data : {
                                     isActive : false
                                 }
+                            })
+                            .then(async () => {
+                                await prisma.post.updateMany({
+                                    where : {
+                                        userId : user.id
+                                    },
+                                    data : {
+                                        isActive : false
+                                    }
+                                })
+                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                            })
+                            .then(async () => {
+                                await prisma.comment.updateMany({
+                                    where : {
+                                        userId : user.id
+                                    },
+                                    data : {
+                                        isActive : false
+                                    }
+                                })
+                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
                             })
                             .then(async () => { await prisma.$disconnect() })
                             .then(() => res.status(200).json({ message : 'Compte desactive' }))

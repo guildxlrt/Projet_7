@@ -36,16 +36,18 @@ model Post {
   userId       Int
   Comment      Comment[]
   Like         Like[]
+  isActive     Boolean   @default(true)
 }
 
 model Comment {
-  id     Int      @id @default(autoincrement())
-  text   String
-  date   DateTime @default(now())
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
-  post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId Int
+  id       Int      @id @default(autoincrement())
+  text     String
+  date     DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId   Int
+  isActive Boolean  @default(true)
 }
 
 model Like {
@@ -55,11 +57,4 @@ model Like {
   userId Int
   post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId Int
-}
-
-model Test {
-  id    Int      @id @default(autoincrement())
-  email String   @unique
-  test  Decimal
-  date  DateTime @default(now())
 }

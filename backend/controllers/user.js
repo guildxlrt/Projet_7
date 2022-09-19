@@ -2,7 +2,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pwVal = require("password-validator");
-const fileDel = require('../middlewares/filedel');
+const fileDel = require('../utils/filedel');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();

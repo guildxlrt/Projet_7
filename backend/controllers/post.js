@@ -8,21 +8,34 @@ const prisma = new PrismaClient();
 
 //========//NOUVEAU
 exports.createPost = async (req, res, next) => {
-    // Condition Fichier
-    const content = req.file ? {
-        ...JSON.parse(req.body),
-        imageUrl : utils.newImageUrl(req),
-        userId : req.auth.userId
-    } : {
-        ...req.body,
-        userId : req.auth.userId
-    };
+    // utilisateur
+    const findUser = await prisma.user.findUnique({
+        where : {
+            id : req.auth.userId
+        }
+    })
 
-    // Enregistrement
-    await prisma.post.create({data : content})
-    .then(async () => { await prisma.$disconnect() })
-    .then(() => res.status(201).json({ message : 'publication cree !'}))
-    .catch(error => console.log(error) || res.status(400).json({ message : error }))
+    if (findUser.isActive) {
+        // Condition Fichier
+        const content = req.file ? {
+            ...JSON.parse(req.body),
+            imageUrl : utils.newImageUrl(req),
+            userId : req.auth.userId
+        } : {
+            ...req.body,
+            userId : req.auth.userId
+        };
+
+        // Enregistrement
+        await prisma.post.create({data : content})
+        .then(async () => { await prisma.$disconnect() })
+        .then(() => res.status(201).json({ message : 'publication cree !'}))
+        .catch(error => console.log(error) || res.status(400).json({ message : error }))
+    } else {
+        return res.status(401).json({ message : 'Acces non authorise' })
+    }
+
+    
 };
 
 //========//TOUT AFFICHER
@@ -102,7 +115,7 @@ exports.modifyPost = async (req, res, next) => {
 exports.deletePost = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
-    if (req.auth.isAdmin === true) {
+    if (req.auth.isAdmin) {
         await prisma.user.findUnique({
             where : {
                 id : req.auth.userId
@@ -110,7 +123,7 @@ exports.deletePost = async (req, res, next) => {
         })
         .then(async admin => {
             // verification administrateur
-            if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
+            if ((req.auth.userId === admin.id) && (admin.isActive) && (admin.isAdmin)) {
                 
                 //---Suppression fichier
                 await prisma.post.findUnique({
@@ -178,15 +191,15 @@ exports.deletePost = async (req, res, next) => {
 //================//LIKER//================//
 exports.likePost = async (req, res, next) => {
     //---RECHERCHES
-    // doublon
-    const doublon = await prisma.like.findFirst({
+    // like doublon
+    const findLike = await prisma.like.findFirst({
         where : {
             userId : req.auth.userId,
             postId : Number(req.params.id)
         }
     })
     // publication
-    const postUser = await prisma.post.findUnique({
+    const findPost = await prisma.post.findUnique({
         where : {
             id : Number(req.params.id)
         }
@@ -200,12 +213,12 @@ exports.likePost = async (req, res, next) => {
     })
 
     // l'utilisateur et le post doivent etre actif
-    if ((findUser.isActive) === true && (postUser.isActive) === true) {
+    if ((findUser.isActive) && (findPost.isActive)) {
         // CONDITIONS
         //========//Aucun doublon : AJOUTER
-        if (!Boolean(doublon)) {
+        if (!Boolean(findLike)) {
             // empecher les auto-like
-            if (!(postUser.userId === req.auth.userId)) {            
+            if (!(findPost.userId === req.auth.userId)) {            
                 
                 // enregistrement
                 await prisma.like.create({
@@ -223,11 +236,11 @@ exports.likePost = async (req, res, next) => {
                 return res.status(401).json({ message : 'auto-like interdit' })
             }
         }
-        //========//Doublon : RETIRER
+        //========//doublon : RETIRER
         else {
             await prisma.like.delete({
                 where : {
-                    id : doublon.id,
+                    id : findLike.id,
                 }
             })
             .then(async () => { await prisma.$disconnect() })

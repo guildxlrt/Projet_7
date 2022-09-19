@@ -417,22 +417,27 @@ exports.avatar = async (req, res, next) => {
         } 
     })
     .then(async user => {
-        //---Suppression ancienne
-        fileDel(user.avatarUrl)
-    })
-    .then(async () => {
-        //---Enregistrer
-        await prisma.user.update({
-            where : {
-                id : req.auth.userId
-            },
-            data : {
-                avatarUrl : utils.newImageUrl(req)
-            }
-        })
-        .then(async () => { await prisma.$disconnect() })
-        .then(() => res.status(200).json({ message : 'Avatar change !' }))
-        .catch(error => console.log(error) || res.status(401).json({ message : error }));
+        // Verification
+        if ((req.auth.userId === user.id ) && (user.isActive)) {
+            //---Suppression fichier
+            fileDel(user.avatarUrl)
+            .then(async () => {
+                //---Enregistrer
+                await prisma.user.update({
+                    where : {
+                        id : req.auth.userId
+                    },
+                    data : {
+                        avatarUrl : utils.newImageUrl(req)
+                    }
+                })
+                .then(async () => { await prisma.$disconnect() })
+                .then(() => res.status(200).json({ message : 'Avatar change !' }))
+                .catch(error => console.log(error) || res.status(401).json({ message : error }));
+            })
+        } else {
+            res.status(401).json({ message : 'Acces non authorise' });
+        }
     })
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }
@@ -445,22 +450,27 @@ exports.delAvatar = async (req, res, next) => {
         } 
     })
     .then(async user => {
-        //---Suppression fichier
-        fileDel(user.avatarUrl)
-    })
-    .then(async () => {
-        //---Supression URL dans BDD
-        await prisma.user.update({
-            where : {
-                id : req.auth.userId
-            },
-            data : {
-                avatarUrl : null
-            }
-        })
-        .then(async () => { await prisma.$disconnect() })
-        .then(() => res.status(200).json({ message : 'Avatar supprime !' }))
-        .catch(error => console.log(error) || res.status(401).json({ message : error }));
+        // Verification
+        if ((req.auth.userId === user.id ) && (user.isActive)) {
+            //---Suppression fichier
+            fileDel(user.avatarUrl)
+            .then(async () => {
+                //---Supression URL dans BDD
+                await prisma.user.update({
+                    where : {
+                        id : req.auth.userId
+                    },
+                    data : {
+                        avatarUrl : null
+                    }
+                })
+                .then(async () => { await prisma.$disconnect() })
+                .then(() => res.status(200).json({ message : 'Avatar supprime !' }))
+                .catch(error => console.log(error) || res.status(401).json({ message : error }));
+            })
+        } else {
+            res.status(401).json({ message : 'Acces non authorise' });
+        }  
     })
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }

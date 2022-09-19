@@ -7,17 +7,35 @@ const prisma = new PrismaClient();
 
 //========//CREER
 exports.commentPost = async (req, res, next) => {
-    // enregistrement
-    await prisma.comment.create({
-        data : {
-            text : req.body.text,
-            postId : Number(req.params.id),
-            userId : req.auth.userId
+    // publication
+    const findPost = await prisma.post.findUnique({
+        where : {
+            id : Number(req.params.id)
         }
     })
-    .then(async () => { await prisma.$disconnect() })
-    .then(() => res.status(201).json({ message : 'commentaire publie !' }))
-    .catch(error => console.log(error) || res.status(400).json({ message : error }))
+
+    // utilisateur
+    const findUser = await prisma.user.findUnique({
+        where : {
+            id : req.auth.userId
+        }
+    })
+
+    if ((findPost.isActive) && (findUser.isActive)) {
+        // enregistrement
+        await prisma.comment.create({
+            data : {
+                text : req.body.text,
+                postId : Number(req.params.id),
+                userId : req.auth.userId
+            }
+        })
+        .then(async () => { await prisma.$disconnect() })
+        .then(() => res.status(201).json({ message : 'commentaire publie !' }))
+        .catch(error => console.log(error) || res.status(400).json({ message : error }))
+    } else {
+        return res.status(401).json({ message : 'Acces non authorise' });
+    }
 };
 
 //========//AFFICHER
@@ -49,7 +67,6 @@ exports.getOneComment = async (req, res, next) => {
 
 //========//MODIFIER
 exports.modifyComment = async (req, res, next) => {
-    console.log('alooo')
     // Recherche
     await prisma.comment.findUnique({
         where : {
@@ -63,6 +80,7 @@ exports.modifyComment = async (req, res, next) => {
                 id : req.auth.userId
             }
         })
+        
         if ((comment.userId === req.auth.userId) && (user.isActive)) {
             
             // enregistrement

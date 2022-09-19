@@ -199,9 +199,10 @@ exports.likePost = async (req, res, next) => {
         }
     })
 
-    if (findUser.isActive) {
+    // l'utilisateur et le post doivent etre actif
+    if ((findUser.isActive) === true && (postUser.isActive) === true) {
         // CONDITIONS
-        //---Aucun doublon : Ajouter
+        //========//Aucun doublon : AJOUTER
         if (!Boolean(doublon)) {
             // empecher les auto-like
             if (!(postUser.userId === req.auth.userId)) {            
@@ -222,7 +223,7 @@ exports.likePost = async (req, res, next) => {
                 return res.status(401).json({ message : 'auto-like interdit' })
             }
         }
-        //---Doublon : Retirer
+        //========//Doublon : RETIRER
         else {
             await prisma.like.delete({
                 where : {

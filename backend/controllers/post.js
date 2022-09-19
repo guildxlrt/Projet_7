@@ -1,5 +1,5 @@
 //========//IMPORTS//========//
-const fileDel = require('../utils/filedel');
+const utils = require('../utils/utils');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -11,7 +11,7 @@ exports.createPost = async (req, res, next) => {
     // Condition Fichier
     const content = req.file ? {
         ...JSON.parse(req.body),
-        imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        imageUrl : utils.newImageUrl(req),
         userId : req.auth.userId
     } : {
         ...req.body,
@@ -68,11 +68,10 @@ exports.modifyPost = async (req, res, next) => {
             }
         })
         if ((post.userId === req.auth.userId) && (user.isActive)) {
-
             //---Recherche fichier
             const content = req.file ? {
                 ...JSON.parse(req.body),
-                imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+                imageUrl : utils.newImageUrl(req)
             } : { 
                 ...req.body
             };

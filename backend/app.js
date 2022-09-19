@@ -1,4 +1,4 @@
-//========//IMPORTS//========//
+//================//IMPORTS//================//
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -12,7 +12,7 @@ const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
 app.use(cors());
 
-//========//
+//================//CONFIG//================//
 
 //========//Autorisation
 app.use((req, res, next) => {
@@ -31,5 +31,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comment', commentRoutes);
 
-//========//EXPORT//========//
+
+//================//EXPORT//================//
 module.exports = app;

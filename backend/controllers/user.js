@@ -1,34 +1,19 @@
 //========//IMPORTS//========//
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const pwVal = require("password-validator");
-const fileDel = require('../utils/filedel');
+const utils = require('../utils/utils');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-//================//CONFIG//================//
-//----EMAIL
-const emailValidator = new RegExp(/^([a-z0-9._-]+)@([a-z0-9]+)\.([a-z]{2,8})(\.[a-z]{2,8})?$/, 'g');
         
-//----PASSWORD
-const pwValSchema = new pwVal();
-pwValSchema
-.is().min(8)                                    // Minimum length 8
-.is().max(100)                                  // Maximum length 100
-.has().uppercase(2)                              // Must have uppercase letters
-.has().lowercase(2)                              // Must have lowercase letters
-.has().digits(2)                                // Must have at least 2 digits
-.has().not().spaces()                           // Should not have spaces
-.is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
-
 //================//UTILISATEURS//================//
 
 //========//NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
         //---ACCEPT
-        if ((emailValidator.test(req.body.email)) && (pwValSchema.validate(req.body.password))) {
+        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password))) {
             bcrypt.hash(req.body.password, 10)
             .then(async hash => {
 
@@ -41,7 +26,7 @@ exports.signup = (req, res, next) => {
                 // recherche de fichier
                 const newUser = req.file ? {
                     ...JSON.parse(req.body),
-                    imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+                    imageUrl : utils.newImageUrl(req)
                 } : { 
                     ...req.body
                 };
@@ -62,15 +47,15 @@ exports.signup = (req, res, next) => {
         }
         //---REJET
         // Email
-        else if ((emailValidator.test(req.body.email)) === false && (pwValSchema.validate(req.body.password)) === true) {
+        else if ((utils.emailValid(req.body.email)) === false && (utils.passwdValid(req.body.password)) === true) {
             return res.status(400).json({ message : "l'email doit etre au format email : jack.nicholson@laposte.fr, sasha93.dupont@yahoo.fr, kanap-service_client@kanap.co.fr ..." })
         }
         // Mot De Passe
-        else if ((emailValidator.test(req.body.email)) === true && (pwValSchema.validate(req.body.password)) === false) {
+        else if ((utils.emailValid(req.body.email)) === true && (utils.passwdValid(req.body.password)) === false) {
             return res.status(400).json({ message : "le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres" })
         }
         // les deux
-        else if ((emailValidator.test(req.body.email)) === false && (pwValSchema.validate(req.body.password)) === false) {
+        else if ((utils.emailValid(req.body.email)) === false && (utils.passwdValid(req.body.password)) === false) {
             return res.status(400).json({ message : "informations incorrectes" })
         }
     })();
@@ -144,7 +129,7 @@ exports.update = async (req, res, next) => {
                         email : req.body.updates.email,
                         name : req.body.updates.name,
                         surname : req.body.updates.surname,
-                        birthday : req.body.updates.bithday
+                        birthday : req.body.updates.birthday
                     }
                     const authToken = req.auth.userId;
 
@@ -165,7 +150,7 @@ exports.update = async (req, res, next) => {
                     }
 
                     function emailChecker(req, res, next) {
-                        if (emailValidator.test(req.body.updates.email)) {
+                        if (utils.emailValid(req.body.updates.email)) {
                             sendUpdates(req, res, next)
                         } else {
                             return res.status(400).json({ message : "l'email doit etre au format email : jack.nicholson@laposte.fr, sasha93.dupont@yahoo.fr, kanap-service_client@kanap.co.fr ..." })
@@ -175,7 +160,6 @@ exports.update = async (req, res, next) => {
                     // modification de l'email
                     req.body.updates.email ? emailChecker(req, res, next) : sendUpdates(req, res, next)
 
-                    // verification mail
                     
                 } else {
                     res.status(401).json({ message : 'Acces non authorise' });
@@ -206,7 +190,7 @@ exports.password = async (req, res, next) => {
             .then(async valid => {
                 if (valid) {
                     // nouveau pass
-                    if (req.body.password != req.body.newPass && req.body.newPass === req.body.passConfirm && pwValSchema.validate(req.body.newPass)) {
+                    if (req.body.password != req.body.newPass && req.body.newPass === req.body.passConfirm && utils.passwdValid(req.body.newPass)) {
                         bcrypt.hash(req.body.passConfirm, 10)
                         .then(async hash => {
                             // enregistrement du nouveau mot de passe
@@ -232,7 +216,7 @@ exports.password = async (req, res, next) => {
                         return res.status(400).json({ message : "Les saisies du mot de passe doivent correspondre." });
                     }
                     // FORCE
-                    else if (!(pwValSchema.validate(req.body.newPass))) {
+                    else if (!(utils.passwdValid(req.body.newPass))) {
                         return res.status(400).json({ message : "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres." });
                     }
                 } else {
@@ -437,16 +421,13 @@ exports.avatar = async (req, res, next) => {
         fileDel(user.avatarUrl)
     })
     .then(async () => {
-        //---Generer URL nouvelle
-        const newImageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-
         //---Enregistrer
         await prisma.user.update({
             where : {
                 id : req.auth.userId
             },
             data : {
-                avatarUrl : newImageUrl
+                avatarUrl : utils.newImageUrl(req)
             }
         })
         .then(async () => { await prisma.$disconnect() })

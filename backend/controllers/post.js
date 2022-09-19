@@ -9,11 +9,7 @@ const prisma = new PrismaClient();
 //========//NOUVEAU
 exports.createPost = async (req, res, next) => {
     // utilisateur
-    const findUser = await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        }
-    })
+    const findUser = utils.findUser({id : req.auth.userId})
 
     if (findUser.isActive) {
         // Condition Fichier
@@ -54,11 +50,7 @@ exports.getAllPosts = async (req, res, next) => {
 //========//UN SEUL
 exports.getOnePost = async (req, res, next) => {
     // recherche
-    await prisma.post.findUnique({
-        where : {
-            id : Number(req.params.id)
-        }
-    })
+    utils.findPost({id : Number(req.params.id)})
     .then(post => res.status(200).json(post))
     .then(async () => { await prisma.$disconnect() })
     .catch(error => console.log(error) || res.status(404).json({ message : error }));
@@ -68,21 +60,13 @@ exports.getOnePost = async (req, res, next) => {
 //========//MODIFIER
 exports.modifyPost = async (req, res, next) => {
     // Recherche
-    await prisma.post.findUnique({
-        where : {
-            id : Number(req.params.id)
-        }
-    })
+    utils.findPost({id : Number(req.params.id)})
     .then(async (post) => {
         
         // verification utilisateur
-        const user = await prisma.user.findUnique({
-            where : {
-                id : req.auth.userId
-            }
-        })
+        const findUser = utils.findUser({id : req.auth.userId})
 
-        if ((post.userId === req.auth.userId) && (user.isActive)) {
+        if ((post.userId === req.auth.userId) && (findUser.isActive)) {
             //---Recherche fichier
             const content = req.file ? {
                 ...JSON.parse(req.body),
@@ -118,21 +102,13 @@ exports.deletePost = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin) {
-        await prisma.user.findUnique({
-            where : {
-                id : req.auth.userId
-            }
-        })
+        utils.findUser({id : req.auth.userId})
         .then(async admin => {
             // verification administrateur
             if ((req.auth.userId === admin.id) && (admin.isActive) && (admin.isAdmin)) {
                 
                 //---Suppression fichier
-                await prisma.post.findUnique({
-                    where : {
-                        id : req.params.id
-                    }
-                })
+                utils.findPost({id : Number(req.params.id)})
                 .then(post => {
                     fileDel(post.imageUrl)
                 })
@@ -155,18 +131,10 @@ exports.deletePost = async (req, res, next) => {
     //------UTILISATEUR NORMAL
     else {
         // Recherche dans le post
-        await prisma.post.findUnique({
-            where : {
-                id : Number(req.params.id)
-            }
-        })
+        utils.findPost({id : Number(req.params.id)})
         .then(async post => {
             // verification utilisateur
-            const user = await prisma.user.findUnique({
-                where : {
-                    id : req.auth.userId
-                }
-            })
+            const user = utils.findUser({id : req.auth.userId})
             if ((post.userId === req.auth.userId) && (user.isActive)) {
                 
                 //---Suppression fichier
@@ -201,18 +169,10 @@ exports.likePost = async (req, res, next) => {
         }
     })
     // publication
-    const findPost = await prisma.post.findUnique({
-        where : {
-            id : Number(req.params.id)
-        }
-    })
+    const findPost = utils.findPost({id : Number(req.params.id)})
 
     // utilisateur
-    const findUser = await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        }
-    })
+    const findUser = utils.findUser({id : req.auth.userId})
 
     // l'utilisateur et le post doivent etre actif
     if ((findUser.isActive) && (findPost.isActive)) {

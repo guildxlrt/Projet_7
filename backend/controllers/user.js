@@ -64,11 +64,7 @@ exports.signup = (req, res, next) => {
 
 //========//CONNEXION
 exports.login = async (req, res, next) => {
-    await prisma.user.findUnique({ 
-        where : {
-            email : req.body.email
-        }
-    })
+    utils.findUser({email : req.body.email})
     .then(async user => {
         if (user) {
             // Compte actif
@@ -112,11 +108,7 @@ exports.login = async (req, res, next) => {
 //========//MODIFICATIONS
 exports.update = async (req, res, next) => {
     // Recherche de l'utilisateur
-    await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        }
-    })
+    utils.findUser({id : req.auth.userId})
     .then(async user => {
         // verification utilisateur
         if ((user.id === req.auth.userId) && (user.isActive)) {
@@ -176,11 +168,7 @@ exports.update = async (req, res, next) => {
 //========//CHANGER MDP
 exports.password = async (req, res, next) => {
     // Recherche de l'utilisateur
-    await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        }
-    })
+    utils.findUser({id : req.auth.userId})
     //-----VERIFICATION
     .then(async user => {
         // utilisateur
@@ -236,11 +224,7 @@ exports.disable = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin === true) {
-        await prisma.user.findUnique({
-            where : {
-                id : req.auth.userId
-            }
-        })
+        utils.findUser({id : req.auth.userId})
         //---Verifications
         .then(async admin => {
             // administrateur
@@ -250,11 +234,7 @@ exports.disable = async (req, res, next) => {
                 .then( async valid => {
                     if (valid) {
                         // recherche de l'utilisateur cible
-                        await prisma.user.findUnique({
-                            where : {
-                                id : Number(req.params.id)
-                            }
-                        })
+                        utils.findUser({id : Number(req.params.id)})
                         .then( async user => {
 
                             // DESACTIVER
@@ -344,11 +324,7 @@ exports.disable = async (req, res, next) => {
     //------UTILISATEUR NORMAL
     else {
         // Recherche de l'utilisateur
-        await prisma.user.findUnique({
-            where : {
-                id : req.auth.userId
-            } 
-        })
+        utils.findUser({id : req.auth.userId})
         //---Verifications
         .then(async user => {
             // utilisateur
@@ -411,11 +387,7 @@ exports.disable = async (req, res, next) => {
 
 //========//CHANGER AVATAR
 exports.avatar = async (req, res, next) => {
-    await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        } 
-    })
+    utils.findUser({id : req.auth.userId})
     .then(async user => {
         // Verification
         if ((req.auth.userId === user.id ) && (user.isActive)) {
@@ -444,11 +416,7 @@ exports.avatar = async (req, res, next) => {
 
 //========//SUPPRIMER AVATAR
 exports.delAvatar = async (req, res, next) => {
-    await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        } 
-    })
+    utils.findUser({id : req.auth.userId})
     .then(async user => {
         // Verification
         if ((req.auth.userId === user.id ) && (user.isActive)) {

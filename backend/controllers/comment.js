@@ -1,4 +1,5 @@
 //========//IMPORTS//========//
+const utils = require('../utils/utils');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -7,19 +8,8 @@ const prisma = new PrismaClient();
 
 //========//CREER
 exports.commentPost = async (req, res, next) => {
-    // publication
-    const findPost = await prisma.post.findUnique({
-        where : {
-            id : Number(req.params.id)
-        }
-    })
-
-    // utilisateur
-    const findUser = await prisma.user.findUnique({
-        where : {
-            id : req.auth.userId
-        }
-    })
+    const findPost = utils.findPost({id : Number(req.params.id)})
+    const findUser = utils.findUser({id : req.auth.userId})
 
     if ((findPost.isActive) && (findUser.isActive)) {
         // enregistrement
@@ -55,11 +45,7 @@ exports.getPostComments = async (req, res, next) => {
 //========//UN SEUL
 exports.getOneComment = async (req, res, next) => {
     // recherche
-    await prisma.comment.findUnique({
-        where : {
-            id : Number(req.params.id)
-        }
-    })
+    utils.comment({id : Number(req.params.id)})
     .then(comment => res.status(200).json(comment))
     .then(async () => { await prisma.$disconnect() })
     .catch(error => console.log(error) || res.status(404).json({ message : error }));
@@ -68,20 +54,12 @@ exports.getOneComment = async (req, res, next) => {
 //========//MODIFIER
 exports.modifyComment = async (req, res, next) => {
     // Recherche
-    await prisma.comment.findUnique({
-        where : {
-            id : Number(req.params.id)
-        }
-    })
+    utils.comment({id : Number(req.params.id)})
     .then(async comment => {
         // verification utilisateur
-        const user = await prisma.user.findUnique({
-            where : {
-                id : req.auth.userId
-            }
-        })
+        const findUser = utils.findUser({id : req.auth.userId})
         
-        if ((comment.userId === req.auth.userId) && (user.isActive)) {
+        if ((comment.userId === req.auth.userId) && (findUser.isActive)) {
             
             // enregistrement
             await prisma.comment.update({
@@ -108,11 +86,7 @@ exports.delComment = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin === true) {
-        await prisma.user.findUnique({
-            where : {
-                id : req.auth.userId
-            }
-        })
+        utils.findUser({id : req.auth.userId})
         .then(async admin => {
             // verification administrateur
             if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
@@ -135,19 +109,11 @@ exports.delComment = async (req, res, next) => {
     //------UTILISATEUR NORMAL
     else {
         // Recherche dans le post
-        await prisma.comment.findUnique({
-            where : {
-                id : Number(req.params.id)
-            }
-        })
+        utils.comment({id : Number(req.params.id)})
         .then(async comment => {
             // verification utilisateur
-            const user = await prisma.user.findUnique({
-                where : {
-                    id : req.auth.userId
-                }
-            })
-            if ((comment.userId === req.auth.userId) && (user.isActive)) {
+            const findUser = utils.findUser({id : req.auth.userId})
+            if ((comment.userId === req.auth.userId) && (findUser.isActive)) {
                 // enregistrement
                 await prisma.comment.delete({
                     where : {

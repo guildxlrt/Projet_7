@@ -74,12 +74,14 @@ exports.modifyPost = async (req, res, next) => {
         }
     })
     .then(async (post) => {
+        
         // verification utilisateur
         const user = await prisma.user.findUnique({
             where : {
                 id : req.auth.userId
             }
         })
+
         if ((post.userId === req.auth.userId) && (user.isActive)) {
             //---Recherche fichier
             const content = req.file ? {

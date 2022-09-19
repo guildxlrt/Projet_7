@@ -1,6 +1,9 @@
 //================//IMPORTS//================//
 const fs = require('fs')
 const pwVal = require("password-validator");
+//----prisma
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 
 //========//File suppressor

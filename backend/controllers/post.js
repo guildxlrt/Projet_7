@@ -1,5 +1,5 @@
 //========//IMPORTS//========//
-//const fs = require('fs')
+const fileDel = require('../middlewares/filedel');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -78,16 +78,8 @@ exports.modifyPost = async (req, res, next) => {
             };
 
             //---Suppression ancien fichier
-            if (req.file) {
-                const filename = post.imageUrl.split('/images/')[1];
-                fs.unlink(`images/${filename}`, (err) => {
-                    if (err) {
-                        console.log("Echec lors de la suppression de l'ancienne image : "+err)
-                    } else {
-                        console.log("le fichier de l'ancienne image a ete supprime")
-                    }
-                })
-            }
+            //---Suppression fichier
+            fileDel(post.imageUrl)
 
             //---Enregistrement
             await prisma.post.update({
@@ -128,14 +120,7 @@ exports.deletePost = async (req, res, next) => {
                     }
                 })
                 .then(post => {
-                    const filename = post.imageUrl.split('/images/')[1];
-                    fs.unlink(`images/${filename}`, (err) => {
-                        if (err) {
-                            console.log("Echec lors de la suppression de l'avatar : " + err);
-                        } else {
-                            console.log("le fichier de l'avatar a ete supprime")
-                        }
-                    })
+                    fileDel(post.imageUrl)
                 })
 
                 //---Suppression dans la BDD
@@ -171,14 +156,7 @@ exports.deletePost = async (req, res, next) => {
             if ((post.userId === req.auth.userId) && (user.isActive)) {
                 
                 //---Suppression fichier
-                const filename = post.imageUrl.split('/images/')[1];
-                fs.unlink(`images/${filename}`, (err) => {
-                    if (err) {
-                        console.log("Echec lors de la suppression de l'avatar : " + err);
-                    } else {
-                        console.log("le fichier de l'avatar a ete supprime")
-                    }
-                })
+                fileDel(post.imageUrl)
 
                 //---Suppression dans la BDD
                 await prisma.post.delete({
@@ -199,7 +177,6 @@ exports.deletePost = async (req, res, next) => {
 };
 
 //================//LIKER//================//
-
 exports.likePost = async (req, res, next) => {
     //---RECHERCHES
     // doublon

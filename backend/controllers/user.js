@@ -2,7 +2,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pwVal = require("password-validator");
-//const fs = require('fs')
+const fileDel = require('../middlewares/filedel');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -45,7 +45,7 @@ exports.signup = (req, res, next) => {
                 } : { 
                     ...req.body
                 };
-                
+
                 // enregistrement
                 await prisma.user.create({ data : newUser })
                 .then(async () => { await prisma.$disconnect() })
@@ -434,14 +434,7 @@ exports.avatar = async (req, res, next) => {
     })
     .then(async user => {
         //---Suppression ancienne
-        const filename = user.avatarUrl.split('/images/')[1];
-        fs.unlink(`images/${filename}`, (err) => {
-            if (err) {
-                console.log("Echec lors de la suppression de l'ancienne avatar : " + err)
-            } else {
-                console.log("le fichier de l'ancienne avatar a ete supprime")
-            }
-        })
+        fileDel(user.avatarUrl)
     })
     .then(async () => {
         //---Generer URL nouvelle
@@ -472,14 +465,7 @@ exports.delAvatar = async (req, res, next) => {
     })
     .then(async user => {
         //---Suppression fichier
-        const filename = user.avatarUrl.split('/images/')[1];
-        fs.unlink(`images/${filename}`, (err) => {
-            if (err) {
-                console.log("Echec lors de la suppression de l'avatar : " + err);
-            } else {
-                console.log("le fichier de l'avatar a ete supprime")
-            }
-        })
+        fileDel(user.avatarUrl)
     })
     .then(async () => {
         //---Supression URL dans BDD

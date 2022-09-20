@@ -160,7 +160,6 @@ exports.likePost = async (req, res, next) => {
     })
     // publication
     const findPost = utils.findPost({id : Number(req.params.id)})
-
     // utilisateur
     const findUser = utils.findUser({id : req.auth.userId})
 
@@ -171,7 +170,6 @@ exports.likePost = async (req, res, next) => {
         if (!Boolean(findLike)) {
             // empecher les auto-like
             if (!(findPost.userId === req.auth.userId)) {            
-                
                 // enregistrement
                 await prisma.like.create({
                     data : {
@@ -182,7 +180,6 @@ exports.likePost = async (req, res, next) => {
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(201).json({ message : 'publication likee !'}))
                 .catch(error => console.log(error) || res.status(400).json({ message : error }))
-
             }
             else {
                 return res.status(401).json({ message : 'auto-like interdit' })

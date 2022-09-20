@@ -43,9 +43,62 @@ exports.passwdValid = async (value) => {
     schema.validate(value)
 };
 
+//========//Recherche
 exports.findUser = async (props) => await prisma.user.findUnique({ where : props });
 
 exports.findPost = async (props) => await prisma.post.findUnique({ where : props });
 
 exports.findComment = async (props) => await prisma.comment.findUnique({ where : props });
 
+//========//Update User Status
+exports.userManage = async (targetId, bolValue, req, res) => {
+    //---Utilisateur
+    await prisma.user.update({
+        where : { id : targetId },
+        data : { isActive : bolValue }
+    })
+    .then( console.log('user status update') )
+    //---Publications
+    .then(async () => {
+        await prisma.post.updateMany({
+            where : { userId : targetId },
+            data : { isActive : bolValue }
+        })
+        .then( console.log('user posts update') )
+        .catch(error => console.log(error));
+    })
+    //---Commentaires
+    .then(async () => {
+        await prisma.comment.updateMany({
+            where : { userId : targetId },
+            data : { isActive : bolValue }
+        })
+        .then( console.log('user comments update') )
+        .catch(error => console.log(error));
+    })
+    .then(async () => { await prisma.$disconnect() })
+    .then(() => {
+        if (bolValue === false) {
+            res.status(200).json({ message : 'Compte Desactive !' })
+        } else {
+            res.status(200).json({ message : 'Compte active !' })
+        }
+    })
+    .catch(error => console.log(error) || res.status(401).json({ message : error }))
+}
+
+//========//Update Avatar BDD
+exports.avatarUpdate = async (auth, url) => {
+    let message = '';
+    if (url === null) { message = 'Avatar supprime !' }
+    else { message = 'Avatar change !' }
+
+    //---Enregistrer
+    await prisma.user.update({
+        where : { id : auth },
+        data : { avatarUrl : url }
+    })
+    .then(async () => { await prisma.$disconnect() })
+    .then(() => res.status(200).json({ message : message }))
+    .catch(error => console.log(error) || res.status(401).json({ message : error }));
+} ;

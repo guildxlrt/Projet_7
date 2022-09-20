@@ -14,8 +14,6 @@ router.put('/password', auth, userCtrl.password);
 router.put('/:id/disable', auth, userCtrl.disable);
 //========//Avatar
 router.put('/avatar', auth, multer, userCtrl.avatar);
-router.put('/avatar', auth, userCtrl.delAvatar);
-
 
 //========//EXPORT//========//
 module.exports = router;

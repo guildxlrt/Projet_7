@@ -16,10 +16,8 @@ exports.signup = (req, res, next) => {
         if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password))) {
             bcrypt.hash(req.body.password, 10)
             .then(async hash => {
-
                 // mot de pass
                 req.body.password = hash;
-
                 // formatage date
                 req.body.birthday ? req.body.birthday = new Date(req.body.birthday) : null
 
@@ -228,57 +226,15 @@ exports.disable = async (req, res, next) => {
                         // recherche de l'utilisateur cible
                         utils.findUser({id : Number(req.params.id)})
                         .then( async user => {
-
                             // DESACTIVER
                             if (user.isActive === true) {
                                 //---Enregistrement
-                                await prisma.user.update({
-                                    where : { id : Number(req.params.id) },
-                                    data : { isActive : false }
-                                })
-                                .then(async () => {
-                                    await prisma.post.updateMany({
-                                        where : { userId : user.id },
-                                        data : { isActive : false }
-                                    })
-                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
-                                })
-                                .then(async () => {
-                                    await prisma.comment.updateMany({
-                                        where : { userId : user.id },
-                                        data : { isActive : false }
-                                    })
-                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
-                                })
-                                .then(async () => { await prisma.$disconnect() })
-                                .then(() => res.status(200).json({ message : 'Compte desactive' }))
-                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                                utils.userManage(user.id, false, req, res)
                             }
-                            
                             // REACTIVER 
                             else {
                                 //---Enregistrement
-                                await prisma.user.update({
-                                    where : { id : Number(req.params.id) },
-                                    data : { isActive : true }
-                                })
-                                .then(async () => {
-                                    await prisma.post.updateMany({
-                                        where : { userId : user.id },
-                                        data : { isActive : true }
-                                    })
-                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
-                                })
-                                .then(async () => {
-                                    await prisma.comment.updateMany({
-                                        where : { userId : user.id },
-                                        data : { isActive : true }
-                                    })
-                                    .catch(error => console.log(error) || res.status(401).json({ message : error }))
-                                })
-                                .then(async () => { await prisma.$disconnect() })
-                                .then(() => res.status(200).json({ message : 'Compte Re-active' }))
-                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                                utils.userManage(user.id, true, req, res)
                             }
                         })
                     }
@@ -304,27 +260,7 @@ exports.disable = async (req, res, next) => {
                     .then( async valid => {
                         if (valid) {
                             //---Enregistrement
-                            await prisma.user.update({
-                                where : { id : req.auth.userId },
-                                data : { isActive : false }
-                            })
-                            .then(async () => {
-                                await prisma.post.updateMany({
-                                    where : { userId : user.id },
-                                    data : { isActive : false }
-                                })
-                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
-                            })
-                            .then(async () => {
-                                await prisma.comment.updateMany({
-                                    where : { userId : user.id },
-                                    data : { isActive : false }
-                                })
-                                .catch(error => console.log(error) || res.status(401).json({ message : error }))
-                            })
-                            .then(async () => { await prisma.$disconnect() })
-                            .then(() => res.status(200).json({ message : 'Compte desactive' }))
-                            .catch(error => console.log(error) || res.status(401).json({ message : error }))
+                            utils.userManage(user.id, false, req, res)
                         }
                     })
                     .catch(error => console.log(error) || res.status(500).json({ message : error }));
@@ -343,50 +279,19 @@ exports.disable = async (req, res, next) => {
 
 //========//CHANGER AVATAR
 exports.avatar = async (req, res, next) => {
+    let url = ''
+    req.file ? url = utils.newImageUrl(req) : url = null
+
     utils.findUser({id : req.auth.userId})
     .then(async user => {
         // Verification
         if ((req.auth.userId === user.id ) && (user.isActive)) {
             //---Suppression fichier
             fileDel(user.avatarUrl)
-            .then(async () => {
-                //---Enregistrer
-                await prisma.user.update({
-                    where : { id : req.auth.userId },
-                    data : { avatarUrl : utils.newImageUrl(req) }
-                })
-                .then(async () => { await prisma.$disconnect() })
-                .then(() => res.status(200).json({ message : 'Avatar change !' }))
-                .catch(error => console.log(error) || res.status(401).json({ message : error }));
-            })
+            utils.avatarUpdate(req.auth.userId, url)
         } else {
             res.status(401).json({ message : 'Acces non authorise' });
         }
-    })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }));
-}
-
-//========//SUPPRIMER AVATAR
-exports.delAvatar = async (req, res, next) => {
-    utils.findUser({id : req.auth.userId})
-    .then(async user => {
-        // Verification
-        if ((req.auth.userId === user.id ) && (user.isActive)) {
-            //---Suppression fichier
-            fileDel(user.avatarUrl)
-            .then(async () => {
-                //---Supression URL dans BDD
-                await prisma.user.update({
-                    where : { id : req.auth.userId },
-                    data : { avatarUrl : null }
-                })
-                .then(async () => { await prisma.$disconnect() })
-                .then(() => res.status(200).json({ message : 'Avatar supprime !' }))
-                .catch(error => console.log(error) || res.status(401).json({ message : error }));
-            })
-        } else {
-            res.status(401).json({ message : 'Acces non authorise' });
-        }  
     })
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 }

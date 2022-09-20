@@ -9,29 +9,28 @@ const prisma = new PrismaClient();
 //========//NOUVEAU
 exports.createPost = async (req, res, next) => {
     // utilisateur
-    const findUser = utils.findUser({id : req.auth.userId})
+    await utils.findUser({id : req.auth.userId})
+    .then( async user => {
+        if (user.isActive) {
+            // Condition Fichier
+            const content = req.file ? {
+                ...JSON.parse(req.body),
+                imageUrl : utils.newImageUrl(req),
+                userId : req.auth.userId
+            } : {
+                ...req.body,
+                userId : req.auth.userId
+            };
 
-    if (findUser.isActive) {
-        // Condition Fichier
-        const content = req.file ? {
-            ...JSON.parse(req.body),
-            imageUrl : utils.newImageUrl(req),
-            userId : req.auth.userId
-        } : {
-            ...req.body,
-            userId : req.auth.userId
-        };
-
-        // Enregistrement
-        await prisma.post.create({data : content})
-        .then(async () => { await prisma.$disconnect() })
-        .then(() => res.status(201).json({ message : 'publication cree !'}))
-        .catch(error => console.log(error) || res.status(400).json({ message : error }))
-    } else {
-        return res.status(401).json({ message : 'Acces non authorise' })
-    }
-
-    
+            // Enregistrement
+            await prisma.post.create({data : content})
+            .then(async () => { await prisma.$disconnect() })
+            .then(() => res.status(201).json({ message : 'publication cree !'}))
+            .catch(error => console.log(error) || res.status(400).json({ message : error }))
+        } else {
+            return res.status(401).json({ message : 'Acces non authorise' })
+        }
+    })
 };
 
 //========//TOUT AFFICHER
@@ -72,7 +71,6 @@ exports.modifyPost = async (req, res, next) => {
             } : { ...req.body };
 
             //---Suppression ancien fichier
-            //---Suppression fichier
             fileDel(post.imageUrl)
 
             //---Enregistrement

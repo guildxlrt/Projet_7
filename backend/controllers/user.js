@@ -99,7 +99,17 @@ exports.login = async (req, res, next) => {
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 };
 
+//========//DECONNEXION
+exports.logout = async (req, res, next) => {
+    //
+    console.log("logout route :")
+    return res.status(200).json({ 'Logout route' : req.auth })
+}
+
 //================//MANAGE//================//
+
+/* retirer email */
+/* retirer verification mdp*/
 
 //========//MODIFICATIONS
 exports.update = async (req, res, next) => {
@@ -114,7 +124,7 @@ exports.update = async (req, res, next) => {
                 if (valid) {
                     // Donnees a soumettre
                     const updateUser = {
-                        email : req.body.updates.email,
+                        //email : req.body.updates.email,
                         name : req.body.updates.name,
                         surname : req.body.updates.surname,
                         birthday : req.body.updates.birthday
@@ -172,7 +182,7 @@ exports.password = async (req, res, next) => {
             .then(async valid => {
                 if (valid) {
                     // nouveau pass
-                    if (req.body.password != req.body.newPass && req.body.newPass === req.body.passConfirm && utils.passwdValid(req.body.newPass)) {
+                    if ((req.body.password != req.body.newPass) && (req.body.newPass === req.body.passConfirm) && (utils.passwdValid(req.body.newPass))) {
                         bcrypt.hash(req.body.passConfirm, 10)
                         .then(async hash => {
                             // enregistrement du nouveau mot de passe
@@ -219,24 +229,16 @@ exports.disable = async (req, res, next) => {
         .then(async admin => {
             // administrateur
             if ((req.auth.userId === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
-                // mot de passe
-                await bcrypt.compare(req.body.password, admin.password)
-                .then( async valid => {
-                    if (valid) {
-                        // recherche de l'utilisateur cible
-                        utils.findUser({id : Number(req.params.id)})
-                        .then( async user => {
-                            // DESACTIVER
-                            if (user.isActive === true) {
-                                //---Enregistrement
-                                utils.userManage(user.id, false, req, res)
-                            }
-                            // REACTIVER 
-                            else {
-                                //---Enregistrement
-                                utils.userManage(user.id, true, req, res)
-                            }
-                        })
+                // recherche de l'utilisateur cible
+                utils.findUser({id : Number(req.params.id)})
+                .then( async user => {
+                    // DESACTIVER
+                    if (user.isActive === true) {
+                        utils.userManage(user.id, false, req, res)
+                    }
+                    // REACTIVER 
+                    else {
+                        utils.userManage(user.id, true, req, res)
                     }
                 })
             } else {
@@ -246,6 +248,9 @@ exports.disable = async (req, res, next) => {
         .catch(error => console.log(error) || res.status(500).json({ message : error }));
     }
     //------UTILISATEUR NORMAL
+
+    // supprimer les parametres
+
     else {
         // Recherche de l'utilisateur
         utils.findUser({id : req.auth.userId})
@@ -253,20 +258,7 @@ exports.disable = async (req, res, next) => {
         .then(async user => {
             // utilisateur
             if ((req.auth.userId === user.id ) && (user.isActive)) {
-                // saisie email
-                if ((req.body.email === user.email) && (req.body.email === req.body.emailConfirm)) {
-                    // mot de passe
-                    await bcrypt.compare(req.body.password, user.password)
-                    .then( async valid => {
-                        if (valid) {
-                            //---Enregistrement
-                            utils.userManage(user.id, false, req, res)
-                        }
-                    })
-                    .catch(error => console.log(error) || res.status(500).json({ message : error }));
-                } else {
-                    res.status(401).json({ message : "l'email ne correspond pas" })
-                }
+                utils.userManage(user.id, false, req, res)
             } else {
                 res.status(401).json({ message : 'Acces non authorise' });
             }

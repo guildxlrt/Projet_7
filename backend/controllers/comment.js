@@ -93,9 +93,7 @@ exports.delComment = async (req, res, next) => {
                 
                 // enregistrement
                 await prisma.comment.delete({
-                    where : {
-                        id : Number(req.params.id)
-                    }
+                    where : { id : Number(req.params.id) }
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'commentaire supprime !' }))
@@ -116,9 +114,7 @@ exports.delComment = async (req, res, next) => {
             if ((comment.userId === req.auth.userId) && (findUser.isActive)) {
                 // enregistrement
                 await prisma.comment.delete({
-                    where : {
-                        id : Number(req.params.id)
-                    }
+                    where : { id : Number(req.params.id) }
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'commentaire supprime !' }))

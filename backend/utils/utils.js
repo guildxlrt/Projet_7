@@ -43,14 +43,9 @@ exports.passwdValid = async (value) => {
     schema.validate(value)
 };
 
-exports.findUser = async (props) => await prisma.user.findUnique({ 
-    where : props
-});
+exports.findUser = async (props) => await prisma.user.findUnique({ where : props });
 
-exports.findPost = async (props) => await prisma.post.findUnique({ 
-    where : props
-});
+exports.findPost = async (props) => await prisma.post.findUnique({ where : props });
 
-exports.findComment = async (props) => await prisma.comment.findUnique({ 
-    where : props
-});
+exports.findComment = async (props) => await prisma.comment.findUnique({ where : props });
+

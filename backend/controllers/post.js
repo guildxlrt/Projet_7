@@ -38,9 +38,7 @@ exports.createPost = async (req, res, next) => {
 exports.getAllPosts = async (req, res, next) => {
     // recherche
     await prisma.post.findMany({
-        where : {
-            isActive : true
-        }
+        where : { isActive : true }
     })
     .then(posts => res.status(200).json(posts))
     .then(async () => { await prisma.$disconnect() })
@@ -71,9 +69,7 @@ exports.modifyPost = async (req, res, next) => {
             const content = req.file ? {
                 ...JSON.parse(req.body),
                 imageUrl : utils.newImageUrl(req)
-            } : { 
-                ...req.body
-            };
+            } : { ...req.body };
 
             //---Suppression ancien fichier
             //---Suppression fichier
@@ -81,9 +77,7 @@ exports.modifyPost = async (req, res, next) => {
 
             //---Enregistrement
             await prisma.post.update({
-                where : {
-                    id : Number(req.params.id)
-                },
+                where : { id : Number(req.params.id) },
                 data : content
             })
             .then(async () => { await prisma.$disconnect() })
@@ -115,9 +109,7 @@ exports.deletePost = async (req, res, next) => {
 
                 //---Suppression dans la BDD
                 await prisma.post.delete({
-                    where : {
-                        id : Number(req.params.id)
-                    }
+                    where : { id : Number(req.params.id)}
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
@@ -142,9 +134,7 @@ exports.deletePost = async (req, res, next) => {
 
                 //---Suppression dans la BDD
                 await prisma.post.delete({
-                    where : {
-                        id : Number(req.params.id)
-                    }
+                    where : { id : Number(req.params.id)}
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
@@ -201,9 +191,7 @@ exports.likePost = async (req, res, next) => {
         //========//doublon : RETIRER
         else {
             await prisma.like.delete({
-                where : {
-                    id : findLike.id,
-                }
+                where : { id : findLike.id }
             })
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(200).json({ message : 'like supprime !' }))

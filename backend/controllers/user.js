@@ -27,9 +27,7 @@ exports.signup = (req, res, next) => {
                 const newUser = req.file ? {
                     ...JSON.parse(req.body),
                     imageUrl : utils.newImageUrl(req)
-                } : { 
-                    ...req.body
-                };
+                } : { ...req.body };
 
                 // enregistrement
                 await prisma.user.create({ data : newUser })
@@ -131,9 +129,7 @@ exports.update = async (req, res, next) => {
 
                         // Enregistrement dans la BDD
                         await prisma.user.update({
-                            where : {
-                                id : authToken
-                            },
+                            where : { id : authToken },
                             data : updateUser
                         })
                         .then(async () => { await prisma.$disconnect() })
@@ -183,12 +179,8 @@ exports.password = async (req, res, next) => {
                         .then(async hash => {
                             // enregistrement du nouveau mot de passe
                             await prisma.user.update({
-                                where : {
-                                    id : req.auth.userId
-                                },
-                                data : {
-                                    password : hash
-                                }
+                                where : { id : req.auth.userId },
+                                data : { password : hash }
                             })
                             .then(async () => { await prisma.$disconnect() })
                             .then(() => res.status(200).json({ message : 'mot de passe modifie !' }))
@@ -241,32 +233,20 @@ exports.disable = async (req, res, next) => {
                             if (user.isActive === true) {
                                 //---Enregistrement
                                 await prisma.user.update({
-                                    where : {
-                                        id : Number(req.params.id)
-                                    },
-                                    data : {
-                                        isActive : false
-                                    }
+                                    where : { id : Number(req.params.id) },
+                                    data : { isActive : false }
                                 })
                                 .then(async () => {
                                     await prisma.post.updateMany({
-                                        where : {
-                                            userId : user.id
-                                        },
-                                        data : {
-                                            isActive : false
-                                        }
+                                        where : { userId : user.id },
+                                        data : { isActive : false }
                                     })
                                     .catch(error => console.log(error) || res.status(401).json({ message : error }))
                                 })
                                 .then(async () => {
                                     await prisma.comment.updateMany({
-                                        where : {
-                                            userId : user.id
-                                        },
-                                        data : {
-                                            isActive : false
-                                        }
+                                        where : { userId : user.id },
+                                        data : { isActive : false }
                                     })
                                     .catch(error => console.log(error) || res.status(401).json({ message : error }))
                                 })
@@ -279,32 +259,20 @@ exports.disable = async (req, res, next) => {
                             else {
                                 //---Enregistrement
                                 await prisma.user.update({
-                                    where : {
-                                        id : Number(req.params.id)
-                                    },
-                                    data : {
-                                        isActive : true
-                                    }
+                                    where : { id : Number(req.params.id) },
+                                    data : { isActive : true }
                                 })
                                 .then(async () => {
                                     await prisma.post.updateMany({
-                                        where : {
-                                            userId : user.id
-                                        },
-                                        data : {
-                                            isActive : true
-                                        }
+                                        where : { userId : user.id },
+                                        data : { isActive : true }
                                     })
                                     .catch(error => console.log(error) || res.status(401).json({ message : error }))
                                 })
                                 .then(async () => {
                                     await prisma.comment.updateMany({
-                                        where : {
-                                            userId : user.id
-                                        },
-                                        data : {
-                                            isActive : true
-                                        }
+                                        where : { userId : user.id },
+                                        data : { isActive : true }
                                     })
                                     .catch(error => console.log(error) || res.status(401).json({ message : error }))
                                 })
@@ -337,32 +305,20 @@ exports.disable = async (req, res, next) => {
                         if (valid) {
                             //---Enregistrement
                             await prisma.user.update({
-                                where : {
-                                    id : req.auth.userId
-                                },
-                                data : {
-                                    isActive : false
-                                }
+                                where : { id : req.auth.userId },
+                                data : { isActive : false }
                             })
                             .then(async () => {
                                 await prisma.post.updateMany({
-                                    where : {
-                                        userId : user.id
-                                    },
-                                    data : {
-                                        isActive : false
-                                    }
+                                    where : { userId : user.id },
+                                    data : { isActive : false }
                                 })
                                 .catch(error => console.log(error) || res.status(401).json({ message : error }))
                             })
                             .then(async () => {
                                 await prisma.comment.updateMany({
-                                    where : {
-                                        userId : user.id
-                                    },
-                                    data : {
-                                        isActive : false
-                                    }
+                                    where : { userId : user.id },
+                                    data : { isActive : false }
                                 })
                                 .catch(error => console.log(error) || res.status(401).json({ message : error }))
                             })
@@ -396,12 +352,8 @@ exports.avatar = async (req, res, next) => {
             .then(async () => {
                 //---Enregistrer
                 await prisma.user.update({
-                    where : {
-                        id : req.auth.userId
-                    },
-                    data : {
-                        avatarUrl : utils.newImageUrl(req)
-                    }
+                    where : { id : req.auth.userId },
+                    data : { avatarUrl : utils.newImageUrl(req) }
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'Avatar change !' }))
@@ -425,12 +377,8 @@ exports.delAvatar = async (req, res, next) => {
             .then(async () => {
                 //---Supression URL dans BDD
                 await prisma.user.update({
-                    where : {
-                        id : req.auth.userId
-                    },
-                    data : {
-                        avatarUrl : null
-                    }
+                    where : { id : req.auth.userId },
+                    data : { avatarUrl : null }
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'Avatar supprime !' }))

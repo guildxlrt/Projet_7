@@ -83,19 +83,3 @@ exports.userManage = async (targetId, bolValue, req, res) => {
     })
     .catch(error => console.log(error) || res.status(401).json({ message : error }))
 }
-
-//========//Update Avatar BDD
-exports.avatarUpdate = async (auth, url) => {
-    let message = '';
-    if (url == null) { message = 'Avatar supprime !' }
-    else { message = 'Avatar change !' }
-
-    //---Enregistrer
-    await prisma.user.update({
-        where : { id : auth },
-        data : { avatarUrl : url }
-    })
-    .then(async () => { await prisma.$disconnect() })
-    .then(() => res.status(200).json({ message : message }))
-    .catch(error => console.log(error) || res.status(401).json({ message : error }));
-} ;

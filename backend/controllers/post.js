@@ -71,7 +71,7 @@ exports.modifyPost = async (req, res, next) => {
                 } : { ...req.body };
     
                 //---Suppression ancien fichier
-                req.file ? (function test () {
+                req.file ? (function findURL () {
                     if (post.imageUrl != null) {
                         utils.fileDel(post.imageUrl)
                     }

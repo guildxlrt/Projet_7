@@ -240,16 +240,35 @@ exports.disable = async (req, res, next) => {
 
 //========//CHANGER AVATAR
 exports.avatar = async (req, res, next) => {
-    let url = ''
-    req.file ? url = utils.newImageUrl(req) : url = null
-
     utils.findUser({id : req.auth.userId})
     .then(async user => {
-        // Verification
+        //----Verification
         if ((req.auth.userId === user.id ) && (user.isActive)) {
-            //---Suppression fichier
-            utils.fileDel(user.avatarUrl)
-            utils.avatarUpdate(req.auth.userId, url)
+            //----Suppression fichier
+            if (user.imageUrl != null) {
+                utils.fileDel(user.imageUrl)
+            }
+
+            // Mise a jour BDD
+            let url = ''
+            let message = ''
+
+            function newURL(a, b) {
+                url = a;
+                message = b
+                return {url, message}
+            }
+
+            req.file ? newURL(utils.newImageUrl(req), 'Avatar change !') : newURL(null, 'Avatar supprime !')
+            
+            // Enregistrer
+            await prisma.user.update({
+                where : { id : req.auth.userId },
+                data : { avatarUrl : url }
+            })
+            .then(async () => { await prisma.$disconnect() })
+            .then(() => res.status(200).json({ message : message }))
+            .catch(error => console.log(error) || res.status(401).json({ message : error }))
         } else {
             res.status(401).json({ message : 'Acces non authorise' });
         }

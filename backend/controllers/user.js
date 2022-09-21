@@ -250,16 +250,16 @@ exports.avatar = async (req, res, next) => {
             }
 
             // Mise a jour BDD
-            let url = ''
-            let message = ''
+            let url = '';
+            let message = '';
 
             function newURL(a, b) {
                 url = a;
-                message = b
-                return {url, message}
+                message = b;
+                return {url, message};
             }
 
-            req.file ? newURL(utils.newImageUrl(req), 'Avatar change !') : newURL(null, 'Avatar supprime !')
+            req.file ? newURL(utils.newImageUrl(req), 'Avatar change !') : newURL(null, 'Avatar supprime !');
             
             // Enregistrer
             await prisma.user.update({

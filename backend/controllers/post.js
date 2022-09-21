@@ -61,48 +61,53 @@ exports.modifyPost = async (req, res, next) => {
     .then(async (post) => {
         
         // verification utilisateur
-        const findUser = utils.findUser({id : req.auth.userId})
-
-        if ((post.userId === req.auth.userId) && (findUser.isActive)) {
-            //---Recherche fichier
-            const content = req.file ? {
-                ...JSON.parse(req.body),
-                imageUrl : utils.newImageUrl(req)
-            } : { ...req.body };
-
-            //---Suppression ancien fichier
-            fileDel(post.imageUrl)
-
-            //---Enregistrement
-            await prisma.post.update({
-                where : { id : Number(req.params.id) },
-                data : content
-            })
-            .then(async () => { await prisma.$disconnect() })
-            .then(() => res.status(200).json({ message : 'Publication modifie !' }))
-            .catch(error => console.log(error) || res.status(401).json({ message : error }));
-
-        } else {
-            return res.status(401).json({ message : 'Acces non authorise' })
-        }
+        utils.findUser({id : req.auth.userId})
+        .then(async user => {
+            if ((post.userId === req.auth.userId) && (user.isActive)) {
+                //---Recherche fichier
+                const content = req.file ? {
+                    ...JSON.parse(req.body),
+                    imageUrl : utils.newImageUrl(req)
+                } : { ...req.body };
+    
+                //---Suppression ancien fichier
+                req.file ? (function test () {
+                    if (post.imageUrl != null) {
+                        utils.fileDel(post.imageUrl)
+                    }
+                })() : null;
+    
+                //---Enregistrement
+                await prisma.post.update({
+                    where : { id : Number(req.params.id) },
+                    data : content
+                })
+                .then(async () => { await prisma.$disconnect() })
+                .then(() => res.status(200).json({ message : 'Publication modifie !' }))
+                .catch(error => console.log(error) || res.status(401).json({ message : error }));
+    
+            } else {
+                return res.status(401).json({ message : 'Acces non authorise' })
+            }
+        })    
     })
     .catch(error => console.log(error) || res.status(500).json({ message : error }));
 };
 
 //========//SUPPRIMER
 exports.deletePost = async (req, res, next) => {
-    //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin) {
         utils.findUser({id : req.auth.userId})
         .then(async admin => {
             // verification administrateur
-            if ((req.auth.userId === admin.id) && (admin.isActive) && (admin.isAdmin)) {
-                
+            if ((req.auth.userId === admin.id) && (admin.isActive) && (admin.isAdmin)) {  
                 //---Suppression fichier
                 utils.findPost({id : Number(req.params.id)})
                 .then(post => {
-                    fileDel(post.imageUrl)
+                    if (post.imageUrl != null) {
+                        utils.fileDel(post.imageUrl)
+                    }
                 })
 
                 //---Suppression dans la BDD
@@ -112,7 +117,6 @@ exports.deletePost = async (req, res, next) => {
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
                 .catch(error => res.status(401).json({ message : error }))
-
             } else {
                 return res.status(401).json({ message : 'Acces non authorise' })
             }
@@ -124,23 +128,25 @@ exports.deletePost = async (req, res, next) => {
         utils.findPost({id : Number(req.params.id)})
         .then(async post => {
             // verification utilisateur
-            const user = utils.findUser({id : req.auth.userId})
-            if ((post.userId === req.auth.userId) && (user.isActive)) {
-                
-                //---Suppression fichier
-                fileDel(post.imageUrl)
-
-                //---Suppression dans la BDD
-                await prisma.post.delete({
-                    where : { id : Number(req.params.id)}
-                })
-                .then(async () => { await prisma.$disconnect() })
-                .then(() => res.status(200).json({ message : 'publication supprime !' }))
-                .catch(error => res.status(401).json({ message : error }))
-
-            } else {
-                return res.status(401).json({ message : 'Acces non authorise' })
-            }
+            utils.findUser({id : req.auth.userId})
+            .then(async user => {
+                if ((post.userId === req.auth.userId) && (user.isActive)) {
+                    //---Suppression fichier
+                    if (post.imageUrl != null) {
+                        utils.fileDel(post.imageUrl)
+                    }
+                        
+                    //---Suppression dans la BDD
+                    await prisma.post.delete({
+                        where : { id : Number(req.params.id)}
+                    })
+                    .then(async () => { await prisma.$disconnect() })
+                    .then(() => res.status(200).json({ message : 'publication supprime !' }))
+                    .catch(error => res.status(401).json({ message : error }))
+                } else {
+                    return res.status(401).json({ message : 'Acces non authorise' })
+                }
+            })
         })
         .catch(error => res.status(500).json({ message : error }));
     }

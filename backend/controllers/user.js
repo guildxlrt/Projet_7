@@ -19,13 +19,14 @@ exports.signup = (req, res, next) => {
                 // mot de pass
                 req.body.password = hash;
                 // formatage date
-                req.body.birthday ? req.body.birthday = new Date(req.body.birthday) : null
-
+                req.body.birthday = utils.birthday(req.body.birthday)
+                
                 // recherche de fichier
                 const newUser = req.file ? {
                     ...JSON.parse(req.body),
                     imageUrl : utils.newImageUrl(req)
                 } : { ...req.body };
+                
 
                 // enregistrement
                 await prisma.user.create({ data : newUser })
@@ -108,9 +109,6 @@ exports.logout = async (req, res, next) => {
 
 //================//MANAGE//================//
 
-/* retirer email */
-/* retirer verification mdp*/
-
 //========//MODIFICATIONS
 exports.update = async (req, res, next) => {
     // Recherche de l'utilisateur
@@ -118,50 +116,21 @@ exports.update = async (req, res, next) => {
     .then(async user => {
         // verification utilisateur
         if ((user.id === req.auth.userId) && (user.isActive)) {
-            // verification pass
-            await bcrypt.compare(req.body.password, user.password)
-            .then(async valid => {
-                if (valid) {
-                    // Donnees a soumettre
-                    const updateUser = {
-                        //email : req.body.updates.email,
-                        name : req.body.updates.name,
-                        surname : req.body.updates.surname,
-                        birthday : req.body.updates.birthday
-                    }
-                    const authToken = req.auth.userId;
+            // Donnees a soumettre
+            const updateUser = {
+                name : req.body.name,
+                surname : req.body.surname,
+                birthday : utils.birthday(req.body.birthday)
+            }
 
-                    async function sendUpdates(req, res, next) {
-                        // formatage date
-                        updateUser.birthday ? updateUser.birthday = new Date(updateUser.birthday) : null
-
-                        // Enregistrement dans la BDD
-                        await prisma.user.update({
-                            where : { id : authToken },
-                            data : updateUser
-                        })
-                        .then(async () => { await prisma.$disconnect() })
-                        .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
-                        .catch(error => console.log(error) || res.status(401).json({ message : error }));
-                    }
-
-                    function emailChecker(req, res, next) {
-                        if (utils.emailValid(req.body.updates.email)) {
-                            sendUpdates(req, res, next)
-                        } else {
-                            return res.status(400).json({ message : "l'email doit etre au format email : jack.nicholson@laposte.fr, sasha93.dupont@yahoo.fr, kanap-service_client@kanap.co.fr ..." })
-                        }
-                    }
-
-                    // modification de l'email
-                    req.body.updates.email ? emailChecker(req, res, next) : sendUpdates(req, res, next)
-
-                    
-                } else {
-                    res.status(401).json({ message : 'Acces non authorise' });
-                }
+            // Enregistrement dans la BDD
+            await prisma.user.update({
+                where : { id : req.auth.userId },
+                data : updateUser
             })
-            .catch(error => console.log(error) || res.status(500).json({ message : error }));
+            .then(async () => { await prisma.$disconnect() })
+            .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
+            .catch(error => console.log(error) || res.status(401).json({ message : error }))
         } else {
             return res.status(401).json({ message : 'Acces non authorise' });
         }
@@ -279,7 +248,7 @@ exports.avatar = async (req, res, next) => {
         // Verification
         if ((req.auth.userId === user.id ) && (user.isActive)) {
             //---Suppression fichier
-            fileDel(user.avatarUrl)
+            utils.fileDel(user.avatarUrl)
             utils.avatarUpdate(req.auth.userId, url)
         } else {
             res.status(401).json({ message : 'Acces non authorise' });

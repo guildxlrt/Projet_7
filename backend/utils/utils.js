@@ -37,6 +37,9 @@ exports.passwdValid = (value) => new pwVal()
     .validate(value)
 ;
 
+//========//Format birthday
+exports.birthday = (date) => date ? new Date(date) : null;
+
 //========//Recherche
 exports.findUser = async (props) => await prisma.user.findUnique({ where : props });
 

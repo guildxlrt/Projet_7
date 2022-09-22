@@ -202,3 +202,14 @@ exports.likePost = async (req, res, next) => {
         return res.status(401).json({ message : 'Acces non authorise' });
     }
 };
+
+//================//COUNT OF LIKES//================//
+exports.likesCount = async (req, res, next) => {
+    // recherche
+    await prisma.like.count({
+        where : { postId : Number(req.params.id) }
+    })
+    .then(likes => res.status(200).json({likes : likes}))
+    .then(async () => { await prisma.$disconnect() })
+    .catch(error => console.log(error) || res.status(400).json({ message : error }));
+}

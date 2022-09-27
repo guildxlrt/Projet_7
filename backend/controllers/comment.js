@@ -26,17 +26,17 @@ exports.commentPost = async (req, res, next) => {
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(201).json({ message : 'commentaire publie !' }))
-                    .catch(error => console.log(error) || res.status(400).json({ message : error }))
+                    .catch(error => console.log(error) || res.status(400).json(error))
                 } else {
-                    return res.status(401).json({ message : 'Acces non authorise' });
+                    return res.status(401).json({ error : 'Acces non authorise' });
                 }
             })
-            .catch(error => console.log(error) || res.status(400).json({ message : error }));
+            .catch(error => console.log(error) || res.status(400).json(error));
         } else {
-            return res.status(401).json({ message : 'Acces non authorise' });
+            return res.status(401).json({ error : 'Acces non authorise' });
         }
     })
-    .catch(error => console.log(error) || res.status(400).json({ message : error }));
+    .catch(error => console.log(error) || res.status(400).json(error));
 };
 
 //========//AFFICHER
@@ -50,7 +50,7 @@ exports.getPostComments = async (req, res, next) => {
     })
     .then(comments => res.status(200).json(comments))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(400).json({ message : error }));
+    .catch(error => console.log(error) || res.status(400).json(error));
 }
 
 //========//UN SEUL
@@ -59,7 +59,7 @@ exports.getOneComment = async (req, res, next) => {
     utils.comment({id : Number(req.params.id)})
     .then(comment => res.status(200).json(comment))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(404).json({ message : error }));
+    .catch(error => console.log(error) || res.status(404).json(error));
 };
 
 //========//MODIFIER
@@ -83,14 +83,14 @@ exports.modifyComment = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'Commentaire modifie !' }))
-                .catch(error => console.log(error) || res.status(401).json({ message : error }));
+                .catch(error => console.log(error) || res.status(401).json(error));
     
             } else {
-                return res.status(401).json({ message : 'Acces non authorise' })
+                return res.status(401).json({ error : 'Acces non authorise' })
             }
         })
     })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+    .catch(error => console.log(error) || res.status(500).json(error));
 }
 
 //========//SUPPRIMER
@@ -109,10 +109,10 @@ exports.delComment = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'commentaire supprime !' }))
-                .catch(error => res.status(401).json({ message : error }))
+                .catch(error => res.status(401).json(error))
 
             } else {
-                return res.status(401).json({ message : 'Acces non authorise' })
+                return res.status(401).json({ error : 'Acces non authorise' })
             }
         })
     }
@@ -131,12 +131,12 @@ exports.delComment = async (req, res, next) => {
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(200).json({ message : 'commentaire supprime !' }))
-                    .catch(error => res.status(401).json({ message : error }))
+                    .catch(error => res.status(401).json(error))
                 } else {
-                    return res.status(401).json({ message : 'Acces non authorise' })
+                    return res.status(401).json({ error : 'Acces non authorise' })
                 }
             })
         })
-        .catch(error => res.status(500).json({ message : error }));
+        .catch(error => res.status(500).json(error));
     }
 }

@@ -9,17 +9,25 @@ const prisma = new PrismaClient();
         
 //================//UTILISATEURS//================//
 
+//----Error messages
+
+
 //========//NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
+        // formatage date
+        const birthday = utils.birthday(req.body.birthday)
+        req.body.birthday = birthday
+
         //---ACCEPT
-        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password))) {
+        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password)) && (utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
             bcrypt.hash(req.body.password, 10)
             .then(async hash => {
                 // mot de pass
                 req.body.password = hash;
-                // formatage date
-                req.body.birthday = utils.birthday(req.body.birthday)
+
+                console.log(req.body)
+                
                 
                 // recherche de fichier
                 const newUser = req.file ? {
@@ -34,26 +42,33 @@ exports.signup = (req, res, next) => {
                 .then(() => res.status(201).json({ message : 'utilisateur cree !' }))
                 .catch(error => {
                     if (error.code === "P2002") {
-                        console.log("l'email est deja utilise") || res.status(500).json({ message : "l'email est deja utilise" })
+                        console.log("l'email est deja utilise") || res.status(500).json({ error : "l'email est deja utilise" })
                     } else {
-                        console.log(error) || res.status(400).json({message : error})
+                        console.log(error) || res.status(400).json({error : error})
                     }
                 })
             })
-            .catch(error => console.log(error) || res.status(500).json({ message : error }));
+            .catch(error => console.log(error) || res.status(500).json(error));
         }
         //---REJET
         // Email
         else if ((utils.emailValid(req.body.email)) === false && (utils.passwdValid(req.body.password)) === true) {
-            return res.status(400).json({ message : "l'email doit etre au format email : jack.nicholson@laposte.fr, sasha93.dupont@yahoo.fr, kanap-service_client@kanap.co.fr ..." })
+            return res.status(400).json({ error : utils.emailErr })
         }
         // Mot De Passe
         else if ((utils.emailValid(req.body.email)) === true && (utils.passwdValid(req.body.password)) === false) {
-            return res.status(400).json({ message : "le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres" })
+            return res.status(400).json({ error : utils.passErr })
         }
         // les deux
         else if ((utils.emailValid(req.body.email)) === false && (utils.passwdValid(req.body.password)) === false) {
-            return res.status(400).json({ message : "informations incorrectes" })
+            return res.status(400).json({ error : "informations incorrectes" })
+        }
+        // les noms
+        else if ((utils.surnameValid(req.body.surname)) === false) {
+            return res.status(400).json({ error : utils.surnameErr })
+        }
+        else if ((utils.nameValid(req.body.name)) === false) {
+            return res.status(400).json({ error : utils.nameErr })
         }
     })();
 };
@@ -70,41 +85,52 @@ exports.login = async (req, res, next) => {
                 await bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (valid) {
+                        const token = jwt.sign(
+                            {
+                                userId : user.id,
+                                isAdmin : user.isAdmin
+                            },
+                            process.env.RANDOM_TOKEN,
+                            { expiresIn : '24h'}
+                        )
+
+                        // cookie expiration : ms * sec * min * hr * days
+                        const maxAge = 1000 * 60 * 60 * 24
+
                         // Connexion
-                        res.status(200).json({
+                        res
+                        .cookie('jwt', token, { maxAge : maxAge, httpOnly : true, sameSite: 'strict', secure: false })
+                        .status(200).json({
                             userId : user.id,
-                            isAdmin : user.isAdmin,
-                            token : jwt.sign(
-                                {
-                                    userId : user.id,
-                                    isAdmin : user.isAdmin
-                                },
-                                process.env.RANDOM_TOKEN,
-                                { expiresIn : '24h'}
-                            )
+                            isAdmin : user.isAdmin
                         })
                     }
                     else {
-                        res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
+                        res.status(401).json({ error : "Paire login/mot de passe incorrecte" });
                     }
                 })
-            .catch(error => console.log(error) || res.status(500).json({ message : error }));
+                .catch(error => console.log(error) || res.status(500).json(error));
             } else {
-                return res.status(401).json({ message : 'compte non actif' });
+                return res.status(401).json({ error : "Le Compte n'est plus actif"});
             }
         }
         else {
-            return res.status(401).json({ message : 'Paire login/mot de passe incorrecte' });
+            return res.status(401).json({ error : "L'adresse email est inconnue" });
         }
     })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+    .catch(error => console.log(error) || res.status(500).json(error));
 };
 
 //========//DECONNEXION
 exports.logout = async (req, res, next) => {
-    //
-    console.log("logout route :")
-    return res.status(200).json({ 'Logout route' : req.auth })
+    return res
+    .clearCookie('jwt')
+    .status(200).json({ message : "Deconnexion utilisateur reussie" })
+}
+
+//========//DECODE TOKEN
+exports.getUserId = async (req, res, next) => {
+    return res.status(200).json(req.auth.userId)
 }
 
 //================//MANAGE//================//
@@ -130,12 +156,12 @@ exports.update = async (req, res, next) => {
             })
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
-            .catch(error => console.log(error) || res.status(401).json({ message : error }))
+            .catch(error => console.log(error) || res.status(401).json(error))
         } else {
-            return res.status(401).json({ message : 'Acces non authorise' });
+            return res.status(401).json({ error : 'Acces non authorise' });
         }
     })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+    .catch(error => console.log(error) || res.status(500).json(error));
 }
 
 //========//CHANGER MDP
@@ -161,31 +187,31 @@ exports.password = async (req, res, next) => {
                             })
                             .then(async () => { await prisma.$disconnect() })
                             .then(() => res.status(200).json({ message : 'mot de passe modifie !' }))
-                            .catch(error => console.log(error) || res.status(401).json({ message : error }));
+                            .catch(error => console.log(error) || res.status(401).json(error));
                         })
                     }
                     // RENOUVELLEMENT
                     else if (req.body.password === req.body.newPass) {
-                        return res.status(400).json({ message : "Le nouveau mot de passe doit differer du nouveau." });
+                        return res.status(400).json({ error : "Le nouveau mot de passe doit differer du nouveau." });
                     }
                     // CONCORDANCE
                     else if (req.body.newPass != req.body.passConfirm) {
-                        return res.status(400).json({ message : "Les saisies du mot de passe doivent correspondre." });
+                        return res.status(400).json({ error : "Les saisies du mot de passe doivent correspondre." });
                     }
                     // FORCE
                     else if (!(utils.passwdValid(req.body.newPass))) {
-                        return res.status(400).json({ message : "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres." });
+                        return res.status(400).json({ error : "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres." });
                     }
                 } else {
-                    res.status(401).json({ message : 'Mot de passe incorrect' })
+                    res.status(401).json({ error : 'Mot de passe incorrect' })
                 }
             })
-            .catch(error => console.log(error) || res.status(500).json({ message : error }));
+            .catch(error => console.log(error) || res.status(500).json(error));
         } else {
-            return res.status(401).json({ message : 'Acces non authorise' });
+            return res.status(401).json({ error : 'Acces non authorise' });
         }
     })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+    .catch(error => console.log(error) || res.status(500).json(error));
 }
 
 //========//DESACTIVER
@@ -211,10 +237,10 @@ exports.disable = async (req, res, next) => {
                     }
                 })
             } else {
-                res.status(401).json({ message : 'Acces non authorise' });
+                res.status(401).json({ error : 'Acces non authorise' });
             }
         })
-        .catch(error => console.log(error) || res.status(500).json({ message : error }));
+        .catch(error => console.log(error) || res.status(500).json(error));
     }
     //------UTILISATEUR NORMAL
 
@@ -229,10 +255,10 @@ exports.disable = async (req, res, next) => {
             if ((req.auth.userId === user.id ) && (user.isActive)) {
                 utils.userManage(user.id, false, req, res)
             } else {
-                res.status(401).json({ message : 'Acces non authorise' });
+                res.status(401).json({ error : 'Acces non authorise' });
             }
         })
-        .catch(error => console.log(error) || res.status(500).json({ message : error }));
+        .catch(error => console.log(error) || res.status(500).json(error));
     }
 }
 
@@ -268,10 +294,10 @@ exports.avatar = async (req, res, next) => {
             })
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(200).json({ message : message }))
-            .catch(error => console.log(error) || res.status(401).json({ message : error }))
+            .catch(error => console.log(error) || res.status(401).json(error))
         } else {
-            res.status(401).json({ message : 'Acces non authorise' });
+            res.status(401).json({ error : 'Acces non authorise' });
         }
     })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }));
+    .catch(error => console.log(error) || res.status(500).json(error));
 }

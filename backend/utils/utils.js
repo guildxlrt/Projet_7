@@ -22,10 +22,35 @@ exports.fileDel = (target) => {
 //========//Get new URL
 exports.newImageUrl = (req) => `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
 
-//========//Email validation
+//========//Recherche
+exports.findUser = async (props) => await prisma.user.findUnique({ where : props });
+
+exports.findPost = async (props) => await prisma.post.findUnique({ where : props });
+
+exports.findComment = async (props) => await prisma.comment.findUnique({ where : props });
+
+
+//========//USER CREATION//========//
+
+//--------//Error messages
+exports.emailErr = "l'email doit etre au format email : jack.nicholson@laposte.fr, sasha93.dupont@yahoo.fr, kanap-service_client@kanap.co.fr ...";
+exports.passErr = "le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres";
+exports.surnameErr = "Votre prenom doit comporter 2 caracteres minimum, avec  une majuscule suivit de minuscules: Paul, Marie-Louise, Jose Antonio ...";
+exports.nameErr = "Votre nom de famille doit comporter 2 caracteres minimum, avec une majuscule suivit de minuscules : Dupont, D'Artagnan, De Sade, Primo De Rivera ...";
+
+//--------//Email validation
 exports.emailValid = (value) => new RegExp(/^([a-z0-9._-]+)@([a-z0-9]+)\.([a-z]{2,8})(\.[a-z]{2,8})?$/, 'g').test(value);
 
-//========//Password
+//--------//Name validation
+exports.surnameValid = (value) => new RegExp(/^([a-zA-ZÀ-ÿ]{2,26})(-[a-zA-ZÀ-ÿ]{2,26})?(\s[a-zA-ZÀ-ÿ]{2,26})?$/, 'g').test(value);
+
+//--------//Surname validation
+exports.nameValid = (value) => new RegExp(/^([a-zA-ZÀ-ÿ]{1,3}\s)?([a-zA-ZÀ-ÿ]{1,3}[']{1})?([a-zA-ZÀ-ÿ]{2,26})(\s[a-zA-ZÀ-ÿ]{2,26})?(-[a-zA-ZÀ-ÿ]{2,26})?(\s[a-zA-ZÀ-ÿ]{2,26})?$/, 'g').test(value);
+
+//--------//Format birthday
+exports.birthday = (value) => value ? new Date(value) : null;
+
+//--------//Password
 exports.passwdValid = (value) => new pwVal()
     .is().min(8)                                    // Minimum length 8
     .is().max(100)                                  // Maximum length 100
@@ -37,15 +62,8 @@ exports.passwdValid = (value) => new pwVal()
     .validate(value)
 ;
 
-//========//Format birthday
-exports.birthday = (date) => date ? new Date(date) : null;
+//========//USER MANAGEMENT//========//
 
-//========//Recherche
-exports.findUser = async (props) => await prisma.user.findUnique({ where : props });
-
-exports.findPost = async (props) => await prisma.post.findUnique({ where : props });
-
-exports.findComment = async (props) => await prisma.comment.findUnique({ where : props });
 
 //========//Update User Status
 exports.userManage = async (targetId, bolValue, req, res) => {

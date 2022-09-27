@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config()
+const cookieParser = require('cookie-parser');
 // Securite
 const cors = require('cors');
 const helmet = require("helmet");
@@ -36,11 +37,12 @@ const speedLimiter = slowDown({
 
 //========//START//========//
 app.use(express.json());
+app.use(cookieParser())
 app.use(cors());
 app.use(helmet());
-// expresss rate limit
+//---expresss rate limit
 app.use(limiter);
-// express slow down
+//---express slow down
 // app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
 app.use(speedLimiter);
 

@@ -1,6 +1,7 @@
 //================//IMPORTS//================//
 const fs = require('fs')
 const pwVal = require("password-validator");
+const jwt = require('jsonwebtoken');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -30,6 +31,41 @@ exports.findPost = async (props) => await prisma.post.findUnique({ where : props
 exports.findComment = async (props) => await prisma.comment.findUnique({ where : props });
 
 
+//==========================//
+//========//TOKENS//========//
+
+//========//Generator
+exports.tokenGen = (userId, isAdmin) => {
+    const exp = 1000 * 60 * 60 * 24 // cookie expiration : ms * sec * min * hr * days
+
+    const gen = jwt.sign(
+        {
+            userId : userId,
+            isAdmin : isAdmin
+        },
+        process.env.RANDOM_TOKEN,
+        { expiresIn : '24h'}
+    )
+
+    return {gen, exp}
+}
+
+//========//Decoder
+exports.tokenDecoder = (req) => {
+    const token = req.cookies.jwt;
+    const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN);
+
+    const userId = decodedToken.userId;
+    const isAdmin = decodedToken.isAdmin;
+        
+    req.auth = {
+        userId : userId,
+        isAdmin : isAdmin
+    }
+}
+
+
+//=================================//
 //========//USER CREATION//========//
 
 //--------//Error messages
@@ -59,11 +95,11 @@ exports.passwdValid = (value) => new pwVal()
     .has().digits(2)                                // Must have at least 2 digits
     .has().not().spaces()                           // Should not have spaces
     .is().not().oneOf(['Passw0rd', 'Password123']) // Blacklist these value
-    .validate(value)
-;
+    .validate(value);
 
+
+//===================================//
 //========//USER MANAGEMENT//========//
-
 
 //========//Update User Status
 exports.userManage = async (targetId, bolValue, req, res) => {

@@ -1,7 +1,7 @@
 //========//IMPORTS//========//
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const utils = require('../utils/utils');
+const jwt = require('jsonwebtoken');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -9,66 +9,82 @@ const prisma = new PrismaClient();
         
 //================//UTILISATEURS//================//
 
-//----Error messages
-
-
 //========//NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
-        // formatage date
-        const birthday = utils.birthday(req.body.birthday)
-        req.body.birthday = birthday
-
         //---ACCEPT
-        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password)) && (utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
+        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password)) && (req.body.password === req.body.passwordConf) && (utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
             bcrypt.hash(req.body.password, 10)
             .then(async hash => {
-                // mot de pass
-                req.body.password = hash;
+                // formatage date
+                const birthday = utils.birthday(req.body.birthday)
 
-                console.log(req.body)
-                
+                const datas = {
+                    surname : req.body.surname,
+                    name : req.body.name,
+                    birthday : birthday,
+                    email : req.body.email,
+                    password : hash
+                }
                 
                 // recherche de fichier
                 const newUser = req.file ? {
-                    ...JSON.parse(req.body),
+                    ...datas,
                     imageUrl : utils.newImageUrl(req)
-                } : { ...req.body };
+                } : { ...datas };
                 
-
                 // enregistrement
                 await prisma.user.create({ data : newUser })
                 .then(async () => { await prisma.$disconnect() })
-                .then(() => res.status(201).json({ message : 'utilisateur cree !' }))
+                .then(() => {
+                    utils.findUser({email : req.body.email})
+                    .then(newUser => {
+                        const ntk = utils.tokenGen(newUser.id, newUser.isAdmin)
+
+                        // Creation Cookie de connexion                        
+                        res
+                        .cookie('jwt', ntk.gen, { maxAge : ntk.exp, httpOnly : true, sameSite: 'strict', secure: false })
+                        .status(201).json({
+                            message : 'utilisateur cree !',
+                            userId : newUser.id,
+                            isAdmin : newUser.isAdmin
+                        })
+                    })
+                })
                 .catch(error => {
                     if (error.code === "P2002") {
-                        console.log("l'email est deja utilise") || res.status(500).json({ error : "l'email est deja utilise" })
+                        console.log("l'email est deja utilise") || res.status(500).json({ error : { email : "l'email est deja utilise" } })
                     } else {
-                        console.log(error) || res.status(400).json({error : error})
+                        console.log(error) || res.status(400).json(error)
                     }
                 })
             })
             .catch(error => console.log(error) || res.status(500).json(error));
         }
         //---REJET
-        // Email
-        else if ((utils.emailValid(req.body.email)) === false && (utils.passwdValid(req.body.password)) === true) {
-            return res.status(400).json({ error : utils.emailErr })
-        }
-        // Mot De Passe
-        else if ((utils.emailValid(req.body.email)) === true && (utils.passwdValid(req.body.password)) === false) {
-            return res.status(400).json({ error : utils.passErr })
-        }
-        // les deux
-        else if ((utils.emailValid(req.body.email)) === false && (utils.passwdValid(req.body.password)) === false) {
-            return res.status(400).json({ error : "informations incorrectes" })
-        }
-        // les noms
-        else if ((utils.surnameValid(req.body.surname)) === false) {
-            return res.status(400).json({ error : utils.surnameErr })
-        }
-        else if ((utils.nameValid(req.body.name)) === false) {
-            return res.status(400).json({ error : utils.nameErr })
+        else {
+            let errors = {}
+            // Email
+            if ((utils.emailValid(req.body.email)) === false) {
+                errors.email = utils.emailErr
+            }
+            // Mot De Passe
+            if ((utils.passwdValid(req.body.password)) === false) {
+                errors.password = utils.passErr
+            }
+            if (req.body.password !== req.body.passwordConf) {
+                errors.passwordConf = "les mots de passe doivent correspondre"
+            }
+            // prenomNom
+            if ((utils.surnameValid(req.body.surname)) === false) {
+                errors.surname = utils.surnameErr
+            }
+            // Nom de famille
+            if ((utils.nameValid(req.body.name)) === false) {
+                errors.name = utils.nameErr
+            }
+
+            return res.status(400).json({ errors : errors })
         }
     })();
 };
@@ -85,21 +101,11 @@ exports.login = async (req, res, next) => {
                 await bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (valid) {
-                        const token = jwt.sign(
-                            {
-                                userId : user.id,
-                                isAdmin : user.isAdmin
-                            },
-                            process.env.RANDOM_TOKEN,
-                            { expiresIn : '24h'}
-                        )
+                        const ntk = utils.tokenGen(user.id, user.isAdmin)
 
-                        // cookie expiration : ms * sec * min * hr * days
-                        const maxAge = 1000 * 60 * 60 * 24
-
-                        // Connexion
+                        // Creation Cookie de connexion
                         res
-                        .cookie('jwt', token, { maxAge : maxAge, httpOnly : true, sameSite: 'strict', secure: false })
+                        .cookie('jwt', ntk.gen, { maxAge : ntk.exp, httpOnly : true, sameSite: 'strict', secure: false })
                         .status(200).json({
                             userId : user.id,
                             isAdmin : user.isAdmin
@@ -130,7 +136,7 @@ exports.logout = async (req, res, next) => {
 
 //========//DECODE TOKEN
 exports.getUserId = async (req, res, next) => {
-    return res.status(200).json(req.auth.userId)
+    return res.status(200).json(req.auth)
 }
 
 //================//MANAGE//================//
@@ -142,21 +148,32 @@ exports.update = async (req, res, next) => {
     .then(async user => {
         // verification utilisateur
         if ((user.id === req.auth.userId) && (user.isActive)) {
-            // Donnees a soumettre
-            const updateUser = {
-                name : req.body.name,
-                surname : req.body.surname,
-                birthday : utils.birthday(req.body.birthday)
-            }
+            if ((utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
+                // Donnees a soumettre
+                const updateUser = {
+                    name : req.body.name,
+                    surname : req.body.surname,
+                    birthday : utils.birthday(req.body.birthday)
+                }
 
-            // Enregistrement dans la BDD
-            await prisma.user.update({
-                where : { id : req.auth.userId },
-                data : updateUser
-            })
-            .then(async () => { await prisma.$disconnect() })
-            .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
-            .catch(error => console.log(error) || res.status(401).json(error))
+                // Enregistrement dans la BDD
+                await prisma.user.update({
+                    where : { id : req.auth.userId },
+                    data : updateUser
+                })
+                .then(async () => { await prisma.$disconnect() })
+                .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
+                .catch(error => console.log(error) || res.status(401).json(error))
+            }
+            //----Erreurs
+            // prenomNom
+            else if ((utils.surnameValid(req.body.surname)) === false) {
+                return res.status(400).json({ error : {surname : utils.surnameErr} })
+            }
+            // Nom de famille
+            else if ((utils.nameValid(req.body.name)) === false) {
+            return res.status(400).json({ error : {name : utils.nameErr} })
+            }
         } else {
             return res.status(401).json({ error : 'Acces non authorise' });
         }
@@ -172,13 +189,13 @@ exports.password = async (req, res, next) => {
     .then(async user => {
         // utilisateur
         if ((user.id === req.auth.userId) && (user.isActive)) {
-            // ancient pass
+            // ancient
             await bcrypt.compare(req.body.password, user.password)
             .then(async valid => {
                 if (valid) {
-                    // nouveau pass
-                    if ((req.body.password != req.body.newPass) && (req.body.newPass === req.body.passConfirm) && (utils.passwdValid(req.body.newPass))) {
-                        bcrypt.hash(req.body.passConfirm, 10)
+                    //---Nouveau
+                    if ((req.body.password != req.body.newPass) && (req.body.newPass === req.body.passwordConf) && (utils.passwdValid(req.body.newPass))) {
+                        bcrypt.hash(req.body.passwordConf, 10)
                         .then(async hash => {
                             // enregistrement du nouveau mot de passe
                             await prisma.user.update({
@@ -190,17 +207,24 @@ exports.password = async (req, res, next) => {
                             .catch(error => console.log(error) || res.status(401).json(error));
                         })
                     }
-                    // RENOUVELLEMENT
-                    else if (req.body.password === req.body.newPass) {
-                        return res.status(400).json({ error : "Le nouveau mot de passe doit differer du nouveau." });
-                    }
-                    // CONCORDANCE
-                    else if (req.body.newPass != req.body.passConfirm) {
-                        return res.status(400).json({ error : "Les saisies du mot de passe doivent correspondre." });
-                    }
-                    // FORCE
-                    else if (!(utils.passwdValid(req.body.newPass))) {
-                        return res.status(400).json({ error : "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres." });
+                    //---Erreurs
+                    else {
+                        let errors = {}
+
+                        // renouvellement
+                        if (req.body.password === req.body.newPass) {
+                            errors.renewal = "Le nouveau mot de passe doit differer du nouveau."
+                        }
+                        // concordance
+                        if (req.body.newPass != req.body.passwordConf) {
+                            errors.congruency = "les mots de passe doivent correspondre"
+                        }
+                        // force
+                        if (!(utils.passwdValid(req.body.newPass))) {
+                            errors.force = utils.passErr
+                        }
+
+                        return res.status(400).json({ errors : errors })
                     }
                 } else {
                     res.status(401).json({ error : 'Mot de passe incorrect' })

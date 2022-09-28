@@ -2,7 +2,7 @@ const utils = require('../utils/utils');
 
 module.exports = (req, res, next) => {
     try {
-        utils.tokenDecoder(req);
+        utils.tokenDec(req);
         next();
     }
     catch (error) {

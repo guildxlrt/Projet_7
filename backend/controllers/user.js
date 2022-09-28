@@ -1,7 +1,6 @@
 //========//IMPORTS//========//
 const bcrypt = require('bcrypt');
 const utils = require('../utils/utils');
-const jwt = require('jsonwebtoken');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -135,9 +134,27 @@ exports.logout = async (req, res, next) => {
 }
 
 //========//DECODE TOKEN
-exports.getUserId = async (req, res, next) => {
+exports.userToken = async (req, res, next) => {
     return res.status(200).json(req.auth)
 }
+
+//========//User Profil
+exports.userInfos = async (req, res, next) => {
+     // Recherche de l'utilisateur
+     utils.findUser({id : req.auth.userId})
+     .then(async user => {
+        if ((user.id === req.auth.userId) && (user.isActive)) {
+            // recherche
+            utils.findUser({ id : req.auth.userId })
+            .then(infos => res.status(200).json(infos))
+            .then(async () => { await prisma.$disconnect() })
+            .catch(error => console.log(error) || res.status(404).json(error));
+        } else {
+            return res.status(401).json({ error : 'Acces non authorise' });
+        }
+     })
+}
+
 
 //================//MANAGE//================//
 

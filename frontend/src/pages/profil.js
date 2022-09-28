@@ -19,7 +19,12 @@ const Profil = () => {
             <div>
               <br /> 
               <p>You are an Admin</p>
-            </div> ) : null}
+            </div> ) : (
+              <div>
+              <br /> 
+              <p>You are a normal user</p>
+            </div>
+            )}
         </div>
       ) : (
         <div className="log-container">

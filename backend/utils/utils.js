@@ -51,7 +51,7 @@ exports.tokenGen = (userId, isAdmin) => {
 }
 
 //========//Decoder
-exports.tokenDecoder = (req) => {
+exports.tokenDec = (req) => {
     const token = req.cookies.jwt;
     const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN);
 

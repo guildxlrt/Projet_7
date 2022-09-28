@@ -35,13 +35,13 @@ exports.findComment = async (props) => await prisma.comment.findUnique({ where :
 //========//TOKENS//========//
 
 //========//Generator
-exports.tokenGen = (userId, isAdmin) => {
+exports.tokenGen = (userId, adminStatus) => {
     const exp = 1000 * 60 * 60 * 24 // cookie expiration : ms * sec * min * hr * days
 
     const gen = jwt.sign(
         {
             userId : userId,
-            isAdmin : isAdmin
+            isAdmin : adminStatus
         },
         process.env.RANDOM_TOKEN,
         { expiresIn : '24h'}

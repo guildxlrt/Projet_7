@@ -34,9 +34,8 @@ exports.signup = (req, res, next) => {
                 
                 // enregistrement
                 await prisma.user.create({ data : newUser })
-                .then(async () => { await prisma.$disconnect() })
-                .then(() => {
-                    utils.findUser({email : req.body.email})
+                .then(async () => {
+                    await utils.findUser({email : req.body.email})
                     .then(newUser => {
                         const ntk = utils.tokenGen(newUser.id, newUser.isAdmin)
 
@@ -50,6 +49,7 @@ exports.signup = (req, res, next) => {
                         })
                     })
                 })
+                .then(async () => { await prisma.$disconnect() })
                 .catch(error => {
                     if (error.code === "P2002") {
                         console.log("l'email est deja utilise") || res.status(500).json({ error : { email : "l'email est deja utilise" } })
@@ -91,7 +91,7 @@ exports.signup = (req, res, next) => {
 
 //========//CONNEXION
 exports.login = async (req, res, next) => {
-    utils.findUser({email : req.body.email})
+    await utils.findUser({email : req.body.email})
     .then(async user => {
         if (user) {
             // Compte actif
@@ -128,9 +128,13 @@ exports.login = async (req, res, next) => {
 
 //========//DECONNEXION
 exports.logout = async (req, res, next) => {
-    return res
-    .clearCookie('jwt')
-    .status(200).json({ message : "Deconnexion utilisateur reussie" })
+    if(req.cookies.jwt) {
+       return res
+       .clearCookie('jwt')
+       .status(200).json({ message : "Deconnexion utilisateur reussie" }) 
+    } else {
+        return res.status(200).json({ message : "No cookie token, so no able to disconnect some user" })
+    }
 }
 
 //========//DECODE TOKEN
@@ -141,11 +145,11 @@ exports.userToken = async (req, res, next) => {
 //========//User Profil
 exports.userInfos = async (req, res, next) => {
      // Recherche de l'utilisateur
-     utils.findUser({id : req.auth.userId})
+     await utils.findUser({id : req.auth.userId})
      .then(async user => {
         if ((user.id === req.auth.userId) && (user.isActive)) {
             // recherche
-            utils.findUser({ id : req.auth.userId })
+            await utils.findUser({ id : req.auth.userId })
             .then(infos => res.status(200).json(infos))
             .then(async () => { await prisma.$disconnect() })
             .catch(error => console.log(error) || res.status(404).json(error));
@@ -161,7 +165,7 @@ exports.userInfos = async (req, res, next) => {
 //========//MODIFICATIONS
 exports.update = async (req, res, next) => {
     // Recherche de l'utilisateur
-    utils.findUser({id : req.auth.userId})
+    await utils.findUser({id : req.auth.userId})
     .then(async user => {
         // verification utilisateur
         if ((user.id === req.auth.userId) && (user.isActive)) {
@@ -201,7 +205,7 @@ exports.update = async (req, res, next) => {
 //========//CHANGER MDP
 exports.password = async (req, res, next) => {
     // Recherche de l'utilisateur
-    utils.findUser({id : req.auth.userId})
+    await utils.findUser({id : req.auth.userId})
     //-----VERIFICATION
     .then(async user => {
         // utilisateur
@@ -260,13 +264,13 @@ exports.disable = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin === true) {
-        utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : req.auth.userId})
         //---Verifications
         .then(async admin => {
             // administrateur
             if ((req.auth.userId === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
                 // recherche de l'utilisateur cible
-                utils.findUser({id : Number(req.params.id)})
+                await utils.findUser({id : Number(req.params.id)})
                 .then( async user => {
                     // DESACTIVER
                     if (user.isActive === true) {
@@ -289,7 +293,7 @@ exports.disable = async (req, res, next) => {
 
     else {
         // Recherche de l'utilisateur
-        utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : req.auth.userId})
         //---Verifications
         .then(async user => {
             // utilisateur
@@ -307,7 +311,7 @@ exports.disable = async (req, res, next) => {
 
 //========//CHANGER AVATAR
 exports.avatar = async (req, res, next) => {
-    utils.findUser({id : req.auth.userId})
+    await utils.findUser({id : req.auth.userId})
     .then(async user => {
         //----Verification
         if ((req.auth.userId === user.id ) && (user.isActive)) {

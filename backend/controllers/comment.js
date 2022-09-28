@@ -9,18 +9,19 @@ const prisma = new PrismaClient();
 //========//CREER
 exports.commentPost = async (req, res, next) => {
     // Recherche post 
-    utils.findPost({id : Number(req.params.id)})
+    await utils.findPost({id : Number(req.params.id_post)})
     .then( async post => {
+        console.log(post)
         if(post.isActive) {
             // Recherche utilisateur
-            utils.findUser({id : req.auth.userId})
+            await utils.findUser({id : req.auth.userId})
             .then( async user => {
                 if (user.isActive) {
                     // enregistrement
                     await prisma.comment.create({
                         data : {
                             text : req.body.text,
-                            postId : Number(req.params.id),
+                            postId : Number(req.params.id_post),
                             userId : req.auth.userId
                         }
                     })
@@ -28,12 +29,12 @@ exports.commentPost = async (req, res, next) => {
                     .then(() => res.status(201).json({ message : 'commentaire publie !' }))
                     .catch(error => console.log(error) || res.status(400).json(error))
                 } else {
-                    return res.status(401).json({ error : 'Acces non authorise' });
+                    return res.status(401).json({ error : 'Utilisateur : Acces non authorise' });
                 }
             })
             .catch(error => console.log(error) || res.status(400).json(error));
         } else {
-            return res.status(401).json({ error : 'Acces non authorise' });
+            return res.status(401).json({ error : 'Post : Acces non authorise' });
         }
     })
     .catch(error => console.log(error) || res.status(400).json(error));
@@ -44,7 +45,7 @@ exports.getPostComments = async (req, res, next) => {
     // recherche
     await prisma.comment.findMany({
         where : {
-            postId : Number(req.params.id),
+            postId : Number(req.params.id_post),
             isActive : true
         }
     })
@@ -56,7 +57,7 @@ exports.getPostComments = async (req, res, next) => {
 //========//UN SEUL
 exports.getOneComment = async (req, res, next) => {
     // recherche
-    utils.comment({id : Number(req.params.id)})
+    await utils.findComment({id : Number(req.params.id)})
     .then(comment => res.status(200).json(comment))
     .then(async () => { await prisma.$disconnect() })
     .catch(error => console.log(error) || res.status(404).json(error));
@@ -65,10 +66,10 @@ exports.getOneComment = async (req, res, next) => {
 //========//MODIFIER
 exports.modifyComment = async (req, res, next) => {
     // Recherche
-    utils.findComment({id : Number(req.params.id)})
+    await utils.findComment({id : Number(req.params.id)})
     .then(async comment => {
         // verification utilisateur
-        utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : req.auth.userId})
         .then(async user => {
             if ((comment.userId === req.auth.userId) && (user.isActive)) {
             
@@ -98,7 +99,7 @@ exports.delComment = async (req, res, next) => {
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin === true) {
-        utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : req.auth.userId})
         .then(async admin => {
             // verification administrateur
             if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
@@ -119,10 +120,10 @@ exports.delComment = async (req, res, next) => {
     //------UTILISATEUR NORMAL
     else {
         // Recherche dans le post
-        utils.findComment({id : Number(req.params.id)})
+        await utils.findComment({id : Number(req.params.id)})
         .then(async comment => {
             // verification utilisateur
-            utils.findUser({id : req.auth.userId})
+            await utils.findUser({id : req.auth.userId})
             .then(async user => {
                 if ((comment.userId === req.auth.userId) && (user.isActive)) {
                     // enregistrement

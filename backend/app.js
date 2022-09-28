@@ -61,7 +61,7 @@ app.use(express.static('images'));
 //========//Endpoints
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/comment', commentRoutes);
+app.use('/api/comments', commentRoutes);
 
 
 //================//EXPORT//================//

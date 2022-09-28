@@ -3,8 +3,6 @@ const router = require('express').Router();
 const auth = require('../middlewares/auth');
 const multer = require('../middlewares/multer-config');
 const postsCtrl = require('../controllers/post');
-const commentCtrl = require('../controllers/comment');
-
 
 //========//ENDPOINTS//========//
 //========//Posts
@@ -16,11 +14,7 @@ router.delete('/:id', auth, postsCtrl.deletePost);
 
 //========//Likes
 router.post('/:id/like', auth, postsCtrl.likePost);
-router.get('/:id/count', auth, postsCtrl.likesCount);
-
-//========//Commentaires
-router.post('/:id/comment', auth, commentCtrl.commentPost);
-router.get('/:id/comment', auth, commentCtrl.getPostComments);
+router.get('/:id/count', postsCtrl.likesCount);
 
 
 //========//EXPORT//========//

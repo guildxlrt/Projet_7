@@ -38,6 +38,9 @@ const Home = () => {
           </div>
         </div>
       )}
+      <a href="/profil">
+        <button>Profil</button>
+      </a>
     </div>
   )
 }

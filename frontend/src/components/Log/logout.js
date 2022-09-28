@@ -26,7 +26,9 @@ const Logout = () => {
 
   return (
     <li onClick={logout}>
-        <FontAwesomeIcon icon={faRightFromBracket} />
+        <button>
+            <span>Déconnexion</span> <FontAwesomeIcon icon={faRightFromBracket} />
+        </button>
     </li>
   )
 }

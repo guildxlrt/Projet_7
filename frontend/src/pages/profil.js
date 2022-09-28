@@ -21,9 +21,9 @@ const Profil = () => {
               <p>You are an Admin</p>
             </div> ) : (
               <div>
-              <br /> 
-              <p>You are a normal user</p>
-            </div>
+                <br /> 
+                <p>You are a normal user</p>
+              </div>
             )}
         </div>
       ) : (

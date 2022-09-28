@@ -47,7 +47,7 @@ exports.getAllPosts = async (req, res, next) => {
 //========//UN SEUL
 exports.getOnePost = async (req, res, next) => {
     // recherche
-    utils.findPost({id : Number(req.params.id)})
+    await utils.findPost({id : Number(req.params.id)})
     .then(post => res.status(200).json(post))
     .then(async () => { await prisma.$disconnect() })
     .catch(error => console.log(error) || res.status(404).json(error));
@@ -57,11 +57,11 @@ exports.getOnePost = async (req, res, next) => {
 //========//MODIFIER
 exports.modifyPost = async (req, res, next) => {
     // Recherche
-    utils.findPost({id : Number(req.params.id)})
+    await utils.findPost({id : Number(req.params.id)})
     .then(async (post) => {
         
         // verification utilisateur
-        utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : req.auth.userId})
         .then(async user => {
             if ((post.userId === req.auth.userId) && (user.isActive)) {
                 //---Recherche fichier
@@ -98,12 +98,12 @@ exports.modifyPost = async (req, res, next) => {
 exports.deletePost = async (req, res, next) => {
     //------ADMINISTRATEUR
     if (req.auth.isAdmin) {
-        utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : req.auth.userId})
         .then(async admin => {
             // verification administrateur
             if ((req.auth.userId === admin.id) && (admin.isActive) && (admin.isAdmin)) {  
                 //---Suppression fichier
-                utils.findPost({id : Number(req.params.id)})
+                await utils.findPost({id : Number(req.params.id)})
                 .then(post => {
                     if (post.imageUrl != null) {
                         utils.fileDel(post.imageUrl)
@@ -125,10 +125,10 @@ exports.deletePost = async (req, res, next) => {
     //------UTILISATEUR NORMAL
     else {
         // Recherche dans le post
-        utils.findPost({id : Number(req.params.id)})
+        await utils.findPost({id : Number(req.params.id)})
         .then(async post => {
             // verification utilisateur
-            utils.findUser({id : req.auth.userId})
+            await utils.findUser({id : req.auth.userId})
             .then(async user => {
                 if ((post.userId === req.auth.userId) && (user.isActive)) {
                     //---Suppression fichier
@@ -154,19 +154,22 @@ exports.deletePost = async (req, res, next) => {
 
 //================//LIKER//================//
 exports.likePost = async (req, res, next) => {
+    const liker = req.auth.userId
+    const postToLike = Number(req.params.id)
+    
     //---RECHERCHES
+    // utilisateur
+    const findUser = await utils.findUser({id : liker})
+    // publication
+    const findPost = await utils.findPost({id : postToLike})
     // like doublon
-    const findLike = await prisma.like.findFirst({
+    const findLike = prisma.like.findFirst({
         where : {
             userId : req.auth.userId,
             postId : Number(req.params.id)
         }
     })
-    // publication
-    const findPost = utils.findPost({id : Number(req.params.id)})
-    // utilisateur
-    const findUser = utils.findUser({id : req.auth.userId})
-
+    
     // l'utilisateur et le post doivent etre actif
     if ((findUser.isActive) && (findPost.isActive)) {
         // CONDITIONS

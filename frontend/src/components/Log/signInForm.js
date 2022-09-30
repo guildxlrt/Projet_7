@@ -11,7 +11,7 @@ const SignInForm = () => {
 
     await axios({
       method : "post",
-      url : `${process.env.REACT_APP_API_URL}api/users/login`,
+      url : `${process.env.REACT_APP_API_URL}/api/users/login`,
       withCredentials : true,
       data : {
         email : email,

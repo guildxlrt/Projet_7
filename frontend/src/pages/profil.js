@@ -1,9 +1,7 @@
 import React, { useContext } from 'react'
-import Log from '../components/Log'
 import { UidContext } from '../components/appContext'
 import { UkeyContext } from '../components/appContext'
-
-
+import Log from '../components/Log'
 const Profil = () => {
   const uid = useContext(UidContext)
   const ukey = useContext(UkeyContext)
@@ -28,12 +26,12 @@ const Profil = () => {
         </div>
       ) : (
         <div className="log-container">
-          <Log signin={false} signup={true} />
-          <div className="img-container">
-            {/* <img src="./img/log.svg" alt="img-log" /> */}
+            <Log signin={false} signup={true} />
+            <div className="img-container">
+              {/* <img src="./img/log.svg" alt="img-log" /> */}
+            </div>
           </div>
-        </div>
-      )}
+      ) }
     </div>
   )
 }

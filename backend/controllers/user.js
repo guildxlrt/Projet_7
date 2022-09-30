@@ -144,12 +144,16 @@ exports.userToken = async (req, res, next) => {
 
 //========//User Profil
 exports.userInfos = async (req, res, next) => {
+    const auth = req.auth.userId
+
+    if (req.cookies.jwt) console.log('req.cookies.jwt');
      // Recherche de l'utilisateur
-     await utils.findUser({id : req.auth.userId})
+     await utils.findUser({id : Number(req.params.id)})
      .then(async user => {
-        if ((user.id === req.auth.userId) && (user.isActive)) {
+        if (user) console.log('IS___'+user);
+        if ((user.id === auth) && (user.isActive)) {
             // recherche
-            await utils.findUser({ id : req.auth.userId })
+            await utils.findUser({ id : auth })
             .then(infos => res.status(200).json(infos))
             .then(async () => { await prisma.$disconnect() })
             .catch(error => console.log(error) || res.status(404).json(error));
@@ -164,11 +168,13 @@ exports.userInfos = async (req, res, next) => {
 
 //========//MODIFICATIONS
 exports.update = async (req, res, next) => {
+    const auth = req.auth.userId
+
     // Recherche de l'utilisateur
-    await utils.findUser({id : req.auth.userId})
+    await utils.findUser({id : auth})
     .then(async user => {
         // verification utilisateur
-        if ((user.id === req.auth.userId) && (user.isActive)) {
+        if ((user.id === auth) && (user.isActive)) {
             if ((utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
                 // Donnees a soumettre
                 const updateUser = {
@@ -179,7 +185,7 @@ exports.update = async (req, res, next) => {
 
                 // Enregistrement dans la BDD
                 await prisma.user.update({
-                    where : { id : req.auth.userId },
+                    where : { id : auth },
                     data : updateUser
                 })
                 .then(async () => { await prisma.$disconnect() })
@@ -204,12 +210,14 @@ exports.update = async (req, res, next) => {
 
 //========//CHANGER MDP
 exports.password = async (req, res, next) => {
+    const auth = req.auth.userId
+
     // Recherche de l'utilisateur
-    await utils.findUser({id : req.auth.userId})
+    await utils.findUser({id : auth})
     //-----VERIFICATION
     .then(async user => {
         // utilisateur
-        if ((user.id === req.auth.userId) && (user.isActive)) {
+        if ((user.id === auth) && (user.isActive)) {
             // ancient
             await bcrypt.compare(req.body.password, user.password)
             .then(async valid => {
@@ -220,7 +228,7 @@ exports.password = async (req, res, next) => {
                         .then(async hash => {
                             // enregistrement du nouveau mot de passe
                             await prisma.user.update({
-                                where : { id : req.auth.userId },
+                                where : { id : auth },
                                 data : { password : hash }
                             })
                             .then(async () => { await prisma.$disconnect() })
@@ -261,16 +269,19 @@ exports.password = async (req, res, next) => {
 
 //========//DESACTIVER
 exports.disable = async (req, res, next) => {
+    const target = Number(req.params.id)
+    const auth = req.auth.userId
+
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin === true) {
-        await utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : auth})
         //---Verifications
         .then(async admin => {
             // administrateur
-            if ((req.auth.userId === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
+            if ((auth === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
                 // recherche de l'utilisateur cible
-                await utils.findUser({id : Number(req.params.id)})
+                await utils.findUser({id : target})
                 .then( async user => {
                     // DESACTIVER
                     if (user.isActive === true) {
@@ -288,16 +299,13 @@ exports.disable = async (req, res, next) => {
         .catch(error => console.log(error) || res.status(500).json(error));
     }
     //------UTILISATEUR NORMAL
-
-    // supprimer les parametres
-
     else {
         // Recherche de l'utilisateur
-        await utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : target})
         //---Verifications
         .then(async user => {
             // utilisateur
-            if ((req.auth.userId === user.id ) && (user.isActive)) {
+            if ((auth === user.id ) && (user.isActive)) {
                 utils.userManage(user.id, false, req, res)
             } else {
                 res.status(401).json({ error : 'Acces non authorise' });
@@ -311,10 +319,12 @@ exports.disable = async (req, res, next) => {
 
 //========//CHANGER AVATAR
 exports.avatar = async (req, res, next) => {
-    await utils.findUser({id : req.auth.userId})
+    const auth = req.auth.userId
+
+    await utils.findUser({id : auth})
     .then(async user => {
         //----Verification
-        if ((req.auth.userId === user.id ) && (user.isActive)) {
+        if ((auth === user.id ) && (user.isActive)) {
             //----Suppression fichier
             if (user.imageUrl != null) {
                 utils.fileDel(user.imageUrl)
@@ -334,7 +344,7 @@ exports.avatar = async (req, res, next) => {
             
             // Enregistrer
             await prisma.user.update({
-                where : { id : req.auth.userId },
+                where : { id : auth },
                 data : { avatarUrl : url }
             })
             .then(async () => { await prisma.$disconnect() })

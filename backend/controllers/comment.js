@@ -8,13 +8,15 @@ const prisma = new PrismaClient();
 
 //========//CREER
 exports.commentPost = async (req, res, next) => {
+    const auth = req.auth.userId
+
     // Recherche post 
     await utils.findPost({id : Number(req.params.id_post)})
     .then( async post => {
         console.log(post)
         if(post.isActive) {
             // Recherche utilisateur
-            await utils.findUser({id : req.auth.userId})
+            await utils.findUser({id : auth})
             .then( async user => {
                 if (user.isActive) {
                     // enregistrement
@@ -22,7 +24,7 @@ exports.commentPost = async (req, res, next) => {
                         data : {
                             text : req.body.text,
                             postId : Number(req.params.id_post),
-                            userId : req.auth.userId
+                            userId : auth
                         }
                     })
                     .then(async () => { await prisma.$disconnect() })
@@ -65,18 +67,21 @@ exports.getOneComment = async (req, res, next) => {
 
 //========//MODIFIER
 exports.modifyComment = async (req, res, next) => {
+    const auth = auth
+    const target = Number(req.params.id)
+
     // Recherche
-    await utils.findComment({id : Number(req.params.id)})
+    await utils.findComment({id : target})
     .then(async comment => {
         // verification utilisateur
-        await utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : auth})
         .then(async user => {
-            if ((comment.userId === req.auth.userId) && (user.isActive)) {
+            if ((comment.userId === auth) && (user.isActive)) {
             
                 // enregistrement
                 await prisma.comment.update({
                     where : {
-                        id : Number(req.params.id)
+                        id : target
                     },
                     data : {
                         text : req.body.text
@@ -96,17 +101,20 @@ exports.modifyComment = async (req, res, next) => {
 
 //========//SUPPRIMER
 exports.delComment = async (req, res, next) => {
+    const auth = req.auth.userId
+    const target = Number(req.params.id)
+
     //---Quel utilisateur ?
     //------ADMINISTRATEUR
     if (req.auth.isAdmin === true) {
-        await utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : auth})
         .then(async admin => {
             // verification administrateur
-            if ((req.auth.userId === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
+            if ((auth === admin.id) && (admin.isActive === true) && (admin.isAdmin === true)) {
                 
                 // enregistrement
                 await prisma.comment.delete({
-                    where : { id : Number(req.params.id) }
+                    where : { id : target }
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'commentaire supprime !' }))
@@ -120,15 +128,15 @@ exports.delComment = async (req, res, next) => {
     //------UTILISATEUR NORMAL
     else {
         // Recherche dans le post
-        await utils.findComment({id : Number(req.params.id)})
+        await utils.findComment({id : target})
         .then(async comment => {
             // verification utilisateur
-            await utils.findUser({id : req.auth.userId})
+            await utils.findUser({id : auth})
             .then(async user => {
-                if ((comment.userId === req.auth.userId) && (user.isActive)) {
+                if ((comment.userId === auth) && (user.isActive)) {
                     // enregistrement
                     await prisma.comment.delete({
-                        where : { id : Number(req.params.id) }
+                        where : { id : target }
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(200).json({ message : 'commentaire supprime !' }))

@@ -15,7 +15,7 @@ const Logout = () => {
     const logout = async () => {
         await axios({
             method : "delete",
-            url : `${process.env.REACT_APP_API_URL}api/users/logout`,
+            url : `${process.env.REACT_APP_API_URL}/api/users/logout`,
             withCredentials : true
         })
         .then(() => removecookie('jwt'))

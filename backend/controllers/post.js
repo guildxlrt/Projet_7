@@ -8,18 +8,19 @@ const prisma = new PrismaClient();
 
 //========//NOUVEAU
 exports.createPost = async (req, res, next) => {
+    const auth = req.auth.userId
     // utilisateur
-    await utils.findUser({id : req.auth.userId})
+    await utils.findUser({id : auth})
     .then( async user => {
         if (user.isActive) {
             // Condition Fichier
             const content = req.file ? {
                 ...JSON.parse(req.body),
                 imageUrl : utils.newImageUrl(req),
-                userId : req.auth.userId
+                userId : auth
             } : {
                 ...req.body,
-                userId : req.auth.userId
+                userId : auth
             };
 
             // Enregistrement
@@ -56,14 +57,17 @@ exports.getOnePost = async (req, res, next) => {
 
 //========//MODIFIER
 exports.modifyPost = async (req, res, next) => {
+    const target = Number(req.params.id)
+    const auth = req.auth.userId
+
     // Recherche
-    await utils.findPost({id : Number(req.params.id)})
+    await utils.findPost({id : target})
     .then(async (post) => {
         
         // verification utilisateur
-        await utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : auth})
         .then(async user => {
-            if ((post.userId === req.auth.userId) && (user.isActive)) {
+            if ((post.userId === auth) && (user.isActive)) {
                 //---Recherche fichier
                 const content = req.file ? {
                     ...JSON.parse(req.body),
@@ -79,7 +83,7 @@ exports.modifyPost = async (req, res, next) => {
     
                 //---Enregistrement
                 await prisma.post.update({
-                    where : { id : Number(req.params.id) },
+                    where : { id : target },
                     data : content
                 })
                 .then(async () => { await prisma.$disconnect() })
@@ -96,14 +100,17 @@ exports.modifyPost = async (req, res, next) => {
 
 //========//SUPPRIMER
 exports.deletePost = async (req, res, next) => {
+    const target = Number(req.params.id)
+    const auth = req.auth.userId
+
     //------ADMINISTRATEUR
     if (req.auth.isAdmin) {
-        await utils.findUser({id : req.auth.userId})
+        await utils.findUser({id : auth})
         .then(async admin => {
             // verification administrateur
-            if ((req.auth.userId === admin.id) && (admin.isActive) && (admin.isAdmin)) {  
+            if ((auth === admin.id) && (admin.isActive) && (admin.isAdmin)) {  
                 //---Suppression fichier
-                await utils.findPost({id : Number(req.params.id)})
+                await utils.findPost({id : target})
                 .then(post => {
                     if (post.imageUrl != null) {
                         utils.fileDel(post.imageUrl)
@@ -112,7 +119,7 @@ exports.deletePost = async (req, res, next) => {
 
                 //---Suppression dans la BDD
                 await prisma.post.delete({
-                    where : { id : Number(req.params.id)}
+                    where : { id : target}
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
@@ -125,12 +132,12 @@ exports.deletePost = async (req, res, next) => {
     //------UTILISATEUR NORMAL
     else {
         // Recherche dans le post
-        await utils.findPost({id : Number(req.params.id)})
+        await utils.findPost({id : target})
         .then(async post => {
             // verification utilisateur
-            await utils.findUser({id : req.auth.userId})
+            await utils.findUser({id : auth})
             .then(async user => {
-                if ((post.userId === req.auth.userId) && (user.isActive)) {
+                if ((post.userId === auth) && (user.isActive)) {
                     //---Suppression fichier
                     if (post.imageUrl != null) {
                         utils.fileDel(post.imageUrl)
@@ -138,7 +145,7 @@ exports.deletePost = async (req, res, next) => {
                         
                     //---Suppression dans la BDD
                     await prisma.post.delete({
-                        where : { id : Number(req.params.id)}
+                        where : { id : target}
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(200).json({ message : 'publication supprime !' }))
@@ -163,10 +170,10 @@ exports.likePost = async (req, res, next) => {
     // publication
     const findPost = await utils.findPost({id : postToLike})
     // like doublon
-    const findLike = prisma.like.findFirst({
+    const findLike = await prisma.like.findFirst({
         where : {
-            userId : req.auth.userId,
-            postId : Number(req.params.id)
+            userId : liker,
+            postId : postToLike
         }
     })
     
@@ -176,12 +183,12 @@ exports.likePost = async (req, res, next) => {
         //========//Aucun doublon : AJOUTER
         if (!Boolean(findLike)) {
             // empecher les auto-like
-            if (!(findPost.userId === req.auth.userId)) {            
+            if (!(findPost.userId === liker)) {            
                 // enregistrement
                 await prisma.like.create({
                     data : {
-                        postId : Number(req.params.id),
-                        userId : req.auth.userId
+                        postId : postToLike,
+                        userId : liker
                     }
                 })
                 .then(async () => { await prisma.$disconnect() })

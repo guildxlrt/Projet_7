@@ -11,6 +11,7 @@ const prisma = new PrismaClient();
 exports.fileDel = (target) => {
     //---Suppression fichier
     const filename = target.split('/images/')[1];
+
     fs.unlink(`images/${filename}`, (err) => {
         if (err) {
             console.log("Echec lors de la suppression du fichier : " + err)
@@ -20,14 +21,17 @@ exports.fileDel = (target) => {
     })
 }
 
-//========//Get new URL
-exports.newImageUrl = (req) => {
-    req.file ? (
+//========//Image URL
+exports.newAvatarUrl = (req) => {
+    let url = req.file ? (
         `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     ) : (
         `${req.protocol}://${req.get('host')}/images/random-user.png` 
     )
-} 
+    return url
+}
+
+exports.newImageUrl = (req) => `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
 
 //========//Recherche
 exports.findUser = async (props) => await prisma.user.findUnique({ where : props });

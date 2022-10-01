@@ -39,7 +39,7 @@ const Home = () => {
         </div>
       )}
       <a href="/profil">
-        <button>Profil</button>
+      <img src="./img/icon.png" alt="icon" />
       </a>
     </div>
   )

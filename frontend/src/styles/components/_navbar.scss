@@ -42,8 +42,8 @@ nav {
         font-family: $font-3;
       }
       img {
-        height: 26px;
-        width: 26px;
+        height: 150px;
+        width: 180px;
       }
     }
     
@@ -69,7 +69,7 @@ nav {
       
       li {
         
-        img {
+        svg, img {
           height: 24px;
           width: 24px;
           cursor: pointer;

@@ -21,7 +21,13 @@ exports.fileDel = (target) => {
 }
 
 //========//Get new URL
-exports.newImageUrl = (req) => `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+exports.newImageUrl = (req) => {
+    req.file ? (
+        `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    ) : (
+        `${req.protocol}://${req.get('host')}/images/random-user.png` 
+    )
+} 
 
 //========//Recherche
 exports.findUser = async (props) => await prisma.user.findUnique({ where : props });

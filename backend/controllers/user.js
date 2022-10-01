@@ -27,10 +27,10 @@ exports.signup = (req, res, next) => {
                 }
                 
                 // recherche de fichier
-                const newUser = req.file ? {
+                const newUser = { 
                     ...datas,
                     imageUrl : utils.newImageUrl(req)
-                } : { ...datas };
+                }
                 
                 // enregistrement
                 await prisma.user.create({ data : newUser })
@@ -325,31 +325,32 @@ exports.avatar = async (req, res, next) => {
     .then(async user => {
         //----Verification
         if ((auth === user.id ) && (user.isActive)) {
-            //----Suppression fichier
-            if (user.imageUrl != null) {
-                utils.fileDel(user.imageUrl)
-            }
-
-            // Mise a jour BDD
-            let url = '';
-            let message = '';
-
-            function newURL(a, b) {
-                url = a;
-                message = b;
-                return {url, message};
-            }
-
-            req.file ? newURL(utils.newImageUrl(req), 'Avatar change !') : newURL(null, 'Avatar supprime !');
+            const avatarName = user.avatarUrl.split('/images/')[1];
             
-            // Enregistrer
-            await prisma.user.update({
-                where : { id : auth },
-                data : { avatarUrl : url }
-            })
-            .then(async () => { await prisma.$disconnect() })
-            .then(() => res.status(200).json({ message : message }))
-            .catch(error => console.log(error) || res.status(401).json(error))
+            //=====Protection de l'avatar par defaut
+            if ((!req.file) && (avatarName === 'random-user.png')) {
+                res.status(200).json({ message : 'Aucune modification' }) 
+            }
+            //====Mise a jour de l'avatar
+            else {
+                //----Suppression du fichier
+                if (user.avatarUrl != null) {
+                    utils.fileDel(user.imageUrl)
+                }
+
+                //----Mise a jour BDD
+                const url = utils.newImageUrl(req);
+                const message = req.file ? 'Avatar change !' : 'Avatar supprime !';
+                
+                // Enregistrer
+                await prisma.user.update({
+                    where : { id : auth },
+                    data : { avatarUrl : url }
+                })
+                .then(async () => { await prisma.$disconnect() })
+                .then(() => res.status(200).json({ message : message }))
+                .catch(error => console.log(error) || res.status(401).json(error))
+            }
         } else {
             res.status(401).json({ error : 'Acces non authorise' });
         }

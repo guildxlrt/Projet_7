@@ -14,8 +14,7 @@ const Navbar = () => {
             <div className="logo">
                 <NavLink exact to="/">
                     <div className="logo">
-                        {/* <img src="" alt="icon" /> */}
-                        <h3>Groupomania</h3>
+                        <img src='./img/icon.png' alt="icon" />
                     </div>
                 </NavLink>
             </div>

@@ -1,28 +1,18 @@
 import React, { useContext } from 'react'
 import { UidContext } from '../components/appContext'
-import { UkeyContext } from '../components/appContext'
+// import { UkeyContext } from '../components/appContext'
 import Log from '../components/Log'
+import UpdateProfil from '../components/Profil/UpdateProfil'
+
 const Profil = () => {
   const uid = useContext(UidContext)
-  const ukey = useContext(UkeyContext)
+  //const ukey = useContext(UkeyContext)
 
   return (
     <div className="profil-page">
       {uid ? (
         <div>
-          <h1>UPDATE PAGE</h1>
-          <br /> 
-          <h2>Welcome user {uid}</h2>
-          {ukey ? (
-            <div>
-              <br /> 
-              <p>You are an Admin</p>
-            </div> ) : (
-              <div>
-                <br /> 
-                <p>You are a normal user</p>
-              </div>
-            )}
+          <UpdateProfil/>
         </div>
       ) : (
         <div className="log-container">

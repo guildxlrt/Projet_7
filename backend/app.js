@@ -26,19 +26,26 @@ const limiter = rateLimit({
 })
 
 const speedLimiter = slowDown({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    delayAfter: 100, // allow 100 requests per 15 minutes, then...
-    delayMs: 500 // begin adding 500ms of delay per request above 100:
-    // request # 101 is delayed by  500ms
-    // request # 102 is delayed by 1000ms
-    // request # 103 is delayed by 1500ms
-    // etc.
+    windowMs: 1000 * 60 * 15, //15 minutes
+    delayAfter: 100,
+    delayMs: 500
   });
+
+const corsOptions = {
+  origin : process.env.CLIENT_URL,
+  credential : true,
+  'allowedHeaders' : ['sessionId','Content-Type'],
+  'exposedHeaders' : ['sessionId'],
+  'methods' : 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'preflightContinue' : false,
+  'Strict-Transport-Security' : 'max-age=31536000; includeSubDomains',
+  'Cross-Origin-Resource-Policy' : 'same-site'
+}
 
 //========//START//========//
 app.use(express.json());
 app.use(cookieParser())
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 //---expresss rate limit
 app.use(limiter);
@@ -48,10 +55,13 @@ app.use(speedLimiter);
 
 //========//Autorisations
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    next();
+  res.setHeader('Access-Control-Allow-Origin', 'https://localhost:3000');
+  res.setHeader('Access-Control-Allow-Credentials', true)
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  next();
 });
 
 //========//Multer

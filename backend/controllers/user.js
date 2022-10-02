@@ -41,7 +41,7 @@ exports.signup = (req, res, next) => {
 
                         // Creation Cookie de connexion                        
                         res
-                        .cookie('jwt', ntk.gen, { maxAge : ntk.exp, httpOnly : true, sameSite: 'strict', secure: false })
+                        .cookie('jwt', ntk.gen, { maxAge : ntk.exp, httpOnly : true, sameSite: 'lax', secure: false })
                         .status(201).json({
                             message : 'utilisateur cree !',
                             userId : newUser.id,
@@ -104,7 +104,7 @@ exports.login = async (req, res, next) => {
 
                         // Creation Cookie de connexion
                         res
-                        .cookie('jwt', ntk.gen, { maxAge : ntk.exp, httpOnly : true, sameSite: 'strict', secure: false })
+                        .cookie('jwt', ntk.gen, { maxAge : ntk.exp, httpOnly : true, sameSite: 'lax', secure: false })
                         .status(200).json({
                             userId : user.id,
                             isAdmin : user.isAdmin
@@ -146,11 +146,9 @@ exports.userToken = async (req, res, next) => {
 exports.userInfos = async (req, res, next) => {
     const auth = req.auth.userId
 
-    if (req.cookies.jwt) console.log('req.cookies.jwt');
      // Recherche de l'utilisateur
      await utils.findUser({id : Number(req.params.id)})
      .then(async user => {
-        if (user) console.log('IS___'+user);
         if ((user.id === auth) && (user.isActive)) {
             // recherche
             await utils.findUser({ id : auth })

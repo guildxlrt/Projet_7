@@ -23,7 +23,7 @@ exports.fileDel = (target) => {
 
 //========//Image URL
 exports.newAvatarUrl = (req) => {
-    let url = req.file ? (
+    const url = req.file ? (
         `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     ) : (
         `${req.protocol}://${req.get('host')}/images/random-user.png` 
@@ -83,6 +83,7 @@ exports.emailErr = "l'email doit etre au format email : jack.nicholson@laposte.f
 exports.passErr = "le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres";
 exports.surnameErr = "Votre prenom doit comporter 2 caracteres minimum, avec  une majuscule suivit de minuscules: Paul, Marie-Louise, Jose Antonio ...";
 exports.nameErr = "Votre nom de famille doit comporter 2 caracteres minimum, avec une majuscule suivit de minuscules : Dupont, D'Artagnan, De Sade, Primo De Rivera ...";
+exports.passwordConfErr = "les mots de passe doivent correspondre"
 
 //--------//Email validation
 exports.emailValid = (value) => new RegExp(/^([a-z0-9._-]+)@([a-z0-9]+)\.([a-z]{2,8})(\.[a-z]{2,8})?$/, 'g').test(value);
@@ -145,5 +146,5 @@ exports.userManage = async (targetId, bolValue, req, res) => {
             console.log('Compte (re)active !') || res.status(200).json({ message : 'Compte (re)active !' })
         }
     })
-    .catch(error => console.log(error) || res.status(401).json({ message : error }))
+    .catch(error => console.log(error) || res.status(500).json({ message : error }))
 }

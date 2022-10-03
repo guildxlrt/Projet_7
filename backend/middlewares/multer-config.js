@@ -4,7 +4,8 @@ const MIME_TYPES = {
   'image/jpg': 'jpg',
   'image/jpeg': 'jpeg',
   'image/png': 'png',
-  'image/gif': 'gif'
+  'image/gif': 'gif',
+  'image/webp' : 'webp'
 };
 
 //---CONFIG

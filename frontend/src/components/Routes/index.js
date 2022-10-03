@@ -1,17 +1,21 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from '../../pages/home';
 import Profil from '../../pages/profil';
 import Navbar from '../navbar';
 import LeftNav from '../LeftNav';
+import { UidContext } from '../appContext';
 
 
 
-const index = () => {
+
+const Index = () => {
+  const uid = useContext(UidContext)
+
   return (
     <BrowserRouter>
         <Navbar />
-        <LeftNav/>
+        {uid ? <LeftNav/> : null }
         <Routes>
             <Route path="/" exact element={<Home />} />
             <Route path="/profil" exact element={<Profil />} />
@@ -20,4 +24,4 @@ const index = () => {
   )
 }
 
-export default index
+export default Index

@@ -1,7 +1,6 @@
 //========//IMPORTS
 const http = require('http');
 const https = require('https');
-const { options } = require('./app');
 const app = require('./app');
 const fs = require('fs')
 const path = require('path');

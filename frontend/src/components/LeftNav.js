@@ -10,12 +10,12 @@ const LeftNav = () => {
     <div className="left-nav-container">
         <div className='icons'>
             <div className='icons-bis'>
-                <NavLink to="/" exact activeClassName="active-left-nav">
+                <NavLink to="/" exact activeclassname="active-left-nav">
                     {/* <FontAwesomeIcon icon={faHouseUser} /> */}
                     <img src="./img/icons/home.svg" alt="icon" />
                 </NavLink>
                 <br/>
-                <NavLink to="/profil" exact activeClassName="active-left-nav">
+                <NavLink to="/profil" exact activeclassname="active-left-nav">
                     {/* <FontAwesomeIcon icon={faUser} /> */}
                     <img src="./img/icons/user.svg" alt="icon" />
                 </NavLink>

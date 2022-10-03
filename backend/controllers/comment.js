@@ -29,17 +29,17 @@ exports.commentPost = async (req, res, next) => {
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(201).json({ message : 'commentaire publie !' }))
-                    .catch(error => console.log(error) || res.status(400).json(error))
+                    .catch(error => console.log(error) || res.status(500).json(error))
                 } else {
-                    return res.status(401).json({ error : 'Utilisateur : Acces non authorise' });
+                    return res.status(403).json({ error : 'Utilisateur : Acces non authorise' });
                 }
             })
-            .catch(error => console.log(error) || res.status(400).json(error));
+            .catch(error => console.log(error) || res.status(500).json(error));
         } else {
-            return res.status(401).json({ error : 'Post : Acces non authorise' });
+            return res.status(403).json({ error : 'Post : Acces non authorise' });
         }
     })
-    .catch(error => console.log(error) || res.status(400).json(error));
+    .catch(error => console.log(error) || res.status(500).json(error));
 };
 
 //========//AFFICHER
@@ -53,7 +53,7 @@ exports.getPostComments = async (req, res, next) => {
     })
     .then(comments => res.status(200).json(comments))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(400).json(error));
+    .catch(error => console.log(error) || res.status(404).json(error));
 }
 
 //========//UN SEUL
@@ -89,10 +89,10 @@ exports.modifyComment = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'Commentaire modifie !' }))
-                .catch(error => console.log(error) || res.status(401).json(error));
+                .catch(error => console.log(error) || res.status(500).json(error));
     
             } else {
-                return res.status(401).json({ error : 'Acces non authorise' })
+                return res.status(403).json({ error : 'Acces non authorise' })
             }
         })
     })
@@ -118,10 +118,10 @@ exports.delComment = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'commentaire supprime !' }))
-                .catch(error => res.status(401).json(error))
+                .catch(error => res.status(500).json(error))
 
             } else {
-                return res.status(401).json({ error : 'Acces non authorise' })
+                return res.status(403).json({ error : 'Acces non authorise' })
             }
         })
     }
@@ -140,9 +140,9 @@ exports.delComment = async (req, res, next) => {
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(200).json({ message : 'commentaire supprime !' }))
-                    .catch(error => res.status(401).json(error))
+                    .catch(error => res.status(500).json(error))
                 } else {
-                    return res.status(401).json({ error : 'Acces non authorise' })
+                    return res.status(403).json({ error : 'Acces non authorise' })
                 }
             })
         })

@@ -27,9 +27,9 @@ exports.createPost = async (req, res, next) => {
             await prisma.post.create({data : content})
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(201).json({ message : 'publication cree !'}))
-            .catch(error => console.log(error) || res.status(400).json(error))
+            .catch(error => console.log(error) || res.status(500).json(error))
         } else {
-            return res.status(401).json({ error : 'Acces non authorise' })
+            return res.status(403).json({ error : 'Acces non authorise' })
         }
     })
 };
@@ -42,7 +42,7 @@ exports.getAllPosts = async (req, res, next) => {
     })
     .then(posts => res.status(200).json(posts))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(400).json(error));
+    .catch(error => console.log(error) || res.status(404).json(error));
 };
 
 //========//UN SEUL
@@ -88,10 +88,10 @@ exports.modifyPost = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'Publication modifie !' }))
-                .catch(error => console.log(error) || res.status(401).json(error));
+                .catch(error => console.log(error) || res.status(500).json(error));
     
             } else {
-                return res.status(401).json({ error : 'Acces non authorise' })
+                return res.status(403).json({ error : 'Acces non authorise' })
             }
         })    
     })
@@ -123,9 +123,9 @@ exports.deletePost = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
-                .catch(error => res.status(401).json(error))
+                .catch(error => res.status(500).json(error))
             } else {
-                return res.status(401).json({ error : 'Acces non authorise' })
+                return res.status(403).json({ error : 'Acces non authorise' })
             }
         })
     }
@@ -149,9 +149,9 @@ exports.deletePost = async (req, res, next) => {
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(200).json({ message : 'publication supprime !' }))
-                    .catch(error => res.status(401).json(error))
+                    .catch(error => res.status(500).json(error))
                 } else {
-                    return res.status(401).json({ error : 'Acces non authorise' })
+                    return res.status(403).json({ error : 'Acces non authorise' })
                 }
             })
         })
@@ -193,10 +193,10 @@ exports.likePost = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(201).json({ message : 'publication likee !'}))
-                .catch(error => console.log(error) || res.status(400).json(error))
+                .catch(error => console.log(error) || res.status(500).json(error))
             }
             else {
-                return res.status(401).json({ error : 'auto-like interdit' })
+                return res.status(403).json({ error : 'auto-like interdit' })
             }
         }
         //========//doublon : RETIRER
@@ -206,10 +206,10 @@ exports.likePost = async (req, res, next) => {
             })
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(200).json({ message : 'like supprime !' }))
-            .catch(error => res.status(401).json(error))
+            .catch(error => res.status(500).json(error))
         }
     } else {
-        return res.status(401).json({ error : 'Acces non authorise' });
+        return res.status(403).json({ error : 'Acces non authorise' });
     }
 };
 
@@ -221,5 +221,5 @@ exports.likesCount = async (req, res, next) => {
     })
     .then(likes => res.status(200).json({likes : likes}))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(400).json(error));
+    .catch(error => console.log(error) || res.status(500).json(error));
 }

@@ -11,6 +11,8 @@ const prisma = new PrismaClient();
 //========//NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
+        if (!(req.file)) console.log('Aucun')
+        if (req.file) console.log(req.file)
         //---ACCEPT
         if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password)) && (req.body.password === req.body.passwordConf) && (utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
             bcrypt.hash(req.body.password, 10)
@@ -29,9 +31,9 @@ exports.signup = (req, res, next) => {
                 // recherche de fichier
                 const newUser = { 
                     ...datas,
-                    imageUrl : utils.newAvatarUrl(req)
+                    avatarUrl : utils.newAvatarUrl(req)
                 }
-                
+
                 // enregistrement
                 await prisma.user.create({ data : newUser })
                 .then(async () => {
@@ -52,9 +54,9 @@ exports.signup = (req, res, next) => {
                 .then(async () => { await prisma.$disconnect() })
                 .catch(error => {
                     if (error.code === "P2002") {
-                        console.log("l'email est deja utilise") || res.status(500).json({ error : { email : "l'email est deja utilise" } })
+                        console.log("l'email est deja utilise") || res.status(405).json({ error : { email : "l'email est deja utilise" } })
                     } else {
-                        console.log(error) || res.status(400).json(error)
+                        console.log(error) || res.status(500).json(error)
                     }
                 })
             })
@@ -72,7 +74,7 @@ exports.signup = (req, res, next) => {
                 errors.password = utils.passErr
             }
             if (req.body.password !== req.body.passwordConf) {
-                errors.passwordConf = "les mots de passe doivent correspondre"
+                errors.passwordConf = utils.passwordConfErr
             }
             // prenomNom
             if ((utils.surnameValid(req.body.surname)) === false) {
@@ -133,7 +135,7 @@ exports.logout = async (req, res, next) => {
        .clearCookie('jwt')
        .status(200).json({ message : "Deconnexion utilisateur reussie" }) 
     } else {
-        return res.status(200).json({ message : "No cookie token, so no able to disconnect some user" })
+        return res.status(400).json({ message : "No cookie token, so no able to disconnect some user" })
     }
 }
 
@@ -142,7 +144,7 @@ exports.userToken = async (req, res, next) => {
     return res.status(200).json(req.auth)
 }
 
-//========//User Profil
+//========//USER PROFIL
 exports.userInfos = async (req, res, next) => {
     const auth = req.auth.userId
 
@@ -154,9 +156,9 @@ exports.userInfos = async (req, res, next) => {
             await utils.findUser({ id : auth })
             .then(infos => res.status(200).json(infos))
             .then(async () => { await prisma.$disconnect() })
-            .catch(error => console.log(error) || res.status(404).json(error));
+            .catch(error => console.log(error) || res.status(500).json(error));
         } else {
-            return res.status(401).json({ error : 'Acces non authorise' });
+            return res.status(403).json({ error : 'Acces non authorise' });
         }
      })
 }
@@ -188,7 +190,7 @@ exports.update = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
-                .catch(error => console.log(error) || res.status(401).json(error))
+                .catch(error => console.log(error) || res.status(500).json(error))
             }
             //----Erreurs
             // prenomNom
@@ -200,7 +202,7 @@ exports.update = async (req, res, next) => {
             return res.status(400).json({ error : {name : utils.nameErr} })
             }
         } else {
-            return res.status(401).json({ error : 'Acces non authorise' });
+            return res.status(403).json({ error : 'Acces non authorise' });
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));
@@ -231,7 +233,7 @@ exports.password = async (req, res, next) => {
                             })
                             .then(async () => { await prisma.$disconnect() })
                             .then(() => res.status(200).json({ message : 'mot de passe modifie !' }))
-                            .catch(error => console.log(error) || res.status(401).json(error));
+                            .catch(error => console.log(error) || res.status(500).json(error));
                         })
                     }
                     //---Erreurs
@@ -244,7 +246,7 @@ exports.password = async (req, res, next) => {
                         }
                         // concordance
                         if (req.body.newPass != req.body.passwordConf) {
-                            errors.congruency = "les mots de passe doivent correspondre"
+                            errors.congruency = utils.passwordConfErr
                         }
                         // force
                         if (!(utils.passwdValid(req.body.newPass))) {
@@ -254,12 +256,12 @@ exports.password = async (req, res, next) => {
                         return res.status(400).json({ errors : errors })
                     }
                 } else {
-                    res.status(401).json({ error : 'Mot de passe incorrect' })
+                    res.status(403).json({ error : 'Mot de passe incorrect' })
                 }
             })
             .catch(error => console.log(error) || res.status(500).json(error));
         } else {
-            return res.status(401).json({ error : 'Acces non authorise' });
+            return res.status(403).json({ error : 'Acces non authorise' });
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));
@@ -291,7 +293,7 @@ exports.disable = async (req, res, next) => {
                     }
                 })
             } else {
-                res.status(401).json({ error : 'Acces non authorise' });
+                res.status(403).json({ error : 'Acces non authorise' });
             }
         })
         .catch(error => console.log(error) || res.status(500).json(error));
@@ -306,7 +308,7 @@ exports.disable = async (req, res, next) => {
             if ((auth === user.id ) && (user.isActive)) {
                 utils.userManage(user.id, false, req, res)
             } else {
-                res.status(401).json({ error : 'Acces non authorise' });
+                res.status(403).json({ error : 'Acces non authorise' });
             }
         })
         .catch(error => console.log(error) || res.status(500).json(error));
@@ -332,18 +334,24 @@ exports.avatar = async (req, res, next) => {
 
             //----Mise a jour BDD
             const url = utils.newAvatarUrl(req);
-            const message = req.file ? 'Nouvel avatar !' : 'Avatar par defaut';
-            
-            // Enregistrer
-            await prisma.user.update({
-                where : { id : auth },
-                data : { avatarUrl : url }
-            })
-            .then(async () => { await prisma.$disconnect() })
-            .then(() => res.status(200).json({ message : message }))
-            .catch(error => console.log(error) || res.status(401).json(error))
+            let message = req.file ? ('user ' + user.id +  ' : Nouvel avatar !') : ('user ' + user.id +  ' : Avatar par defaut');
+
+            if (!(req.file) && (avatarName === 'random-user.png')) {
+                message = "Pas de modification : avatar deja par defaut"
+                console.log(message)
+                return res.status(304).json({ message : message })
+            } else {
+                // Enregistrer
+                await prisma.user.update({
+                    where : { id : auth },
+                    data : { avatarUrl : url }
+                })
+                .then(async () => { await prisma.$disconnect() })
+                .then(() => res.status(200).json({ message : message }))
+                .catch(error => console.log(error) || res.status(500).json(error))
+            }
         } else {
-            res.status(401).json({ error : 'Acces non authorise' });
+            res.status(403).json({ error : 'Acces non authorise' });
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));

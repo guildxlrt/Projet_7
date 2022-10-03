@@ -26,7 +26,7 @@ exports.newAvatarUrl = (req) => {
     const url = req.file ? (
         `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     ) : (
-        `${req.protocol}://${req.get('host')}/images/random-user.png` 
+        `./images/random-user.png` 
     )
     return url
 }
@@ -147,4 +147,9 @@ exports.userManage = async (targetId, bolValue, req, res) => {
         }
     })
     .catch(error => console.log(error) || res.status(500).json({ message : error }))
+}
+
+//========//FORMATAGE DATES
+exports.dateFormat = (rawDate) => {
+    return new Date(rawDate).toISOString().split("T")[0]
 }

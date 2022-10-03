@@ -26,7 +26,9 @@ const UploadImg = () => {
   }
 
   return (
-    <div>
+    
+    <div className='left-part'>
+      <h3>Photo de profil</h3>
       <img src={userPic} alt="user-pic"/>
          
       <form action="" onSubmit={handlePicture} className="upload-pic">

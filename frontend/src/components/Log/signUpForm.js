@@ -11,7 +11,7 @@ const SignUpForm = () => {
   const [passwordConf, setPasswordConf] = useState('')
 
   const [file, setFile] = useState()
-  const [userPic="./img/random-user.png", setUserPic] = useState()
+  const [userPic, setUserPic] = useState("./images/random-user.png")
 
   const handlePicture = (e) => {
     e.preventDefault()

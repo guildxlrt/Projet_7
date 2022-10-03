@@ -154,7 +154,18 @@ exports.userInfos = async (req, res, next) => {
         if ((user.id === auth) && (user.isActive)) {
             // recherche
             await utils.findUser({ id : auth })
-            .then(infos => res.status(200).json(infos))
+            .then((datas) => {
+                const infos = {
+                    id : datas.id,
+                    email : datas.email,
+                    name : datas.name,
+                    surname : datas.surname,
+                    birthday : utils.dateFormat(datas.birthday),
+                    signupDate : utils.dateFormat(datas.signupDate),
+                    avatarUrl : datas.avatarUrl
+                }
+                res.status(200).json(infos)
+            })
             .then(async () => { await prisma.$disconnect() })
             .catch(error => console.log(error) || res.status(500).json(error));
         } else {

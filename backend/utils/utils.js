@@ -78,13 +78,6 @@ exports.tokenDec = (req) => {
 //=================================//
 //========//USER CREATION//========//
 
-//--------//Error messages
-exports.emailErr = "l'email doit etre au format email : jack.nicholson@laposte.fr, sasha93.dupont@yahoo.fr, kanap-service_client@kanap.co.fr ...";
-exports.passErr = "le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres";
-exports.surnameErr = "Votre prenom doit comporter 2 caracteres minimum, avec  une majuscule suivit de minuscules: Paul, Marie-Louise, Jose Antonio ...";
-exports.nameErr = "Votre nom de famille doit comporter 2 caracteres minimum, avec une majuscule suivit de minuscules : Dupont, D'Artagnan, De Sade, Primo De Rivera ...";
-exports.passwordConfErr = "les mots de passe doivent correspondre"
-
 //--------//Email validation
 exports.emailValid = (value) => new RegExp(/^([a-z0-9._-]+)@([a-z0-9]+)\.([a-z]{2,8})(\.[a-z]{2,8})?$/, 'g').test(value);
 
@@ -139,6 +132,7 @@ exports.userManage = async (targetId, bolValue, req, res) => {
         .catch(error => console.log(error));
     })
     .then(async () => { await prisma.$disconnect() })
+    //====// Post desactivation 
     .then(() => {
         if (bolValue === false) {
             console.log('Compte Desactive !') || res.status(200).json({ message : 'Compte Desactive !' })

@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import { UidContext } from '../components/appContext'
 // import { UkeyContext } from '../components/appContext'
 import Log from '../components/Log'
-import UpdateProfil from '../components/Profil/UpdateProfil'
+import UserProfil from '../components/Profil/UserProfil'
 
 const Profil = () => {
   const uid = useContext(UidContext)
@@ -12,7 +12,7 @@ const Profil = () => {
     <div className="profil-page">
       {uid ? (
         <div>
-          <UpdateProfil/>
+          <UserProfil/>
         </div>
       ) : (
         <div className="log-container">

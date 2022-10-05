@@ -1,6 +1,8 @@
 //========//IMPORTS//========//
 const bcrypt = require('bcrypt');
 const utils = require('../utils/utils');
+const errMsg = require('../utils/errorMsg');
+const { parse } = require('dotenv');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -11,15 +13,16 @@ const prisma = new PrismaClient();
 //========//NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
-        if (!(req.file)) console.log('Aucun')
-        if (req.file) console.log(req.file)
+        if (req.body.birthday !== "") {console.log(2)}
+
         //---ACCEPT
-        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password)) && (req.body.password === req.body.passwordConf) && (utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
+        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password)) && (req.body.password === req.body.passConfirm) && (utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
             bcrypt.hash(req.body.password, 10)
             .then(async hash => {
                 // formatage date
                 const birthday = utils.birthday(req.body.birthday)
 
+                // construction
                 const datas = {
                     surname : req.body.surname,
                     name : req.body.name,
@@ -54,7 +57,8 @@ exports.signup = (req, res, next) => {
                 .then(async () => { await prisma.$disconnect() })
                 .catch(error => {
                     if (error.code === "P2002") {
-                        console.log("l'email est deja utilise") || res.status(405).json({ error : { email : "l'email est deja utilise" } })
+                        // EMAIL DEJA UTILISE
+                        res.status(405).json(errMsg.emailInUse)
                     } else {
                         console.log(error) || res.status(500).json(error)
                     }
@@ -64,28 +68,32 @@ exports.signup = (req, res, next) => {
         }
         //---REJET
         else {
-            let errors = {}
+            let error = {}
             // Email
             if ((utils.emailValid(req.body.email)) === false) {
-                errors.email = utils.emailErr
+                error.email = errMsg.emailSignup
             }
             // Mot De Passe
             if ((utils.passwdValid(req.body.password)) === false) {
-                errors.password = utils.passErr
+                error.password = errMsg.passErr
             }
-            if (req.body.password !== req.body.passwordConf) {
-                errors.passwordConf = utils.passwordConfErr
+            if (req.body.password !== req.body.passConfirm) {
+                error.passConfirm = errMsg.passwordConfErr
             }
             // prenomNom
             if ((utils.surnameValid(req.body.surname)) === false) {
-                errors.surname = utils.surnameErr
+                error.surname = errMsg.surnameErr
             }
             // Nom de famille
             if ((utils.nameValid(req.body.name)) === false) {
-                errors.name = utils.nameErr
+                error.name = errMsg.nameErr
+            }
+            // Date de naissance
+            if (req.body.birthday === "") {
+                error.date = errMsg.dateErr
             }
 
-            return res.status(400).json({ errors : errors })
+            return res.status(400).json({ error : error })
         }
     })();
 };
@@ -112,17 +120,20 @@ exports.login = async (req, res, next) => {
                             isAdmin : user.isAdmin
                         })
                     }
+                    // mauvais mot de passe
                     else {
-                        res.status(401).json({ error : "Paire login/mot de passe incorrecte" });
+                        res.status(401).json(errMsg.passLogin);
                     }
                 })
                 .catch(error => console.log(error) || res.status(500).json(error));
+            // utilisateur inactif
             } else {
-                return res.status(401).json({ error : "Le Compte n'est plus actif"});
+                return res.status(401).json(errMsg.unactived);
             }
         }
+        // mauvais email
         else {
-            return res.status(401).json({ error : "L'adresse email est inconnue" });
+            return res.status(401).json(errMsg.unknowEmail);
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));
@@ -131,11 +142,12 @@ exports.login = async (req, res, next) => {
 //========//DECONNEXION
 exports.logout = async (req, res, next) => {
     if(req.cookies.jwt) {
+        // Suppression du cookie
        return res
        .clearCookie('jwt')
        .status(200).json({ message : "Deconnexion utilisateur reussie" }) 
     } else {
-        return res.status(400).json({ message : "No cookie token, so no able to disconnect some user" })
+        return res.status(400).json(errMsg.tokkenErr)
     }
 }
 
@@ -169,7 +181,7 @@ exports.userInfos = async (req, res, next) => {
             .then(async () => { await prisma.$disconnect() })
             .catch(error => console.log(error) || res.status(500).json(error));
         } else {
-            return res.status(403).json({ error : 'Acces non authorise' });
+            return res.status(403).json(errMsg.authErr);
         }
      })
 }
@@ -180,7 +192,7 @@ exports.userInfos = async (req, res, next) => {
 //========//MODIFICATIONS
 exports.update = async (req, res, next) => {
     const auth = req.auth.userId
-
+    
     // Recherche de l'utilisateur
     await utils.findUser({id : auth})
     .then(async user => {
@@ -188,11 +200,10 @@ exports.update = async (req, res, next) => {
         if ((user.id === auth) && (user.isActive)) {
             if ((utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
                 // Donnees a soumettre
-                const updateUser = {
-                    name : req.body.name,
-                    surname : req.body.surname,
-                    birthday : utils.birthday(req.body.birthday)
-                }
+                let updateUser = {}
+                if (req.body.name) updateUser.name = req.body.name
+                if (req.body.surname) updateUser.surname = req.body.surname
+                if (req.body.birthday) updateUser.birthday = utils.birthday(req.body.birthday)
 
                 // Enregistrement dans la BDD
                 await prisma.user.update({
@@ -200,20 +211,23 @@ exports.update = async (req, res, next) => {
                     data : updateUser
                 })
                 .then(async () => { await prisma.$disconnect() })
-                .then(() => res.status(200).json({ message : 'utilisateur modifie !' }))
+                .then(() => res.status(200).json({ 
+                    message : 'utilisateur modifie : ',
+                    updates : { ...updateUser }
+                }))
                 .catch(error => console.log(error) || res.status(500).json(error))
             }
             //----Erreurs
             // prenomNom
             else if ((utils.surnameValid(req.body.surname)) === false) {
-                return res.status(400).json({ error : {surname : utils.surnameErr} })
+                return res.status(400).json(errMsg.surnameErr)
             }
             // Nom de famille
             else if ((utils.nameValid(req.body.name)) === false) {
-            return res.status(400).json({ error : {name : utils.nameErr} })
+            return res.status(400).json(errMsg.nameErr)
             }
         } else {
-            return res.status(403).json({ error : 'Acces non authorise' });
+            return res.status(403).json(errMsg.authErr);
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));
@@ -222,6 +236,8 @@ exports.update = async (req, res, next) => {
 //========//CHANGER MDP
 exports.password = async (req, res, next) => {
     const auth = req.auth.userId
+
+    console.log(req.body.newPass+'||'+req.body.passConfirm)
 
     // Recherche de l'utilisateur
     await utils.findUser({id : auth})
@@ -234,8 +250,8 @@ exports.password = async (req, res, next) => {
             .then(async valid => {
                 if (valid) {
                     //---Nouveau
-                    if ((req.body.password != req.body.newPass) && (req.body.newPass === req.body.passwordConf) && (utils.passwdValid(req.body.newPass))) {
-                        bcrypt.hash(req.body.passwordConf, 10)
+                    if ((req.body.password != req.body.newPass) && (req.body.newPass === req.body.passConfirm) && (utils.passwdValid(req.body.newPass))) {
+                        bcrypt.hash(req.body.passConfirm, 10)
                         .then(async hash => {
                             // enregistrement du nouveau mot de passe
                             await prisma.user.update({
@@ -249,30 +265,32 @@ exports.password = async (req, res, next) => {
                     }
                     //---Erreurs
                     else {
-                        let errors = {}
+                        let error = {}
 
                         // renouvellement
                         if (req.body.password === req.body.newPass) {
-                            errors.renewal = "Le nouveau mot de passe doit differer du nouveau."
+                            error.renewal = errMsg.renewal
                         }
                         // concordance
-                        if (req.body.newPass != req.body.passwordConf) {
-                            errors.congruency = utils.passwordConfErr
+                        if (!(req.body.newPass === req.body.passConfirm)) {
+                            error.congruency = errMsg.passwordConfErr
                         }
                         // force
                         if (!(utils.passwdValid(req.body.newPass))) {
-                            errors.force = utils.passErr
+                            error.force = errMsg.passErr
                         }
 
-                        return res.status(400).json({ errors : errors })
+                        return res.status(400).json({ error : error })
                     }
+                // mauvais mot de passe
                 } else {
-                    res.status(403).json({ error : 'Mot de passe incorrect' })
+                    res.status(403).json(errMsg.passEnter)
                 }
             })
             .catch(error => console.log(error) || res.status(500).json(error));
+        // mauvais utilisateur
         } else {
-            return res.status(403).json({ error : 'Acces non authorise' });
+            return res.status(403).json(errMsg.authErr);
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));
@@ -291,7 +309,6 @@ exports.disable = async (req, res, next) => {
         .then(async admin => {
             // administrateur
             if ((auth === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
-                // recherche de l'utilisateur cible
                 await utils.findUser({id : target})
                 .then( async user => {
                     // DESACTIVER
@@ -303,8 +320,9 @@ exports.disable = async (req, res, next) => {
                         utils.userManage(user.id, true, req, res)
                     }
                 })
+            //non admin
             } else {
-                res.status(403).json({ error : 'Acces non authorise' });
+                res.status(403).json(errMsg.authErr);
             }
         })
         .catch(error => console.log(error) || res.status(500).json(error));
@@ -313,13 +331,31 @@ exports.disable = async (req, res, next) => {
     else {
         // Recherche de l'utilisateur
         await utils.findUser({id : target})
-        //---Verifications
+        //----Verification
         .then(async user => {
             // utilisateur
             if ((auth === user.id ) && (user.isActive)) {
-                utils.userManage(user.id, false, req, res)
+                //mot de passe
+                await bcrypt.compare(req.body.password, user.password)
+                    .then(valid => {
+                        if (valid) {
+                            // email
+                            if (req.body.email === user.email) {
+                                utils.userManage(user.id, false, req, res)
+                            }
+                            // mauvais
+                            else {
+                                res.status(403).json(errMsg.emailUser);
+                            }
+                        //Mauvais mot de passe
+                        } else {
+                            res.status(403).json(errMsg.passEnter )
+                    }
+                })
+                .catch(error => console.log(error) || res.status(500).json(error));
+            // mauvais utilisateur
             } else {
-                res.status(403).json({ error : 'Acces non authorise' });
+                res.status(403).json(errMsg.authErr);
             }
         })
         .catch(error => console.log(error) || res.status(500).json(error));
@@ -348,9 +384,8 @@ exports.avatar = async (req, res, next) => {
             let message = req.file ? ('user ' + user.id +  ' : Nouvel avatar !') : ('user ' + user.id +  ' : Avatar par defaut');
 
             if (!(req.file) && (avatarName === 'random-user.png')) {
-                message = "Pas de modification : avatar deja par defaut"
-                console.log(message)
-                return res.status(304).json({ message : message })
+                console.log("Pas de modification : avatar deja par defaut")
+                return res.status(304).end()
             } else {
                 // Enregistrer
                 await prisma.user.update({
@@ -362,7 +397,7 @@ exports.avatar = async (req, res, next) => {
                 .catch(error => console.log(error) || res.status(500).json(error))
             }
         } else {
-            res.status(403).json({ error : 'Acces non authorise' });
+            res.status(403).json(errMsg.authErr);
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));

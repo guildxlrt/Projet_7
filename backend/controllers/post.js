@@ -1,5 +1,6 @@
 //========//IMPORTS//========//
 const utils = require('../utils/utils');
+const errMsg = require('../utils/errorMsg')
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -29,7 +30,7 @@ exports.createPost = async (req, res, next) => {
             .then(() => res.status(201).json({ message : 'publication cree !'}))
             .catch(error => console.log(error) || res.status(500).json(error))
         } else {
-            return res.status(403).json({ error : 'Acces non authorise' })
+            return res.status(403).json(errMsg.authErr)
         }
     })
 };
@@ -91,7 +92,7 @@ exports.modifyPost = async (req, res, next) => {
                 .catch(error => console.log(error) || res.status(500).json(error));
     
             } else {
-                return res.status(403).json({ error : 'Acces non authorise' })
+                return res.status(403).json(errMsg.authErr)
             }
         })    
     })
@@ -125,7 +126,7 @@ exports.deletePost = async (req, res, next) => {
                 .then(() => res.status(200).json({ message : 'publication supprime !' }))
                 .catch(error => res.status(500).json(error))
             } else {
-                return res.status(403).json({ error : 'Acces non authorise' })
+                return res.status(403).json(errMsg.authErr)
             }
         })
     }
@@ -151,7 +152,7 @@ exports.deletePost = async (req, res, next) => {
                     .then(() => res.status(200).json({ message : 'publication supprime !' }))
                     .catch(error => res.status(500).json(error))
                 } else {
-                    return res.status(403).json({ error : 'Acces non authorise' })
+                    return res.status(403).json(errMsg.authErr)
                 }
             })
         })
@@ -182,7 +183,6 @@ exports.likePost = async (req, res, next) => {
         // CONDITIONS
         //========//Aucun doublon : AJOUTER
         if (!Boolean(findLike)) {
-            // empecher les auto-like
             if (!(findPost.userId === liker)) {            
                 // enregistrement
                 await prisma.like.create({
@@ -195,8 +195,9 @@ exports.likePost = async (req, res, next) => {
                 .then(() => res.status(201).json({ message : 'publication likee !'}))
                 .catch(error => console.log(error) || res.status(500).json(error))
             }
+            // empecher autolike
             else {
-                return res.status(403).json({ error : 'auto-like interdit' })
+                return res.status(403).json(errMsg.likeErr)
             }
         }
         //========//doublon : RETIRER
@@ -208,8 +209,9 @@ exports.likePost = async (req, res, next) => {
             .then(() => res.status(200).json({ message : 'like supprime !' }))
             .catch(error => res.status(500).json(error))
         }
+    // mauvais utilisateur
     } else {
-        return res.status(403).json({ error : 'Acces non authorise' });
+        return res.status(403).json(errMsg.authErr);
     }
 };
 

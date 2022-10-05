@@ -31,12 +31,12 @@ exports.commentPost = async (req, res, next) => {
                     .then(() => res.status(201).json({ message : 'commentaire publie !' }))
                     .catch(error => console.log(error) || res.status(500).json(error))
                 } else {
-                    return res.status(403).json({ error : 'Utilisateur : Acces non authorise' });
+                    return res.status(403).json(errMsg.authErr);
                 }
             })
             .catch(error => console.log(error) || res.status(500).json(error));
         } else {
-            return res.status(403).json({ error : 'Post : Acces non authorise' });
+            return res.status(403).json(errMsg.authErr);
         }
     })
     .catch(error => console.log(error) || res.status(500).json(error));
@@ -92,7 +92,7 @@ exports.modifyComment = async (req, res, next) => {
                 .catch(error => console.log(error) || res.status(500).json(error));
     
             } else {
-                return res.status(403).json({ error : 'Acces non authorise' })
+                return res.status(403).json(errMsg.authErr)
             }
         })
     })
@@ -121,7 +121,7 @@ exports.delComment = async (req, res, next) => {
                 .catch(error => res.status(500).json(error))
 
             } else {
-                return res.status(403).json({ error : 'Acces non authorise' })
+                return res.status(403).json(errMsg.authErr)
             }
         })
     }
@@ -142,7 +142,7 @@ exports.delComment = async (req, res, next) => {
                     .then(() => res.status(200).json({ message : 'commentaire supprime !' }))
                     .catch(error => res.status(500).json(error))
                 } else {
-                    return res.status(403).json({ error : 'Acces non authorise' })
+                    return res.status(403).json(errMsg.authErr)
                 }
             })
         })

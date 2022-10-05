@@ -8,10 +8,17 @@ const SignUpForm = () => {
   const [birthday, setBirthday] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [passwordConf, setPasswordConf] = useState('')
+  const [passConfirm, setPassConfirm] = useState('')
 
   const [file, setFile] = useState()
   const [userPic, setUserPic] = useState("./images/random-user.png")
+
+  const removeFile = (e) => {
+    e.preventDefault()
+
+    setFile(null)
+    setUserPic("./images/random-user.png")
+  }
 
   const handlePicture = (e) => {
     e.preventDefault()
@@ -25,7 +32,9 @@ const SignUpForm = () => {
     const nameError = document.querySelector('.error.name')
     const emailError = document.querySelector('.error.email')
     const passwordError = document.querySelector('.error.password')
-    const passwordConfError = document.querySelector('.error.passwordConf')
+    const passwordConfError = document.querySelector('.error.passConfirm')
+    const dateError = document.querySelector('.error.date')
+
     
     const terms = document.getElementById('terms')
     const termsError = document.querySelector('.error.terms')
@@ -36,6 +45,7 @@ const SignUpForm = () => {
     emailError.innerHTML = "";
     passwordError.innerHTML = "";
     passwordConfError.innerHTML = "";
+    dateError.innerHTML = "";
 
     const datas = new FormData()
     datas.append('surname', surname)
@@ -43,7 +53,7 @@ const SignUpForm = () => {
     datas.append('birthday', birthday)
     datas.append('email', email)
     datas.append('password', password)
-    datas.append('passwordConf', passwordConf)
+    datas.append('passConfirm', passConfirm)
     
 
     if (file) {
@@ -65,13 +75,13 @@ const SignUpForm = () => {
         window.location = '/'
       })
       .catch((err) => {
-        console.log(err)
-        const error =  err.response.data.errors
+        const error =  err.response.data.error
         if (error.surname) {surnameError.innerHTML = error.surname}
         if(error.name) {nameError.innerHTML = error.name}
         if(error.email) {emailError.innerHTML = error.email}
         if(error.password) {passwordError.innerHTML = error.password}
-        if(error.passwordConf) {passwordConfError.innerHTML = error.passwordConf}
+        if(error.passConfirm) {passwordConfError.innerHTML = error.passConfirm}
+        if(error.date) {dateError.innerHTML = error.date}
       })
     }
   }
@@ -80,8 +90,14 @@ const SignUpForm = () => {
     <div>
         <div className='new-user-pic'>
           <img alt="user-pic" src={userPic}/>
+          
           <form action="" onSubmit={handlePicture} className="upload-pic">
-            <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.gif,.webp"
+            {file ? (
+              <button className="signup-input-del-img" onClick={removeFile}>Enlever</button>
+            ) : (
+              <label className="signup-input-add-img" htmlFor='file'>Ajouter</label>
+            )}
+            <input className="signup-input-file" type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.gif,.webp"
             onChange={(e) => {
               setFile(e.target.files[0])
               handlePicture(e)
@@ -90,6 +106,8 @@ const SignUpForm = () => {
         </div>
 
 
+        <br/>
+        <br/>
         <form action="" onSubmit={handleRegister} id="sign-in-form">      
           <label htmlFor="surname">Prenom</label>
           <br/>
@@ -107,6 +125,7 @@ const SignUpForm = () => {
           <br/>
           <input type="date" name="birthday" id="birthday" onChange={(e) => setBirthday(e.target.value)} value={birthday} />
           <br/>
+          <div className="error date"></div>
 
 
 
@@ -123,11 +142,11 @@ const SignUpForm = () => {
           <br/>
           <div className="error password"></div>
 
-          <label htmlFor="passwordConf">Confirmation</label>
+          <label htmlFor="passConfirm">Confirmation</label>
           <br/>
-          <input type="password" name="passwordConf" id="passwordConf" onChange={(e) => setPasswordConf(e.target.value)} value={passwordConf} />
+          <input type="password" name="passConfirm" id="passConfirm" onChange={(e) => setPassConfirm(e.target.value)} value={passConfirm} />
           <br/>
-          <div className="error passwordConf"></div>
+          <div className="error passConfirm"></div>
           
 
           <input type="checkbox" id="terms" />

@@ -2,6 +2,10 @@ import axios from 'axios';
 
 export const GET_USER = "GET_USER";
 export const UPLOAD_PICTURE = "UPLOAD_PICTURE";
+export const UPDATE_BIRTHDAY = "UPDATE_BIRTHDAY";
+export const UPDATE_NAMES = "UPDATE_NAMES"
+
+export const NAMES_ERROR = "NAMES_ERROR"
 
 export const getUser = (uid) => {
     return async (dispatch) => {
@@ -26,7 +30,7 @@ export const uploadPicture = (file, id) => {
             withCredentials : true,
             data : file
         })
-        .then(async (res) => {
+        .then(async () => {
             return await axios({
                 method : "get",
                 url : `${process.env.REACT_APP_API_URL}/api/users/${id}`,
@@ -38,5 +42,59 @@ export const uploadPicture = (file, id) => {
             .catch(error => console.log(error))
         })
         .catch(error => console.log(error))
+    }
+}
+
+export const updateBirthday = (birthday, id) => {
+    return async (dispatch) => {
+        return await axios({
+            method : "put",
+            url : `${process.env.REACT_APP_API_URL}/api/users/update`,
+            withCredentials : true,
+            data : {
+                birthday : birthday
+            }
+        })
+        .then(async () => {
+            return await axios({
+                method : "get",
+                url : `${process.env.REACT_APP_API_URL}/api/users/${id}`,
+                withCredentials : true
+            }) 
+            .then((res) => {
+                dispatch({type : UPDATE_BIRTHDAY, payload : res.data.birthday})
+            })
+            .catch(error => console.log(error))
+        })
+        .catch(error => console.log(error))
+    }
+}
+
+export const updateNames = (names, id) => {
+    return async (dispatch) => {
+        return await axios({
+            method : "put",
+            url : `${process.env.REACT_APP_API_URL}/api/users/update`,
+            withCredentials : true,
+            data : names
+        })
+        .then(async () => {
+            return await axios({
+                method : "get",
+                url : `${process.env.REACT_APP_API_URL}/api/users/${id}`,
+                withCredentials : true
+            }) 
+            .then((res) => {
+                const payload = {
+                    surname : res.data.surname,
+                    name : res.data.name
+                }
+                dispatch({type : UPDATE_NAMES, payload : payload})
+            })
+            .catch(error => console.log(error))
+        })
+        .catch((error) => {
+            dispatch({type : NAMES_ERROR, payload : error.response.data.error})
+        })
     }
 }

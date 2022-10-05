@@ -60,7 +60,7 @@ const SignUpForm = () => {
       datas.append('image', file)
     }
 
-    console.log(Array.from(datas))
+    //console.log(Array.from(datas))
 
     if (!terms.checked) {
       termsError.innerHTML = "Veuillez remplir les conditions generales" 
@@ -76,6 +76,7 @@ const SignUpForm = () => {
       })
       .catch((err) => {
         const error =  err.response.data.error
+        console.log(error.surname)
         if (error.surname) {surnameError.innerHTML = error.surname}
         if(error.name) {nameError.innerHTML = error.name}
         if(error.email) {emailError.innerHTML = error.email}

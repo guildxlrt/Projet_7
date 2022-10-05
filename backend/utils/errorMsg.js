@@ -1,14 +1,14 @@
 //========// MESSAGES D'ERREUR //========//
 // infos utilisateur
-exports.surnameErr = { error : {surname : "Votre prenom doit comporter 2 caracteres minimum, avec  une majuscule suivit de minuscules: Paul, Marie-Louise, Jose Antonio ..." }};
-exports.nameErr = { error : {name : "Votre nom de famille doit comporter 2 caracteres minimum, avec une majuscule suivit de minuscules : Dupont, D'Artagnan, De Sade, Primo De Rivera ..." }};
+exports.surnameErr = "Votre prenom doit comporter 2 caracteres minimum, avec  une majuscule suivit de minuscules: Paul, Marie-Louise, Jose Antonio ..." ;
+exports.nameErr = "Votre nom de famille doit comporter 2 caracteres minimum, avec une majuscule suivit de minuscules : Dupont, D'Artagnan, De Sade, Primo De Rivera ...";
 exports.dateErr = "Le champs est obligatoire"
 
 //mdp
 exports.passLogin = { error : "Paire login/mot de passe incorrecte" }
-exports.passErr = "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres";
+exports.passStrenght = "Le mot de passe n'est pas assez fort : il doit contenir au minimum 2 chiffres, 2 minuscules et 2 majuscules; il doit etre d'une longueur minimum de 8 caracteres";
 exports.passwordConfErr = "Les mots de passe doivent correspondre"
-exports.passEnter = {error : "Erreur de mot de passe"}
+exports.passErr = "Erreur de mot de passe"
 exports.renewal = "Le nouveau mot de passe doit differer du nouveau."
 
 //email

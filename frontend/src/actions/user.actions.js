@@ -70,31 +70,8 @@ export const updateBirthday = (birthday, id) => {
     }
 }
 
-export const updateNames = (names, id) => {
+export const updateNames = (names) => {
     return async (dispatch) => {
-        return await axios({
-            method : "put",
-            url : `${process.env.REACT_APP_API_URL}/api/users/update`,
-            withCredentials : true,
-            data : names
-        })
-        .then(async () => {
-            return await axios({
-                method : "get",
-                url : `${process.env.REACT_APP_API_URL}/api/users/${id}`,
-                withCredentials : true
-            }) 
-            .then((res) => {
-                const payload = {
-                    surname : res.data.surname,
-                    name : res.data.name
-                }
-                dispatch({type : UPDATE_NAMES, payload : payload})
-            })
-            .catch(error => console.log(error))
-        })
-        .catch((error) => {
-            dispatch({type : NAMES_ERROR, payload : error.response.data.error})
-        })
+        dispatch({type : UPDATE_NAMES, payload : names})
     }
 }

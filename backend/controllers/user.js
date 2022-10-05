@@ -75,7 +75,7 @@ exports.signup = (req, res, next) => {
             }
             // Mot De Passe
             if ((utils.passwdValid(req.body.password)) === false) {
-                error.password = errMsg.passErr
+                error.password = errMsg.passStrenght
             }
             if (req.body.password !== req.body.passConfirm) {
                 error.passConfirm = errMsg.passwordConfErr
@@ -176,7 +176,7 @@ exports.userInfos = async (req, res, next) => {
                     signupDate : utils.dateFormat(datas.signupDate),
                     avatarUrl : datas.avatarUrl
                 }
-                res.status(200).json(infos)
+                return res.status(200).json(infos)
             })
             .then(async () => { await prisma.$disconnect() })
             .catch(error => console.log(error) || res.status(500).json(error));
@@ -218,14 +218,21 @@ exports.update = async (req, res, next) => {
                 .catch(error => console.log(error) || res.status(500).json(error))
             }
             //----Erreurs
-            // prenomNom
-            else if ((utils.surnameValid(req.body.surname)) === false) {
-                return res.status(400).json(errMsg.surnameErr)
+            else {
+                let error = {};
+                
+                // prenomNom
+                if ((utils.surnameValid(req.body.surname)) === false) {
+                    error.surname = errMsg.surnameErr
+                }
+                // Nom de famille
+                if ((utils.nameValid(req.body.name)) === false) {
+                    error.name = errMsg.nameErr
+                }
+
+                return res.status(400).json(error)
             }
-            // Nom de famille
-            else if ((utils.nameValid(req.body.name)) === false) {
-            return res.status(400).json(errMsg.nameErr)
-            }
+        // mauvais utilisateur
         } else {
             return res.status(403).json(errMsg.authErr);
         }
@@ -277,14 +284,14 @@ exports.password = async (req, res, next) => {
                         }
                         // force
                         if (!(utils.passwdValid(req.body.newPass))) {
-                            error.force = errMsg.passErr
+                            error.force = errMsg.passStrenght
                         }
 
                         return res.status(400).json({ error : error })
                     }
                 // mauvais mot de passe
                 } else {
-                    res.status(403).json(errMsg.passEnter)
+                    res.status(403).json({ error : { entry : errMsg.passErr} })
                 }
             })
             .catch(error => console.log(error) || res.status(500).json(error));
@@ -349,7 +356,7 @@ exports.disable = async (req, res, next) => {
                             }
                         //Mauvais mot de passe
                         } else {
-                            res.status(403).json(errMsg.passEnter )
+                            res.status(403).json({error : errMsg.passErr})
                     }
                 })
                 .catch(error => console.log(error) || res.status(500).json(error));

@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { updateNames } from '../../actions/user.actions';
-import errorReducer from '../../reducers/error.reducer';
+import axios from 'axios';
 
 const UpdateNames = () => {
     const userData = useSelector((state) => state.userReducer)
-    //const errorRepport = useSelector((state) => state.errorReducer)
+
     const dispatch =  useDispatch();
 
     // Variables du rendu
@@ -22,27 +22,39 @@ const UpdateNames = () => {
         setClickOn(false)
     }
 
-    const handleValidation = (e) => {
+    const handleValidation = async (e) => {
         e.preventDefault()
 
         const surnameError = document.querySelector('.error.surname')
-        const nameError = document.querySelector('.error.name')
-
         surnameError.innerHTML = "";
+        const nameError = document.querySelector('.error.name')       
         nameError.innerHTML = "";
 
         //envoyer les donnees
         const datas = {}
         datas.surname = surname
         datas.name = name
-        dispatch(updateNames(datas, userData.id))
 
-        const errSurname = errorReducer.surname
-
-        console.log(errSurname)
+        await axios({
+            method : "put",
+            url : `${process.env.REACT_APP_API_URL}/api/users/update`,
+            withCredentials : true,
+            data : datas
+        })
+        .then(async () => {
+            dispatch(updateNames(datas))
+        })
+        .catch((error) => {
+            const err = error.response.data
+            if (err.surname) {
+                surnameError.innerHTML = err.surname
+                surnameError.removeAttribute('hidden')
+            }
+            if (err.name) { nameError.innerHTML = err.name }
+        })
         
         // rafraichissement de linterface
-        setClickOn(false)
+        //setClickOn(false)
     }
   return (
     <>
@@ -51,10 +63,15 @@ const UpdateNames = () => {
                 <form action="" onSubmit={handleValidation} >
                     <h4>Prénom :</h4>
                     <input className='surname-input' type="text" name="surname" id="surname" onChange={(e) => setSurname(e.target.value)} value={surname} />
+                    <br/>
+                    <div className="error surname" hidden></div>
+
                     <h4>Nom de famille :</h4>
-                    <div className="error surname"></div>
                     <input className='name-input' type="text" name="name" id="name" onChange={(e) => setName(e.target.value)} value={name} />
+                    <br/>
                     <div className="error name"></div>
+
+                    <br/>
                     <input type="submit" value="Modifier" />
                     <button className='pic-button' onClick={anullForm} >Annuler</button>
                 </form>

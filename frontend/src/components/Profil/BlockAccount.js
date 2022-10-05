@@ -91,7 +91,7 @@ const BlockAccount = () => {
                         <br/>
                         <input type="text" name="email" id="email" onChange={(e) => setEmail(e.target.value)} value={email} />
                         
-                        <br/>
+                        <br/><br/>
                         <input type="submit" value="Confirmer" />
                         <br/>
                         <button onClick={anullForm}>Annuler</button>

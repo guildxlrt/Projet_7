@@ -47,6 +47,7 @@ const ChangePassword = () => {
             document.getElementById('messages-bottom').removeAttribute('hidden')
 
             const e =  error.response.data.error;
+            console.log(e)
 
             if (e.entry)  {errorEntry.innerHTML = e.entry}
             if (e.renewal)  {errorRenew.innerHTML = e.renewal}

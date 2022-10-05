@@ -31,7 +31,7 @@ exports.newAvatarUrl = (req) => {
     return url
 }
 
-exports.newImageUrl = (req) => `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+exports.newImageUrl = (req) => `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`
 
 //========//Recherche
 exports.findUser = async (props) => await prisma.user.findUnique({ where : props });

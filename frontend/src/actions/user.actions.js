@@ -45,20 +45,9 @@ export const uploadPicture = (file, id) => {
     }
 }
 
-export const updateBirthday = (birthday, id) => {
+export const updateBirthday = (birthday) => {
     return async (dispatch) => {
-        return await axios({
-            method : "put",
-            url : `${process.env.REACT_APP_API_URL}/api/users/update`,
-            withCredentials : true,
-            data : {
-                birthday : birthday
-            }
-        })
-        .then((res) => {
-            dispatch({type : UPDATE_BIRTHDAY, payload : res.data.birthday})
-        })
-        .catch(error => console.log(error))
+        dispatch({type : UPDATE_BIRTHDAY, payload : birthday})
     }
 }
 

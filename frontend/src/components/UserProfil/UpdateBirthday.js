@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { updateBirthday } from '../../actions/user.actions';
@@ -21,17 +22,43 @@ const UpdateBirthday = () => {
         }
     }
 
-    const handleBirth = (e) => {
+    const handleBirth = async (e) => {
         e.preventDefault()
 
         const btnValue = document.getElementById('birth-submit').value
 
-        if (btnValue === "Modifier") {
-            dispatch(updateBirthday(formDate, userData.id))
+        const dateError = document.querySelector('.error.birthday')
+        dateError.innerHTML = "";
 
-            setBirthday(formDate)
-            setBirthForm(false)
-        } else if (btnValue === "Annuler") {
+        if (btnValue === "Modifier") {   
+            await axios({
+                method : "put",
+                url : `${process.env.REACT_APP_API_URL}/api/users/update`,
+                withCredentials : true,
+                data : {
+                    birthday : formDate
+                }
+            })
+            .then(async () => {
+                dispatch(updateBirthday(formDate))
+                
+                // rafraichissement de linterface
+                setBirthday(formDate)
+                setBirthForm(false)
+            })
+            .catch((error) => {
+                const err = error.response.data
+                if (err.date) {
+                    dateError.innerHTML = err.date
+                    dateError.removeAttribute('hidden')
+                }
+                if (err.legal_age) {
+                    dateError.innerHTML = err.legal_age
+                    dateError.removeAttribute('hidden')
+                }
+            })
+        }
+        else if (btnValue === "Annuler") {
             setBirthForm(false)
         }
     }
@@ -42,6 +69,8 @@ const UpdateBirthday = () => {
                 <div className='birth-container'>
                     <form action="" onSubmit={handleBirth} >
                         <input type="date" name="birthday" id="birthday" onChange={birthChange}  value={formDate}  />
+                        <br/>
+                        <div className="error birthday" hidden></div>
                         <br/>
                         {birthButton ? (
                             <>

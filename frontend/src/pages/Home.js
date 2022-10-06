@@ -3,12 +3,9 @@ import React, { useContext } from 'react'
 import Log from '../components/Log'
 import { UidContext } from '../components/appContext'
 import Publications from '../components/Publications'
-// import { UkeyContext } from '../components/appContext'
-
 
 const Home = () => {
   const uid = useContext(UidContext)
-  // const ukey = useContext(UkeyContext)
 
   return (
     <div>

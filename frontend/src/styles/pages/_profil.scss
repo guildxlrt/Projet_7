@@ -11,8 +11,6 @@
 
   .log-container {
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 60% 40%;
 
     @media screen and(max-width: 885px) {
       grid-template-columns: 1fr;

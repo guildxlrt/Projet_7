@@ -12,7 +12,7 @@ function App() {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    (async function getToken() {
+    (async function getUserDatas() {
       await axios({
         method : "get",
         url : `${process.env.REACT_APP_API_URL}/api/users/`,

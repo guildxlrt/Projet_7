@@ -1,9 +1,6 @@
 import React from 'react'
 import {NavLink} from 'react-router-dom'
 
-// fonts
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-// import {faHouseUser, faUser} from '@fortawesome/free-solid-svg-icons'
 
 const LeftNav = () => {
   return (

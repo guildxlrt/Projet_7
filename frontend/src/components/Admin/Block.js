@@ -7,14 +7,27 @@ const Block = () => {
     const ukey = useContext(UkeyContext)
     const [accStatus =  account.isActive, setAccStatus] = useState()
 
-    const accId = "103";
+    const getIdFromUrl = () => {
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
 
+        if (params.has('id')) {
+            const id = params.get('id');
+            return id;
+        }
+        else {
+            alert("Erreur : l'identifiant n'est pas present dans l'url");
+        }
+    }
+    const target = getIdFromUrl()
+    
+    //------// Recuperer Donnees utilisateur
     useEffect(() => {
-        // AXIOS
-        (async function getToken() {
+        (async function getUserDatas() {
+
             await axios({
                 method : "get",
-                url : `${process.env.REACT_APP_API_URL}/api/users/${accId}`,
+                url : `${process.env.REACT_APP_API_URL}/api/users/${target}`,
                 withCredentials : true
             })
             .then((res) => {
@@ -25,6 +38,7 @@ const Block = () => {
         })()
     }, [])
 
+    //Bloquer un compte
     const handleBlockAccount = async (e) => {
         e.preventDefault();
 
@@ -36,7 +50,7 @@ const Block = () => {
         
         await axios({
             method : "put",
-            url : `${process.env.REACT_APP_API_URL}/api/users/${accId}/disable`,
+            url : `${process.env.REACT_APP_API_URL}/api/users/${target}/disable`,
             withCredentials : true
         })
         .then((res) => {

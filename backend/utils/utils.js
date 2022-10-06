@@ -88,7 +88,23 @@ exports.surnameValid = (value) => new RegExp(/^([a-zA-ZÀ-ÿ]{2,26})(-[a-zA-ZÀ-
 exports.nameValid = (value) => new RegExp(/^([a-zA-ZÀ-ÿ]{1,3}\s)?([a-zA-ZÀ-ÿ]{1,3}[']{1})?([a-zA-ZÀ-ÿ]{2,26})(\s[a-zA-ZÀ-ÿ]{2,26})?(-[a-zA-ZÀ-ÿ]{2,26})?(\s[a-zA-ZÀ-ÿ]{2,26})?$/, 'g').test(value);
 
 //--------//Format birthday
-exports.birthday = (value) => value ? new Date(value) : null;
+exports.birthdayFormat = (value) => new Date(value)
+
+exports.ageValidator = (value) => {
+    const now = new Date();
+    const inputDate = new Date(value)
+    const oneYear = 1000 * 60 * 60 * 24 * 365  
+                      
+    const age = (now - inputDate) / oneYear
+    const limitAge = 18
+
+    if (age < limitAge) {
+        return false
+    }
+    else {
+        return true
+    }
+}
 
 //--------//Password
 exports.passwdValid = (value) => new pwVal()

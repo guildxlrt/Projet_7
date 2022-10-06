@@ -21,6 +21,7 @@ const Index = () => {
             <Route path="/" exact element={<Home />} />
             <Route path="/profil" exact element={<Profil />} />
             <Route path='/admin-user' exact element={<AdminAnAccount/>} />
+            {/* <Route path='/admin-user?id=103' exact element={<AdminAnAccount/>} /> */}
         </Routes>
     </BrowserRouter>
   )

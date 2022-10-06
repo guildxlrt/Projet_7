@@ -3,6 +3,7 @@
 exports.surnameErr = "Votre prenom doit comporter 2 caracteres minimum, avec  une majuscule suivit de minuscules: Paul, Marie-Louise, Jose Antonio ..." ;
 exports.nameErr = "Votre nom de famille doit comporter 2 caracteres minimum, avec une majuscule suivit de minuscules : Dupont, D'Artagnan, De Sade, Primo De Rivera ...";
 exports.dateErr = "Le champs est obligatoire"
+exports.legalAgeErr = "Vous devez avoir plus de dix-huit ans" 
 
 //mdp
 exports.passLogin = { error : "Paire login/mot de passe incorrecte" }

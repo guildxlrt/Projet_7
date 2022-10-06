@@ -13,14 +13,21 @@ const prisma = new PrismaClient();
 //========//NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
-        if (req.body.birthday !== "") {console.log(2)}
+        // formatage date
+        const birthday = utils.birthdayFormat(req.body.birthday);
+
+
+        //====// Validation de donnees 
+        const legalAgeTest = utils.ageValidator(birthday)
+        const emailTest = utils.emailValid(req.body.email)
+        const passStrength = utils.passwdValid(req.body.password)
+        const surnameTest = utils.surnameValid(req.body.surname)
+        const nameTest = utils.nameValid(req.body.name)
 
         //---ACCEPT
-        if ((utils.emailValid(req.body.email)) && (utils.passwdValid(req.body.password)) && (req.body.password === req.body.passConfirm) && (utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
+        if ((legalAgeTest === true) && (emailTest === true) && (passStrength === true) && (req.body.password === req.body.passConfirm) && (surnameTest === true) && (nameTest === true)) {
             bcrypt.hash(req.body.password, 10)
             .then(async hash => {
-                // formatage date
-                const birthday = utils.birthday(req.body.birthday)
 
                 // construction
                 const datas = {
@@ -89,8 +96,11 @@ exports.signup = (req, res, next) => {
                 error.name = errMsg.nameErr
             }
             // Date de naissance
-            if (req.body.birthday === "") {
+            if ((req.body.birthday === "") || (req.body.birthday === null)) {
                 error.date = errMsg.dateErr
+            }
+            if (legalAgeTest === false) {
+                error.legal_age = errMsg.legalAgeErr
             }
 
             return res.status(400).json({ error : error })
@@ -189,41 +199,64 @@ exports.update = async (req, res, next) => {
     .then(async user => {
         // verification utilisateur
         if ((user.id === auth) && (user.isActive)) {
-            if ((utils.surnameValid(req.body.surname)) && (utils.nameValid(req.body.name))) {
-                // Donnees a soumettre
-                let updateUser = {}
-                if (req.body.name) updateUser.name = req.body.name
-                if (req.body.surname) updateUser.surname = req.body.surname
-                if (req.body.birthday) updateUser.birthday = utils.birthday(req.body.birthday)
 
+            //====// Traitement des donnees
+            let userDatas = {
+                surname : user.surname,
+                name : user.name,
+                birthday : user.birthday
+            }
+
+            //----New Value
+            if (req.body.surname) userDatas.surname = req.body.surname
+            if (req.body.name) userDatas.name = req.body.name
+            if (req.body.birthday) {
+                userDatas.birthday = utils.birthdayFormat(req.body.birthday)
+            }
+
+            //====// Validation de donnees
+            const legalAgeTest = utils.ageValidator(userDatas.birthday)
+            const surnameTest = utils.surnameValid(userDatas.surname)
+            const nameTest = utils.nameValid(userDatas.name)
+
+            //----Valid
+            if ((surnameTest === true) && (nameTest === true) && (legalAgeTest === true)) {
                 // Enregistrement dans la BDD
                 await prisma.user.update({
                     where : { id : auth },
-                    data : updateUser
+                    data : userDatas
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ 
                     message : 'utilisateur modifie : ',
-                    updates : { ...updateUser }
+                    updates : { ...userDatas }
                 }))
                 .catch(error =>  res.status(500).json(error))
             }
             //----Erreurs
             else {
                 let error = {};
-                
-                // prenomNom
-                if ((utils.surnameValid(req.body.surname)) === false) {
+
+                // Prenom
+                if ((surnameTest) === false) {
                     error.surname = errMsg.surnameErr
                 }
-                // Nom de famille
-                if ((utils.nameValid(req.body.name)) === false) {
+
+                // Nom
+                if (nameTest === false) {
                     error.name = errMsg.nameErr
+                }
+                // Date
+                if ((userDatas.birthday === "") || (userDatas.birthday === null)) {
+                    error.date = errMsg.dateErr
+                }
+                if (legalAgeTest === false) {
+                    error.legal_age = errMsg.legalAgeErr
                 }
 
                 return res.status(400).json(error)
             }
-        // mauvais utilisateur
+        // Mauvais utilisateur
         } else {
             return res.status(403).json(errMsg.authErr);
         }

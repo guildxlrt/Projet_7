@@ -76,13 +76,13 @@ const SignUpForm = () => {
       })
       .catch((err) => {
         const error =  err.response.data.error
-        console.log(error.surname)
         if (error.surname) {surnameError.innerHTML = error.surname}
         if(error.name) {nameError.innerHTML = error.name}
         if(error.email) {emailError.innerHTML = error.email}
         if(error.password) {passwordError.innerHTML = error.password}
         if(error.passConfirm) {passwordConfError.innerHTML = error.passConfirm}
         if(error.date) {dateError.innerHTML = error.date}
+        if(error.legal_age) {dateError.innerHTML = error.legal_age}
       })
     }
   }

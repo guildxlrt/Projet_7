@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { updateBirthday } from '../../actions/user.actions';
 
-
 const UpdateBirthday = () => {
     const userData = useSelector((state) => state.userReducer)
     const dispatch = useDispatch();

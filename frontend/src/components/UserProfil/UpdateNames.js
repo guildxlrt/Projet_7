@@ -5,7 +5,10 @@ import axios from 'axios';
 
 const UpdateNames = () => {
     const userData = useSelector((state) => state.userReducer)
+    const errReport = useSelector((state) => state.errorReducer)
     const dispatch =  useDispatch();
+
+    console.log(errReport)
 
     // Variables du rendu
     const [surname=userData.surname, setSurname] = useState()
@@ -77,8 +80,9 @@ const UpdateNames = () => {
                     <div className="error name"></div>
 
                     <br/>
-                    <input type="submit" value="Modifier" />
-                    <button className='pic-button' onClick={anullForm} >Annuler</button>
+                    <input className='modify' type="submit" value="Modifier" />
+                    <br/>
+                    <button className='anull' onClick={anullForm} >Annuler</button>
                 </form>
                 
             </div>

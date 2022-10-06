@@ -78,6 +78,7 @@ const ChangePassword = () => {
                     <br/>
                     <input type="password" name="passConfirm" id="passConfirm" onChange={(e) => setPassConfirm(e.target.value)} value={passConfirm} />
 
+                    <br/>
                     <div id="messages-bottom" hidden={true}>
                         <br/>
                         <div className="error entry"></div>

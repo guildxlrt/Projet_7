@@ -180,7 +180,8 @@ exports.userInfos = async (req, res, next) => {
             birthday : utils.dateFormat(datas.birthday),
             signupDate : utils.dateFormat(datas.signupDate),
             avatarUrl : datas.avatarUrl,
-            isActive : datas.isActive
+            isActive : datas.isActive,
+            isAdmin : datas.isAdmin
         }
         return res.status(200).json(infos)
     })

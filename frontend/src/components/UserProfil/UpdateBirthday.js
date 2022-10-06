@@ -8,6 +8,7 @@ const UpdateBirthday = () => {
     const dispatch = useDispatch();
 
     const [birthday=userData.birthday, setBirthday] = useState()
+    const [age=userData.age, setAge] = useState()
     const [formDate, setFormDate] = useState('')
     const [birthForm, setBirthForm] = useState(false)
     const [birthButton, setBirthButton] = useState(false)     
@@ -43,7 +44,6 @@ const UpdateBirthday = () => {
                 dispatch(updateBirthday(formDate))
                 
                 // rafraichissement de linterface
-                setBirthday(formDate)
                 setBirthForm(false)
             })
             .catch((error) => {
@@ -85,7 +85,8 @@ const UpdateBirthday = () => {
                 </div>
             ) : (
                 <div>
-                    <h4 className='birth' onClick={() => setBirthForm(true)}>{birthday} ans</h4>
+                    <h4 className='birth' onClick={() => setBirthForm(true)}>{age}</h4>
+                    <h4 className='birth' onClick={() => setBirthForm(true)}>{birthday}</h4>
                 </div>
             )}
         </>

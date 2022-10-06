@@ -84,14 +84,14 @@ const BlockAccount = () => {
                         <br/>
                         <input type="password" name="password" id="password" onChange={(e) => setPassword(e.target.value)} value={password} />
 
-                        <br/>
+                        <br/><br/>
                         <label htmlFor="email">Email</label>
                         <br/>
                         <input type="text" name="email" id="email" onChange={(e) => setEmail(e.target.value)} value={email} />
                         
                         <br/><br/>
                         <input type="submit" value="Confirmer" />
-                        <br/>
+                        <br/><br/>
                         <button onClick={anullForm}>Annuler</button>
                     </form>
                 </>

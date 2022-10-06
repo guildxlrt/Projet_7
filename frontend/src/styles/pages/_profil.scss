@@ -315,8 +315,11 @@
         }
       }
 
-      #surname, #name {
+      #surname {
         margin-top: 50px;
+      }
+      #name {
+        margin-top: 30px;
       }
 
       input[type="submit"] {
@@ -342,6 +345,13 @@
           background-color: $color-1;
           color : $color-2;
         }
+      }
+
+      .modify, .anull {
+        border-radius: 20px;
+        width: 160px;
+        padding: 5px 20px;
+        margin: 10px;
       }
     }
   }

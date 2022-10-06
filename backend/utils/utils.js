@@ -159,7 +159,9 @@ exports.userManage = async (targetId, bolValue, req, res) => {
     .catch(error => res.status(500).json({ error : error }))
 }
 
+
 //========//FORMATAGE DATES
 exports.dateFormat = (rawDate) => {
     return new Date(rawDate).toISOString().split("T")[0]
 }
+

@@ -31,7 +31,7 @@ const Block = () => {
                 withCredentials : true
             })
             .then((res) => {
-                console.log("RESUL INFOS")
+                console.log(res.data)
                 setAccount(res.data)
             })
             .catch((error) => console.log(error)) 
@@ -82,19 +82,18 @@ const Block = () => {
                     <br/>
                     <h3>{account.email}</h3>
                     <br/>
-                    <h3>{account.birthday} ans</h3>
-                    <br/>
                     <h3>Membre depuis le : {account.birthday}</h3>
                     <br/>
-                    {ukey ? (accStatus ? (
+                    <br/>
+                    {!(account.isAdmin) && (
+                        ukey && (accStatus ? (
                                 <button onClick={handleBlockAccount}>Désactiver</button>
                             ) : (
                                 <button onClick={handleBlockAccount}>Activer</button>
                             )
-                        ) : (
-                            <></>
                         )
-                    }
+                    )}
+                    
                     <div id="messages" hidden>
                         <br/>
                         <div className='success'></div>

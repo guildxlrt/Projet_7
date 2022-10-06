@@ -12,7 +12,7 @@ const UpdateUserInfos = () => {
             <UpdateNames/>
             <UpdateBirthday/>
             <h4>{userData.email}</h4>
-            <h4>Inscrit depuis le : {userData.signupDate}</h4>
+            <h4>Inscrit depuis {userData.signupDate}</h4>
 
         </div>
     )

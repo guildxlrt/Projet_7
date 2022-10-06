@@ -140,7 +140,7 @@ exports.userManage = async (targetId, bolValue, req, res) => {
             console.log('Compte (re)active !') || res.status(200).json({ message : 'Compte (re)active !' })
         }
     })
-    .catch(error => console.log(error) || res.status(500).json({ message : error }))
+    .catch(error => res.status(500).json({ error : error }))
 }
 
 //========//FORMATAGE DATES

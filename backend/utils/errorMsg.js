@@ -25,4 +25,11 @@ exports.unactived = { error : "Le Compte n'est plus actif"}
 exports.likeErr = { error : 'auto-like interdit' }
 
 // token
-exports.tokkenErr = { error : "No cookie token, so no able to disconnect some user" }
+exports.tokkenErr = { error : "Cookie/Tokken Introuvable || Impossible de deconnecter correctement" }
+
+// Not Found
+exports.userNotFound = { error : "Utilisateur introuvable" }
+exports.postNotFound = { error : "Publication introuvable" }
+exports.commentNotFound = { error : "Commentaire introuvable" }
+
+

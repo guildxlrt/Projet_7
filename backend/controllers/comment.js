@@ -29,17 +29,17 @@ exports.commentPost = async (req, res, next) => {
                     })
                     .then(async () => { await prisma.$disconnect() })
                     .then(() => res.status(201).json({ message : 'commentaire publie !' }))
-                    .catch(error => console.log(error) || res.status(500).json(error))
+                    .catch(error =>  res.status(500).json(error))
                 } else {
                     return res.status(403).json(errMsg.authErr);
                 }
             })
-            .catch(error => console.log(error) || res.status(500).json(error));
+            .catch(error =>  res.status(500).json(error));
         } else {
             return res.status(403).json(errMsg.authErr);
         }
     })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 };
 
 //========//AFFICHER
@@ -89,14 +89,14 @@ exports.modifyComment = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'Commentaire modifie !' }))
-                .catch(error => console.log(error) || res.status(500).json(error));
+                .catch(error =>  res.status(500).json(error));
     
             } else {
                 return res.status(403).json(errMsg.authErr)
             }
         })
     })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 }
 
 //========//SUPPRIMER

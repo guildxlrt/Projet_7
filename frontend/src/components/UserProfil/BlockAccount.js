@@ -76,11 +76,9 @@ const BlockAccount = () => {
                         <br/>
 
                         <div id="error-container-disable" hidden>
-                            <div id="error-disable" className='error disable'>fff</div>
+                            <div id="error-disable" className='error disable'></div>
                             <br/>
                         </div>
-                        
-
                         
                         <label htmlFor="password">Mot de passe</label>
                         <br/>

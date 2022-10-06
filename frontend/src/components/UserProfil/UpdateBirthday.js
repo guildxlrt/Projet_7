@@ -35,8 +35,6 @@ const UpdateBirthday = () => {
         } else if (btnValue === "Annuler") {
             setBirthForm(false)
         }
-        
-        
     }
 
     return (
@@ -44,7 +42,6 @@ const UpdateBirthday = () => {
             {birthForm ? (
                 <div className='birth-container'>
                     <form action="" onSubmit={handleBirth} >
-                        <h4>Née le :</h4>
                         <input type="date" name="birthday" id="birthday" onChange={birthChange}  value={formDate}  />
                         <br/>
                         {birthButton ? (
@@ -60,7 +57,7 @@ const UpdateBirthday = () => {
                 </div>
             ) : (
                 <div>
-                    <h4 className='birth' onClick={() => setBirthForm(true)}>Née le :<br/><br/>{birthday}</h4>
+                    <h4 className='birth' onClick={() => setBirthForm(true)}>{birthday} ans</h4>
                 </div>
             )}
         </>

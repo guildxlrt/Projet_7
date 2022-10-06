@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 
 import Log from '../components/Log'
 import { UidContext } from '../components/appContext'
+import Publications from '../components/Publications'
 // import { UkeyContext } from '../components/appContext'
 
 
@@ -12,7 +13,9 @@ const Home = () => {
   return (
     <div>
       {uid ? (
-        <div className="home"></div>
+        <div className='home'>
+          <Publications/>
+        </div>
       ) : (
         <div className="profil-page">
           <div className="log-container">

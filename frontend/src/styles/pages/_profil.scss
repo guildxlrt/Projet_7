@@ -129,6 +129,14 @@
     display: grid;
     grid-template-columns: 50% 50%;
 
+    &.admin{
+      grid-template-columns: auto 670px auto;
+
+      @media screen and(max-width: 700px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media screen and(max-width: 700px) {
       grid-template-columns: 1fr;
     }
@@ -260,6 +268,14 @@
       h4 {
         margin: 60px 0 10px;
       }
+      .click {
+        margin-top: 52px;
+      }
+      .dyn-value {
+        margin-top: 17px;
+        margin-bottom: 10px;
+      }
+
       h5 {
         background: $color-1;
         color: $color-4;
@@ -299,6 +315,10 @@
             margin: 10px;
           }
         }
+      }
+
+      #surname, #name {
+        margin-top: 50px;
       }
 
       input[type="submit"] {
@@ -445,7 +465,7 @@
   
   
   h2 {
-    padding-top: 30px;
+    padding-top: 40px;
     translate: 0% -10px;
     display: flex;
     flex-direction: column;

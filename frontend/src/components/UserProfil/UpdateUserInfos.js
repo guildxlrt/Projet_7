@@ -11,10 +11,8 @@ const UpdateUserInfos = () => {
             <h2>Informations Personnelles</h2>
             <UpdateNames/>
             <UpdateBirthday/>
-            <h4>Adresse :
-            <br/>{userData.email}</h4>
-            <h4>Inscrit depuis le :
-            <br/>{userData.signupDate}</h4>
+            <h4>{userData.email}</h4>
+            <h4>Inscrit depuis le : {userData.signupDate}</h4>
 
         </div>
     )

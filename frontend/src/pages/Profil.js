@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { UidContext } from '../components/appContext'
 import Log from '../components/Log'
-import UserProfil from '../components/Profil'
+import UserProfil from '../components/UserProfil'
 
 const Profil = () => {
   const uid = useContext(UidContext)

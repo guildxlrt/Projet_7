@@ -28,7 +28,7 @@ exports.createPost = async (req, res, next) => {
             await prisma.post.create({data : content})
             .then(async () => { await prisma.$disconnect() })
             .then(() => res.status(201).json({ message : 'publication cree !'}))
-            .catch(error => console.log(error) || res.status(500).json(error))
+            .catch(error =>  res.status(500).json(error))
         } else {
             return res.status(403).json(errMsg.authErr)
         }
@@ -43,7 +43,7 @@ exports.getAllPosts = async (req, res, next) => {
     })
     .then(posts => res.status(200).json(posts))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(404).json(error));
+    .catch(error =>  res.status(500).json(error));
 };
 
 //========//UN SEUL
@@ -52,7 +52,7 @@ exports.getOnePost = async (req, res, next) => {
     await utils.findPost({id : Number(req.params.id)})
     .then(post => res.status(200).json(post))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(404).json(error));
+    .catch(error =>  res.status(500).json(error));
 };
 
 
@@ -89,14 +89,14 @@ exports.modifyPost = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : 'Publication modifie !' }))
-                .catch(error => console.log(error) || res.status(500).json(error));
+                .catch(error =>  res.status(500).json(error));
     
             } else {
                 return res.status(403).json(errMsg.authErr)
             }
         })    
     })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 };
 
 //========//SUPPRIMER
@@ -193,7 +193,7 @@ exports.likePost = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(201).json({ message : 'publication likee !'}))
-                .catch(error => console.log(error) || res.status(500).json(error))
+                .catch(error =>  res.status(500).json(error))
             }
             // empecher autolike
             else {
@@ -223,5 +223,5 @@ exports.likesCount = async (req, res, next) => {
     })
     .then(likes => res.status(200).json({likes : likes}))
     .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 }

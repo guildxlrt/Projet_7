@@ -55,16 +55,8 @@ export const updateBirthday = (birthday, id) => {
                 birthday : birthday
             }
         })
-        .then(async () => {
-            return await axios({
-                method : "get",
-                url : `${process.env.REACT_APP_API_URL}/api/users/${id}`,
-                withCredentials : true
-            }) 
-            .then((res) => {
-                dispatch({type : UPDATE_BIRTHDAY, payload : res.data.birthday})
-            })
-            .catch(error => console.log(error))
+        .then((res) => {
+            dispatch({type : UPDATE_BIRTHDAY, payload : res.data.birthday})
         })
         .catch(error => console.log(error))
     }

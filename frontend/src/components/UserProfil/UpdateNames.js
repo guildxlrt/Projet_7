@@ -5,7 +5,6 @@ import axios from 'axios';
 
 const UpdateNames = () => {
     const userData = useSelector((state) => state.userReducer)
-
     const dispatch =  useDispatch();
 
     // Variables du rendu
@@ -13,6 +12,14 @@ const UpdateNames = () => {
     const [name=userData.name, setName] = useState()
     // variable pour le ternaire
     const [clickOn, setClickOn] = useState(false)
+
+    const clickNames = (e) => {
+        e.preventDefault()
+
+        document.querySelector('h4.name').setAttribute('class', 'name click')
+        setClickOn(true)
+    }
+    
 
     const anullForm = (e) => {
         e.preventDefault()
@@ -43,6 +50,9 @@ const UpdateNames = () => {
         })
         .then(async () => {
             dispatch(updateNames(datas))
+            
+            // rafraichissement de linterface
+            setClickOn(false)
         })
         .catch((error) => {
             const err = error.response.data
@@ -52,22 +62,17 @@ const UpdateNames = () => {
             }
             if (err.name) { nameError.innerHTML = err.name }
         })
-        
-        // rafraichissement de linterface
-        //setClickOn(false)
     }
   return (
     <>
         {clickOn ? (
             <div>
                 <form action="" onSubmit={handleValidation} >
-                    <h4>Prénom :</h4>
-                    <input className='surname-input' type="text" name="surname" id="surname" onChange={(e) => setSurname(e.target.value)} value={surname} />
+                    <input className='surname input' type="text" id="surname" onChange={(e) => setSurname(e.target.value)} value={surname} />
                     <br/>
                     <div className="error surname" hidden></div>
 
-                    <h4>Nom de famille :</h4>
-                    <input className='name-input' type="text" name="name" id="name" onChange={(e) => setName(e.target.value)} value={name} />
+                    <input className='name input' type="text" id="name" onChange={(e) => setName(e.target.value)} value={name} />
                     <br/>
                     <div className="error name"></div>
 
@@ -78,10 +83,14 @@ const UpdateNames = () => {
                 
             </div>
         ) : (
-            <div>
-                <h4 className='surname' onClick={() => setClickOn(true)}>Prénom :<br/>{surname}</h4>
-                <h4 className='name' onClick={() => setClickOn(true)}>Nom de famille :<br/>{name}</h4>
-            </div>
+            <>
+                <div onClick={clickNames}>
+                    <h4 className='surname'>Prénom : {surname}</h4>
+                </div>
+                <div onClick={clickNames}>
+                    <h4 className='name'>Nom : {name}</h4>
+                </div>
+            </>
         )}
     </>
   )

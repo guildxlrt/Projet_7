@@ -64,7 +64,7 @@ exports.signup = (req, res, next) => {
                     }
                 })
             })
-            .catch(error => console.log(error) || res.status(500).json(error));
+            .catch(error =>  res.status(500).json(error));
         }
         //---REJET
         else {
@@ -125,7 +125,7 @@ exports.login = async (req, res, next) => {
                         res.status(401).json(errMsg.passLogin);
                     }
                 })
-                .catch(error => console.log(error) || res.status(500).json(error));
+                .catch(error =>  res.status(500).json(error));
             // utilisateur inactif
             } else {
                 return res.status(401).json(errMsg.unactived);
@@ -136,7 +136,7 @@ exports.login = async (req, res, next) => {
             return res.status(401).json(errMsg.unknowEmail);
         }
     })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 };
 
 //========//DECONNEXION
@@ -158,32 +158,23 @@ exports.userToken = async (req, res, next) => {
 
 //========//USER PROFIL
 exports.userInfos = async (req, res, next) => {
-    const auth = req.auth.userId
 
-     // Recherche de l'utilisateur
-     await utils.findUser({id : Number(req.params.id)})
-     .then(async user => {
-        if ((user.id === auth) && (user.isActive)) {
-            // recherche
-            await utils.findUser({ id : auth })
-            .then((datas) => {
-                const infos = {
-                    id : datas.id,
-                    email : datas.email,
-                    name : datas.name,
-                    surname : datas.surname,
-                    birthday : utils.dateFormat(datas.birthday),
-                    signupDate : utils.dateFormat(datas.signupDate),
-                    avatarUrl : datas.avatarUrl
-                }
-                return res.status(200).json(infos)
-            })
-            .then(async () => { await prisma.$disconnect() })
-            .catch(error => console.log(error) || res.status(500).json(error));
-        } else {
-            return res.status(403).json(errMsg.authErr);
+    // Recherche de l'utilisateur
+    await utils.findUser({id : Number(req.params.id)})
+    .then(async (datas) => {
+        const infos = {
+            id : datas.id,
+            email : datas.email,
+            name : datas.name,
+            surname : datas.surname,
+            birthday : utils.dateFormat(datas.birthday),
+            signupDate : utils.dateFormat(datas.signupDate),
+            avatarUrl : datas.avatarUrl,
+            isActive : datas.isActive
         }
-     })
+        return res.status(200).json(infos)
+    })
+    .catch(() => res.status(404).json(errMsg.userNotFound));
 }
 
 
@@ -215,7 +206,7 @@ exports.update = async (req, res, next) => {
                     message : 'utilisateur modifie : ',
                     updates : { ...updateUser }
                 }))
-                .catch(error => console.log(error) || res.status(500).json(error))
+                .catch(error =>  res.status(500).json(error))
             }
             //----Erreurs
             else {
@@ -237,7 +228,7 @@ exports.update = async (req, res, next) => {
             return res.status(403).json(errMsg.authErr);
         }
     })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 }
 
 //========//CHANGER MDP
@@ -267,7 +258,7 @@ exports.password = async (req, res, next) => {
                             })
                             .then(async () => { await prisma.$disconnect() })
                             .then(() => res.status(200).json({ message : 'mot de passe modifie !' }))
-                            .catch(error => console.log(error) || res.status(500).json(error));
+                            .catch(error =>  res.status(500).json(error));
                         })
                     }
                     //---Erreurs
@@ -294,13 +285,13 @@ exports.password = async (req, res, next) => {
                     res.status(403).json({ error : { entry : errMsg.passErr} })
                 }
             })
-            .catch(error => console.log(error) || res.status(500).json(error));
+            .catch(error =>  res.status(500).json(error));
         // mauvais utilisateur
         } else {
             return res.status(403).json(errMsg.authErr);
         }
     })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 }
 
 //========//DESACTIVER
@@ -332,7 +323,7 @@ exports.disable = async (req, res, next) => {
                 res.status(403).json(errMsg.authErr);
             }
         })
-        .catch(error => console.log(error) || res.status(500).json(error));
+        .catch(error =>  res.status(500).json(error));
     }
     //------UTILISATEUR NORMAL
     else {
@@ -359,13 +350,13 @@ exports.disable = async (req, res, next) => {
                             res.status(403).json({error : errMsg.passErr})
                     }
                 })
-                .catch(error => console.log(error) || res.status(500).json(error));
+                .catch(error =>  res.status(500).json(error));
             // mauvais utilisateur
             } else {
                 res.status(403).json(errMsg.authErr);
             }
         })
-        .catch(error => console.log(error) || res.status(500).json(error));
+        .catch(error =>  res.status(500).json(error));
     }
 }
 
@@ -401,11 +392,11 @@ exports.avatar = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : message }))
-                .catch(error => console.log(error) || res.status(500).json(error))
+                .catch(error =>  res.status(500).json(error))
             }
         } else {
             res.status(403).json(errMsg.authErr);
         }
     })
-    .catch(error => console.log(error) || res.status(500).json(error));
+    .catch(error =>  res.status(500).json(error));
 }

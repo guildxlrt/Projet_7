@@ -188,6 +188,15 @@ exports.userInfos = async (req, res, next) => {
     .catch(() => res.status(404).json(errMsg.userNotFound));
 }
 
+//========//TOUT LES UTILISATEURS
+exports.getAllUsers = async (req, res, next) => {
+    // recherche
+    await prisma.user.findMany()
+    .then(users => res.status(200).json(users))
+    .then(async () => { await prisma.$disconnect() })
+    .catch(error =>  res.status(500).json(error));
+};
+
 
 //================//MANAGE//================//
 

@@ -5,10 +5,7 @@ import axios from 'axios';
 
 const UpdateNames = () => {
     const userData = useSelector((state) => state.userReducer)
-    const errReport = useSelector((state) => state.errorReducer)
     const dispatch =  useDispatch();
-
-    console.log(errReport)
 
     // Variables du rendu
     const [surname=userData.surname, setSurname] = useState()

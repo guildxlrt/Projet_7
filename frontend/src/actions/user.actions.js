@@ -5,8 +5,6 @@ export const UPLOAD_PICTURE = "UPLOAD_PICTURE";
 export const UPDATE_BIRTHDAY = "UPDATE_BIRTHDAY";
 export const UPDATE_NAMES = "UPDATE_NAMES"
 
-export const NAMES_ERROR = "NAMES_ERROR"
-
 export const getUser = (uid) => {
     return async (dispatch) => {
         return await axios({

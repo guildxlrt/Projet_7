@@ -1,6 +1,7 @@
 import axios from 'axios'
 import React, { useContext, useEffect, useState } from 'react'
 import { UkeyContext } from '../appContext'
+import { birthdayFormat, dateFormat } from '../utils'
 
 const Block = () => {
     const [account, setAccount] = useState({})
@@ -31,8 +32,12 @@ const Block = () => {
                 withCredentials : true
             })
             .then((res) => {
-                console.log(res.data)
-                setAccount(res.data)
+                const datas = { ...res.data } 
+                datas.signupDate = dateFormat(res.data.signupDate)
+                datas.age = dateFormat(res.data.birthday)
+                datas.birthday = birthdayFormat(res.data.birthday)
+
+                setAccount(datas)
             })
             .catch((error) => console.log(error)) 
         })()
@@ -76,22 +81,43 @@ const Block = () => {
                 <br/>
                 <div className='left-part'>
                     <img src={account.avatarUrl} alt="user-pic"/>
-                    <h3>Prénom : {account.surname}</h3>
+                    <h3>{account.surname}</h3>
                     <br/>
-                    <h3>Nom : {account.name}</h3>
+                    <h3>{account.name}</h3>
+                    {ukey ? (
+                        <>
+                            <br/>
+                            <h3>{account.email}</h3>
+                        </>
+                    ) : (
+                        <>
+                            <br/>
+                            <h3>{account.age}</h3>
+                            <br/>
+                            <h3>{account.birthday}</h3>
+                        </>
+                    )}
+                    
                     <br/>
-                    <h3>{account.email}</h3>
+                    <h3>Membre depuis {account.signupDate}</h3>
                     <br/>
-                    <h3>Membre depuis le : {account.birthday}</h3>
-                    <br/>
-                    <br/>
-                    {!(account.isAdmin) && (
+                    {!(account.isAdmin) ? (
                         ukey && (accStatus ? (
-                                <button onClick={handleBlockAccount}>Désactiver</button>
+                                <>
+                                    <button onClick={handleBlockAccount}>Désactiver</button>
+                                    <br/><br/>
+                                </>
                             ) : (
-                                <button onClick={handleBlockAccount}>Activer</button>
+                                <>
+                                    <button onClick={handleBlockAccount}>Activer</button>
+                                    <br/><br/>
+                                </>
                             )
                         )
+                    ) : (
+                        <>
+                            <h3>Administrateur</h3>
+                        </>
                     )}
                     
                     <div id="messages" hidden>

@@ -8,10 +8,18 @@ const Home = () => {
   const uid = useContext(UidContext)
 
   return (
-    <div>
+    <>
       {uid ? (
         <div className='home'>
-          <Publications/>
+          <div></div>
+          <div className="main">
+            <div className="home-header">
+              <Publications/>
+            </div> 
+          </div>
+          <div></div>
+            
+          
         </div>
       ) : (
         <div className="profil-page">
@@ -25,7 +33,7 @@ const Home = () => {
       <a href="/profil">
       <img src="./images/icon.png" alt="icon" />
       </a>
-    </div>
+    </>
   )
 }
 

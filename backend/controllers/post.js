@@ -14,9 +14,10 @@ exports.createPost = async (req, res, next) => {
     await utils.findUser({id : auth})
     .then( async user => {
         if (user.isActive) {
+            console.log(req.body)
             // Condition Fichier
             const content = req.file ? {
-                ...JSON.parse(req.body),
+                ...req.body,
                 imageUrl : utils.newImageUrl(req),
                 userId : auth
             } : {

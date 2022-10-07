@@ -15,7 +15,7 @@ function App() {
     (async function getUserDatas() {
       await axios({
         method : "get",
-        url : `${process.env.REACT_APP_API_URL}/api/users/`,
+        url : `${process.env.REACT_APP_API_URL}/api/users/token`,
         withCredentials : true
       })
       .then((res) => {
@@ -26,7 +26,7 @@ function App() {
     })()
 
     if (uid) dispatch(getUser(uid))
-  }, [uid]);
+  }, [uid, dispatch]);
 
   return (
     <UidContext.Provider value={uid}>

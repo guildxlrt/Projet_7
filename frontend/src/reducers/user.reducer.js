@@ -1,49 +1,33 @@
 import { GET_USER, UPLOAD_PICTURE, UPDATE_BIRTHDAY, UPDATE_NAMES } from "../actions/user.actions";
+import { birthdayFormat, dateFormat } from "../components/utils";
+
 
 const initialState = {};
 
-const dateFormat = (value) => {
-        const time = ((new Date()) - (new Date(value)));
-    
-        const oneYear = 1000 * 60 * 60 * 24 * 365
-        const oneMonth = 1000 * 60 * 60 * 24 * 30
-        const oneDay = 1000 * 60 * 60 * 24
-    
-    
-        function newFormat (time, scale) {
-            return String(time / scale).split('.')[0]
-        }
-    
-        if (time >= oneYear) {
-            return newFormat(time, oneYear) + " ans";
-        }
-        else if (time >= oneMonth) {
-            return newFormat(time, oneMonth) + " mois";
-        }
-        else if (time >= oneDay) {
-            return newFormat(time, oneDay) + " jours";
-        }
-        else if (time < oneDay) {
-            return "Aujourd'hui";
-        }
-    }
-
 export default function userReducer(state = initialState, action) {
     switch (action.type) {
+
         case GET_USER :
             return (function () {
                 const datas = action.payload
+                const birthday = birthdayFormat(datas.birthday)
+                const age = dateFormat(datas.birthday)
+                const signupDate = dateFormat(datas.signupDate)
 
-                datas.age = dateFormat(datas.birthday)
-                datas.signupDate = dateFormat(datas.signupDate)
-
-                return datas;
+                return { ...datas, age : age, signupDate : signupDate, birthday : birthday };
             })()
 
         case UPLOAD_PICTURE :
             return { ...state, avatarUrl : action.payload}
+
         case UPDATE_BIRTHDAY :
-            return { ...state, birthday : action.payload}
+            return (function () {
+                const birthday = birthdayFormat(action.payload)
+                const age = dateFormat(action.payload)
+
+                return { ...state, age : age, birthday : birthday };
+            })()
+
         case UPDATE_NAMES :
             const surname = action.payload.surname
             const name = action.payload.name

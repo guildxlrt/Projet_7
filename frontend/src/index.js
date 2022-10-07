@@ -10,6 +10,7 @@ import rootReducer from './reducers'
 //dev tools
 import {composeWithDevTools} from '@redux-devtools/extension'
 import logger from 'redux-logger'
+import { GET_ALL_USERS } from './actions/allUsers.action.js';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -18,6 +19,8 @@ const store = configureStore(
   {reducer : rootReducer},
   composeWithDevTools(applyMiddleware(thunk, logger))
 )
+
+//store.dispatch(getUsers)
 
 
 root.render(

@@ -6,13 +6,23 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+//========//File Mover
+exports.fileMove = (folder, filename) => {    
+    fs.rename(`images/${filename}`, `images/${folder}/${filename}`, (err) => {
+        if (err) {
+            console.log("Echec lors de la redirection du fichier : " + err)
+        } else {
+            console.log("le fichier a ete deplace")
+        }
+    })
+}
 
 //========//File suppressor
-exports.fileDel = (target) => {
-    //---Suppression fichier
-    const filename = target.split('/images/')[1];
+exports.fileDel = (folder, filename) => {
+    let link = `images/${folder}/${filename}`
+    if (folder === '/') {link = `images/${filename}`}
 
-    fs.unlink(`images/${filename}`, (err) => {
+    fs.unlink(link, (err) => {
         if (err) {
             console.log("Echec lors de la suppression du fichier : " + err)
         } else {
@@ -24,14 +34,14 @@ exports.fileDel = (target) => {
 //========//Image URL
 exports.newAvatarUrl = (req) => {
     const url = req.file ? (
-        `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        `${req.protocol}://${req.get('host')}/images/users/${req.file.filename}`
     ) : (
         `./images/random-user.png` 
     )
     return url
 }
 
-exports.newImageUrl = (req) => `${req.protocol}://${req.get('host')}/images/publications/${req.file.filename}`
+exports.newImageUrl = (req) => `${req.protocol}://${req.get('host')}/images/posts/${req.file.filename}`
 
 //========//Recherche
 exports.findUser = async (props) => await prisma.user.findUnique({ where : props });
@@ -164,4 +174,3 @@ exports.userManage = async (targetId, bolValue, req, res) => {
 exports.dateFormat = (rawDate) => {
     return new Date(rawDate).toISOString().split("T")[0]
 }
-

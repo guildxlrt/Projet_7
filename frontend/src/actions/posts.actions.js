@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const GET_POSTS = 'GET_POSTS'
 
-export const getPosts = (uid) => {
+export const getPosts = () => {
     return async (dispatch) => {
         return await axios({
             method : "get",

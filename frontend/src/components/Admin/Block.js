@@ -4,6 +4,7 @@ import { UkeyContext } from '../appContext'
 import { birthdayFormat, dateFormat } from '../utils'
 
 const Block = () => {
+    const [pageload, setPageload] = useState(true)
     const [account, setAccount] = useState({})
     const ukey = useContext(UkeyContext)
     const [accStatus =  account.isActive, setAccStatus] = useState()
@@ -20,7 +21,7 @@ const Block = () => {
             alert("Erreur : l'identifiant n'est pas present dans l'url");
         }
     }
-    const target = getIdFromUrl()
+    const urlId = getIdFromUrl()             
     
     //------// Recuperer Donnees utilisateur
     useEffect(() => {
@@ -28,7 +29,7 @@ const Block = () => {
 
             await axios({
                 method : "get",
-                url : `${process.env.REACT_APP_API_URL}/api/users/${target}`,
+                url : `${process.env.REACT_APP_API_URL}/api/users/${urlId}`,
                 withCredentials : true
             })
             .then((res) => {
@@ -39,9 +40,11 @@ const Block = () => {
 
                 setAccount(datas)
             })
-            .catch((error) => console.log(error)) 
+            .catch((error) => console.log(error))
+
+           setPageload(false)
         })()
-    }, [])
+    }, [pageload])
 
     //Bloquer un compte
     const handleBlockAccount = async (e) => {
@@ -55,7 +58,7 @@ const Block = () => {
         
         await axios({
             method : "put",
-            url : `${process.env.REACT_APP_API_URL}/api/users/${target}/disable`,
+            url : `${process.env.REACT_APP_API_URL}/api/users/${urlId}/disable`,
             withCredentials : true
         })
         .then((res) => {

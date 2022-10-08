@@ -37,11 +37,15 @@ exports.signup = (req, res, next) => {
                     email : req.body.email,
                     password : hash
                 }
-                
-                // recherche de fichier
+            
                 const newUser = { 
                     ...datas,
                     avatarUrl : utils.newAvatarUrl(req)
+                }
+
+                // redirection du nouveau fichier
+                if (req.file) {
+                    utils.fileMove('users', req.file.filename)
                 }
 
                 // enregistrement
@@ -413,19 +417,24 @@ exports.avatar = async (req, res, next) => {
     .then(async user => {
         //----Verification
         if ((auth === user.id ) && (user.isActive)) {
-            const avatarName = user.avatarUrl.split('/images/')[1]
+            const oldFile = user.avatarUrl.split('/images/')[1]
+            const url = utils.newAvatarUrl(req);
      
-            //----Suppression du fichier
-            if (!(avatarName === 'random-user.png')) {
-                utils.fileDel(user.avatarUrl)
+            //----Suppression Ancient fichier
+            if (!(oldFile === 'random-user.png')) {
+                const oldFile = user.avatarUrl.split('/images/users/')[1];
+                utils.fileDel('users', oldFile)
             }
 
-            //----Mise a jour BDD
-            const url = utils.newAvatarUrl(req);
+            //---- Nouveau fichier
+            if (req.file) {
+                //----Replacer nouveau fichier
+                utils.fileMove('users', req.file.filename)
+            }
+
             let message = req.file ? ('user ' + user.id +  ' : Nouvel avatar !') : ('user ' + user.id +  ' : Avatar par defaut');
 
-            if (!(req.file) && (avatarName === 'random-user.png')) {
-                console.log("Pas de modification : avatar deja par defaut")
+            if (!(req.file) && (oldFile === 'random-user.png')) {
                 return res.status(304).end()
             } else {
                 // Enregistrer

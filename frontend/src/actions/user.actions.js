@@ -5,6 +5,8 @@ export const UPLOAD_PICTURE = "UPLOAD_PICTURE";
 export const UPDATE_BIRTHDAY = "UPDATE_BIRTHDAY";
 export const UPDATE_NAMES = "UPDATE_NAMES"
 
+export const ALL_USERS = "ALL_USERS"
+
 export const getUser = (uid) => {
     return async (dispatch) => {
         return await axios({
@@ -52,5 +54,19 @@ export const updateBirthday = (birthday) => {
 export const updateNames = (names) => {
     return async (dispatch) => {
         dispatch({type : UPDATE_NAMES, payload : names})
+    }
+}
+
+export const getAllUsers = () => {
+    return async (dispatch) => {
+        return await axios({
+            method : "get",
+            url : `${process.env.REACT_APP_API_URL}/api/users`,
+            withCredentials : true
+        })
+        .then((res) => {
+            dispatch({type : ALL_USERS, payload : res.data})
+        })
+        .catch(error => console.log(error))
     }
 }

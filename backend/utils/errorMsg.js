@@ -33,4 +33,5 @@ exports.userNotFound = { error : "Utilisateur introuvable" }
 exports.postNotFound = { error : "Publication introuvable" }
 exports.commentNotFound = { error : "Commentaire introuvable" }
 
-
+// Posts
+exports.PostErrReq = { error : "bad request : file with 'nofile' tag or no image registered" }

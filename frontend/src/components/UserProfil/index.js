@@ -21,7 +21,7 @@ const UserProfil = () => {
             <ChangePassword/>
             {ukey ? (
               <div className='right-part admin'>
-                <h2 >Vous etes administrateur.</h2>
+                <h2 >Vous etes administrateur</h2>
               </div>
             ) : (
               <BlockAccount/>

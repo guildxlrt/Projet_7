@@ -1,12 +1,12 @@
 import { GET_POSTS } from "../actions/posts.actions";
 
+const initialState = [];
 
-const initialState = {};
-
-export default function userReducer(state = initialState, action) {
+export default function postsReducer(state = initialState, action) {
     switch (action.type) {
+        
         case GET_POSTS :
-            return action.payload;
+            return action.payload.reverse();
         
         default :
         return state;

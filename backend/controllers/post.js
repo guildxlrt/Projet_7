@@ -25,6 +25,11 @@ exports.createPost = async (req, res, next) => {
                 userId : auth
             };
 
+            // Redirection du nouveau fichier
+            if (req.file) {
+                utils.fileMove('posts', req.file.filename)
+            }
+
             // Enregistrement
             await prisma.post.create({data : content})
             .then(async () => { await prisma.$disconnect() })
@@ -62,36 +67,82 @@ exports.modifyPost = async (req, res, next) => {
     const target = Number(req.params.id)
     const auth = req.auth.userId
 
+    // Validation de la requete
+    const update = async (datas) => {
+        await prisma.post.update({
+            where : { id : target },
+            data : datas
+        })
+        .then(async () => { await prisma.$disconnect() })
+        .then(() => res.status(200).json({ message : 'Publication modifie !' }))
+        .catch(error =>  res.status(500).json(error));
+    }
+
     // Recherche
     await utils.findPost({id : target})
     .then(async (post) => {
-        
-        // verification utilisateur
+
+        // utilisateur
         await utils.findUser({id : auth})
         .then(async user => {
+
+            // verification
             if ((post.userId === auth) && (user.isActive)) {
-                //---Recherche fichier
-                const content = req.file ? {
-                    ...JSON.parse(req.body),
-                    imageUrl : utils.newImageUrl(req)
-                } : { ...req.body };
-    
-                //---Suppression ancien fichier
-                req.file ? (function findURL () {
-                    if (post.imageUrl != null) {
-                        utils.fileDel(post.imageUrl)
+
+                //========// TRAITEMENT DE LA REQUETE
+                let content = req.body
+
+                //----Suppression Image
+                if (req.body.nofile === true) {
+                    // Erreurs requete
+                    if (req.file) {
+                        fileDel('/', req.file.filename)
+                        return res.status(400).json(errMsg.PostErrReq)
                     }
-                })() : null;
-    
-                //---Enregistrement
-                await prisma.post.update({
-                    where : { id : target },
-                    data : content
-                })
-                .then(async () => { await prisma.$disconnect() })
-                .then(() => res.status(200).json({ message : 'Publication modifie !' }))
-                .catch(error =>  res.status(500).json(error));
-    
+                    else if (post.imageUrl === null) {
+                        return res.status(400).json(errMsg.PostErrReq)
+                    }
+                    // Requete valide             
+                    else {
+                        // suppression du fichier
+                        const oldFile = post.imageUrl.split('/images/posts/')[1];
+                        utils.fileDel('posts', oldFile)
+                        content.imageUrl = null
+
+                        // enregistrer
+                        delete content.nofile
+                        if (content.text === "") delete content.text
+                        update(content)
+                    }                    
+                }
+                //----Texte seulement
+                else if (!req.file) {
+                    // enregistrer
+                    delete content.nofile
+                    if (content.text === "") delete content.text
+                    update(content)
+                }
+                //---- Nouvelle image
+                else if (req.file) {
+                    content = {
+                        ...(req.body),
+                        imageUrl : utils.newImageUrl(req)
+                    }
+
+                    // //----Nouvelle image
+                    if (!(post.imageUrl === null)) {
+                        //----Suppression Ancient fichier
+                        const oldFile = post.imageUrl.split('/images/posts/')[1];
+                        utils.fileDel('posts', oldFile)
+                    }
+                    // redirection du nouveau fichier
+                    utils.fileMove('posts', req.file.filename)
+
+                    // enregistrer
+                    delete content.nofile
+                    if (content.text === "") { delete content.text }
+                    update(content)
+                }
             } else {
                 return res.status(403).json(errMsg.authErr)
             }

@@ -51,13 +51,16 @@ export const dateFormat = (value) => {
     if (time >= oneYear) {
         return newFormat(time, oneYear) + " ans";
     }
-    else if (time >= oneMonth) {
+    if (time >= oneMonth) {
         return newFormat(time, oneMonth) + " mois";
     }
-    else if (time >= oneDay) {
+    if (time >= oneDay) {
         return newFormat(time, oneDay) + " jours";
     }
-    else if (time < oneDay) {
+    if (time < (oneDay * 2)) {
+        return "Hier";
+    }
+    if (time < oneDay) {
         return "Aujourd'hui";
     }
 }

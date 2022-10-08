@@ -3,7 +3,7 @@ import { UidContext } from "./components/appContext";
 import { UkeyContext } from "./components/appContext";
 import AppRoutes from './components/Routes'
 import axios from 'axios';
-import {getUser} from "./actions/user.actions"
+import {getAllUsers, getUser} from "./actions/user.actions"
 import {useDispatch} from "react-redux"
 
 function App() {
@@ -25,7 +25,10 @@ function App() {
       .catch((error) => console.log("No token || "+error)) 
     })()
 
-    if (uid) dispatch(getUser(uid))
+    if (uid) {
+      dispatch(getUser(uid))
+      dispatch(getAllUsers())
+    }
   }, [uid, dispatch]);
 
   return (

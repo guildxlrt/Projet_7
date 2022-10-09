@@ -2,8 +2,6 @@
 const bcrypt = require('bcrypt');
 const utils = require('../utils/utils');
 const errMsg = require('../utils/errorMsg');
-const usrTools = require('../utils/usrTools')
-const token = require('../utils/token')
 const { parse } = require('dotenv');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
@@ -16,14 +14,15 @@ const prisma = new PrismaClient();
 exports.signup = (req, res, next) => {
     (function reqValidation() {
         // formatage date
-        const birthday = usrTools.birthdayFormat(req.body.birthday);
+        const birthday = utils.birthdayFormat(req.body.birthday);
+
 
         //====// Validation de donnees 
-        const legalAgeTest = usrTools.ageValidator(birthday)
-        const emailTest = utusrToolsils.emailValid(req.body.email)
-        const passStrength = usrTools.passwdValid(req.body.password)
-        const surnameTest = usrTools.surnameValid(req.body.surname)
-        const nameTest = usrTools.nameValid(req.body.name)
+        const legalAgeTest = utils.ageValidator(birthday)
+        const emailTest = utils.emailValid(req.body.email)
+        const passStrength = utils.passwdValid(req.body.password)
+        const surnameTest = utils.surnameValid(req.body.surname)
+        const nameTest = utils.nameValid(req.body.name)
 
         //---ACCEPT
         if ((legalAgeTest === true) && (emailTest === true) && (passStrength === true) && (req.body.password === req.body.passConfirm) && (surnameTest === true) && (nameTest === true)) {
@@ -54,7 +53,7 @@ exports.signup = (req, res, next) => {
                 .then(async () => {
                     await utils.findUser({email : req.body.email})
                     .then(newUser => {
-                        const ntk = token.tokenGen(newUser.id, newUser.isAdmin)
+                        const ntk = utils.tokenGen(newUser.id, newUser.isAdmin)
 
                         // Creation Cookie de connexion                        
                         res
@@ -82,22 +81,22 @@ exports.signup = (req, res, next) => {
         else {
             let error = {}
             // Email
-            if ((usrTools.emailValid(req.body.email)) === false) {
+            if ((utils.emailValid(req.body.email)) === false) {
                 error.email = errMsg.emailSignup
             }
             // Mot De Passe
-            if ((usrTools.passwdValid(req.body.password)) === false) {
+            if ((utils.passwdValid(req.body.password)) === false) {
                 error.password = errMsg.passStrenght
             }
             if (req.body.password !== req.body.passConfirm) {
                 error.passConfirm = errMsg.passwordConfErr
             }
             // prenomNom
-            if ((usrTools.surnameValid(req.body.surname)) === false) {
+            if ((utils.surnameValid(req.body.surname)) === false) {
                 error.surname = errMsg.surnameErr
             }
             // Nom de famille
-            if ((usrTools.nameValid(req.body.name)) === false) {
+            if ((utils.nameValid(req.body.name)) === false) {
                 error.name = errMsg.nameErr
             }
             // Date de naissance
@@ -125,7 +124,7 @@ exports.login = async (req, res, next) => {
                 await bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (valid) {
-                        const ntk = token.tokenGen(user.id, user.isAdmin)
+                        const ntk = utils.tokenGen(user.id, user.isAdmin)
 
                         // Creation Cookie de connexion
                         res

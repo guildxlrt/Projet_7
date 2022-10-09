@@ -23,7 +23,10 @@ exports.authErr = { error : 'Acces non authorise' }
 exports.unactived = { error : "Le Compte n'est plus actif"}
 
 //likes
-exports.likeErr = { error : 'auto-like interdit' }
+exports.autolikeErr = { error : 'auto-like interdit' }
+exports.unlikeErr = { error : 'Like non trouve' }
+exports.likeErr = { error : 'Deja like' }
+
 
 // token
 exports.tokkenErr = { error : "Cookie/Tokken Introuvable || Impossible de deconnecter correctement" }

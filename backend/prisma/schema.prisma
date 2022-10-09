@@ -31,7 +31,9 @@ model Post {
   title        String
   text         String?
   imageUrl     String?
+  video        String?
   creationDate DateTime  @default(now())
+  updated      Boolean   @default(false)
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   Comment      Comment[]
@@ -43,6 +45,7 @@ model Comment {
   id       Int      @id @default(autoincrement())
   text     String
   date     DateTime @default(now())
+  updated  Boolean  @default(false)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   Int
   post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)

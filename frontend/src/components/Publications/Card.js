@@ -1,22 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { dateFormat, isEmpty } from '../utils'
+import { isEmpty, postTime } from '../utils'
+import LikeButton from './LikeButton'
 
 const Card = ({post}) => {
   const [isLoading, setIsLoading] = useState(true)
   const userData = useSelector((state) => state.userReducer)
   const usersList = useSelector((state) => state.allUsersReducer)
 
-  const date = dateFormat(post.creationDate)
-  const PostDate = () => {
-    let part =  null
-    if ((date === "Aujourd'hui" )|| (date === "Hier" )) {
-      part = ''
-    } else {
-      part = "Il y a "
-    }
-    return part + date
-  }
+  const date = postTime(post.creationDate)
+  
+
   
   useEffect(() => {
     !isEmpty(usersList[0]) && setIsLoading(false)
@@ -57,7 +51,7 @@ const Card = ({post}) => {
                   </h3>
                 </div>
                 
-                  <span><PostDate/></span>
+                  <span>{date}</span>
               </div>
               <div>
                 <h4>{post.title}</h4>
@@ -75,6 +69,32 @@ const Card = ({post}) => {
                   <img src={post.imageUrl} alt='card-pic' className='card-pic'/>
                 </>
               )}
+
+            {post.video && (
+              <iframe
+                width="500"
+                height="300"
+                src={post.video}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={post._id}
+              ></iframe>
+            )}
+
+            <div className="card-footer">
+              <div className="comment-icon">
+                <img
+                  //onClick={() => setShowComments(!showComments)}
+                  src="./images/icons/message1.svg"
+                  alt="comment"
+                />
+                <span>{post.Comment.length}</span>
+              </div>
+              <LikeButton post={post}/>
+              <img src="./images/icons/share.svg" alt="share" />
+            </div>
+
             </div>
         </>
       )}

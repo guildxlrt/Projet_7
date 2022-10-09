@@ -15,7 +15,7 @@ const Publications = () => {
       dispatch(getPosts())
       setLoadPost(false)
     }
-  }, [loadPost, dispatch])
+  }, [loadPost])
 
 
   return (

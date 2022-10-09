@@ -47,11 +47,11 @@ app.use(express.json());
 app.use(cookieParser())
 app.use(cors(corsOptions));
 app.use(helmet());
-//---expresss rate limit
-app.use(limiter);
-//---express slow down
-// app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
-app.use(speedLimiter);
+// //---expresss rate limit
+// app.use(limiter);
+// //---express slow down
+// // app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
+// app.use(speedLimiter);
 
 //========//Autorisations
 app.use((req, res, next) => {
@@ -73,7 +73,6 @@ app.use(express.static('images'));
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
-
 
 //================//EXPORT//================//
 module.exports = app;

@@ -64,3 +64,15 @@ export const dateFormat = (value) => {
         return "Aujourd'hui";
     }
 }
+
+export const postTime = (value) => {
+    const date = dateFormat(value)
+
+    let part =  null
+    if ((date === "Aujourd'hui" )|| (date === "Hier" )) {
+      part = ''
+    } else {
+      part = "Il y a "
+    }
+    return part + date
+  }

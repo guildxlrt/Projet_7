@@ -29,7 +29,7 @@ function App() {
       dispatch(getUser(uid))
       dispatch(getAllUsers())
     }
-  }, [uid, dispatch]);
+  }, [uid]);
 
   return (
     <UidContext.Provider value={uid}>

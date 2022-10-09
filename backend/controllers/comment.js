@@ -42,19 +42,6 @@ exports.commentPost = async (req, res, next) => {
     .catch(error =>  res.status(500).json(error));
 };
 
-//========//AFFICHER
-exports.getPostComments = async (req, res, next) => {
-    // recherche
-    await prisma.comment.findMany({
-        where : {
-            postId : Number(req.params.id_post),
-            isActive : true
-        }
-    })
-    .then(comments => res.status(200).json(comments))
-    .then(async () => { await prisma.$disconnect() })
-    .catch(error => console.log(error) || res.status(404).json(error));
-}
 
 //========//UN SEUL
 exports.getOneComment = async (req, res, next) => {

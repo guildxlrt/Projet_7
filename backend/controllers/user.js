@@ -195,7 +195,11 @@ exports.userInfos = async (req, res, next) => {
 //========//TOUT LES UTILISATEURS
 exports.getAllUsers = async (req, res, next) => {
     // recherche
-    await prisma.user.findMany()
+    await prisma.user.findMany({
+        where: {
+            isActive : true,
+        }
+    })
     .then(users => res.status(200).json(users))
     .then(async () => { await prisma.$disconnect() })
     .catch(error =>  res.status(500).json(error));

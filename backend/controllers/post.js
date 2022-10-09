@@ -45,7 +45,13 @@ exports.createPost = async (req, res, next) => {
 exports.getAllPosts = async (req, res, next) => {
     // recherche
     await prisma.post.findMany({
-        where : { isActive : true }
+        where: {
+            isActive : true,
+        },
+        include : {
+          Comment : true,
+          Like : true
+        },
     })
     .then(posts => res.status(200).json(posts))
     .then(async () => { await prisma.$disconnect() })
@@ -266,14 +272,3 @@ exports.likePost = async (req, res, next) => {
         return res.status(403).json(errMsg.authErr);
     }
 };
-
-//================//COUNT OF LIKES//================//
-exports.likesCount = async (req, res, next) => {
-    // recherche
-    await prisma.like.count({
-        where : { postId : Number(req.params.id) }
-    })
-    .then(likes => res.status(200).json({likes : likes}))
-    .then(async () => { await prisma.$disconnect() })
-    .catch(error =>  res.status(500).json(error));
-}

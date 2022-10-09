@@ -136,29 +136,22 @@ exports.userManage = async (targetId, bolValue, req, res) => {
     //---Utilisateur
     await prisma.user.update({
         where : { id : targetId },
-        data : { isActive : bolValue }
+        data : { 
+            isActive : bolValue,
+            Post : {
+                updateMany : {
+                    where : { userId : targetId },
+                    data : { isActive : bolValue }
+                } 
+            },
+            Comment : {
+                updateMany : {
+                    where : { userId : targetId },
+                    data : { isActive : bolValue }
+                } 
+            }
+        },
     })
-    .then( console.log('user status update') )
-    //---Publications
-    .then(async () => {
-        await prisma.post.updateMany({
-            where : { userId : targetId },
-            data : { isActive : bolValue }
-        })
-        .then( console.log('user posts update') )
-        .catch(error => console.log(error));
-    })
-    //---Commentaires
-    .then(async () => {
-        await prisma.comment.updateMany({
-            where : { userId : targetId },
-            data : { isActive : bolValue }
-        })
-        .then( console.log('user comments update') )
-        .catch(error => console.log(error));
-    })
-    .then(async () => { await prisma.$disconnect() })
-    //====// Post desactivation 
     .then(() => {
         if (bolValue === false) {
             console.log('Compte Desactive !') || res.status(200).json({ message : 'Compte Desactive !' })

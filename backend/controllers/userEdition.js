@@ -2,11 +2,11 @@
 const bcrypt = require('bcrypt');
 const utils = require('../utils/utils');
 const errMsg = require('../utils/errorMsg');
+const usrTools = require('../utils/usrTools')
 const { parse } = require('dotenv');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-
 
 //================//MANAGE//================//
 
@@ -31,13 +31,13 @@ exports.update = async (req, res, next) => {
             if (req.body.surname) userDatas.surname = req.body.surname
             if (req.body.name) userDatas.name = req.body.name
             if (req.body.birthday) {
-                userDatas.birthday = utils.birthdayFormat(req.body.birthday)
+                userDatas.birthday = usrTools.birthdayFormat(req.body.birthday)
             }
 
             //====// Validation de donnees
-            const legalAgeTest = utils.ageValidator(userDatas.birthday)
-            const surnameTest = utils.surnameValid(userDatas.surname)
-            const nameTest = utils.nameValid(userDatas.name)
+            const legalAgeTest = usrTools.ageValidator(userDatas.birthday)
+            const surnameTest = usrTools.surnameValid(userDatas.surname)
+            const nameTest = usrTools.nameValid(userDatas.name)
 
             //----Valid
             if ((surnameTest === true) && (nameTest === true) && (legalAgeTest === true)) {
@@ -101,7 +101,7 @@ exports.password = async (req, res, next) => {
             .then(async valid => {
                 if (valid) {
                     //---Nouveau
-                    if ((req.body.password != req.body.newPass) && (req.body.newPass === req.body.passConfirm) && (utils.passwdValid(req.body.newPass))) {
+                    if ((req.body.password != req.body.newPass) && (req.body.newPass === req.body.passConfirm) && (usrTools.passwdValid(req.body.newPass))) {
                         bcrypt.hash(req.body.passConfirm, 10)
                         .then(async hash => {
                             // enregistrement du nouveau mot de passe
@@ -127,7 +127,7 @@ exports.password = async (req, res, next) => {
                             error.congruency = errMsg.passwordConfErr
                         }
                         // force
-                        if (!(utils.passwdValid(req.body.newPass))) {
+                        if (!(usrTools.passwdValid(req.body.newPass))) {
                             error.force = errMsg.passStrenght
                         }
 
@@ -164,11 +164,11 @@ exports.disable = async (req, res, next) => {
                 .then( async user => {
                     // DESACTIVER
                     if (user.isActive === true) {
-                        utils.userBlocking(user.id, false, req, res)
+                        usrTools.userBlocking(user.id, false, req, res)
                     }
                     // REACTIVER 
                     else {
-                        utils.userBlocking(user.id, true, req, res)
+                        usrTools.userBlocking(user.id, true, req, res)
                     }
                 })
             //non admin
@@ -192,7 +192,7 @@ exports.disable = async (req, res, next) => {
                         if (valid) {
                             // email
                             if (req.body.email === user.email) {
-                                utils.userBlocking(user.id, false, req, res)
+                                usrTools.userBlocking(user.id, false, req, res)
                             }
                             // mauvais
                             else {

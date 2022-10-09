@@ -132,7 +132,7 @@ exports.passwdValid = (value) => new pwVal()
 //========//USER MANAGEMENT//========//
 
 //========//Update User Status
-exports.userManage = async (targetId, bolValue, req, res) => {
+exports.userBlocking = async (targetId, bolValue, req, res) => {
     //---Utilisateur
     await prisma.user.update({
         where : { id : targetId },

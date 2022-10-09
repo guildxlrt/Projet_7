@@ -362,11 +362,11 @@ exports.disable = async (req, res, next) => {
                 .then( async user => {
                     // DESACTIVER
                     if (user.isActive === true) {
-                        utils.userManage(user.id, false, req, res)
+                        utils.userBlocking(user.id, false, req, res)
                     }
                     // REACTIVER 
                     else {
-                        utils.userManage(user.id, true, req, res)
+                        utils.userBlocking(user.id, true, req, res)
                     }
                 })
             //non admin
@@ -390,7 +390,7 @@ exports.disable = async (req, res, next) => {
                         if (valid) {
                             // email
                             if (req.body.email === user.email) {
-                                utils.userManage(user.id, false, req, res)
+                                utils.userBlocking(user.id, false, req, res)
                             }
                             // mauvais
                             else {

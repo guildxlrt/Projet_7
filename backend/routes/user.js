@@ -1,9 +1,9 @@
 //========//IMPORTS//========//
 const router = require('express').Router();
-const userCtrl = require('../controllers/user');
 const auth = require('../middlewares/auth');
 const multer = require('../middlewares/multer-config');
-
+const userCtrl = require('../controllers/user');
+const userEdition = require('../controllers/userEdition');
 
 //========//ENDPOINTS//========//
 router.post('/signup', multer, userCtrl.signup);
@@ -15,11 +15,11 @@ router.get('/:id', userCtrl.userInfos)
 router.get('/', userCtrl.getAllUsers)
 
 //========//Manage
-router.put('/update', auth, userCtrl.update);
-router.put('/password', auth, userCtrl.password);
-router.put('/:id/disable', auth, userCtrl.disable);
+router.put('/update', auth, userEdition.update);
+router.put('/password', auth, userEdition.password);
+router.put('/:id/disable', auth, userEdition.disable);
 //========//Avatar
-router.put('/avatar', auth, multer, userCtrl.avatar);
+router.put('/avatar', auth, multer, userEdition.avatar);
 
 //========//EXPORT//========//
 module.exports = router;

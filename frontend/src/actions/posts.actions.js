@@ -22,19 +22,15 @@ export const getPosts = () => {
 export const likePost = (postId, userId) => {
     return async (dispatch) => {
         return await axios({
-            method : "patch",
+            method : "post",
             url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}/like`,
             withCredentials : true
         })
-        .then((res) => dispatch({
-            type : LIKE_POST,
-            payload : {
-                datas : res.data, 
-                    postId : postId,
-                    userId : userId
-                }
-            }
-        ))
+        .then((res) => dispatch({type : LIKE_POST, payload : {
+            datas : res.data,
+            postId : postId,
+            userId : userId
+        } }))
         .catch(error => console.log(error))
     }
 }
@@ -43,18 +39,14 @@ export const likePost = (postId, userId) => {
 export const unlikePost = (postId, userId) => {
     return async (dispatch) => {
         return await axios({
-            method : "patch",
-            url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}/unlike`,
+            method : "delete",
+            url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}/like`,
             withCredentials : true
         })
-        .then(() => dispatch({
-            type : UNLIKE_POST,
-            payload : {
-                    postId : postId,
-                    userId : userId
-                }
-            }
-        ))
+        .then((res) => dispatch({type : UNLIKE_POST, payload : {
+            postId : postId,
+            userId : userId
+        } }))
         .catch(error => console.log(error))
     }
 }

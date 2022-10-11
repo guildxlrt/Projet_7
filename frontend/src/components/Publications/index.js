@@ -6,17 +6,31 @@ import Card from './Card'
 
 
 const Publications = () => {
-  const [loadPost, setLoadPost] = useState(true)
   const dispatch = useDispatch()
   const posts = useSelector((state) => state.postsReducer)
 
-  useEffect(() => {
-    if(loadPost) {
-      dispatch(getPosts())
-      setLoadPost(false)
-    }
-  }, [loadPost])
+  const [loadPage, setLoadPage] = useState(true)
 
+  const loadNumber = 10
+  const [count, setCount] =  useState(loadNumber)
+
+
+  const loadMore = () => {
+    if((window.innerHeight + document.documentElement.scrollTop + 1) > document.documentElement.scrollHeight) {
+      setLoadPage(true);
+    }
+  }
+
+  useEffect(() => {
+    if(loadPage) {
+      dispatch(getPosts(count))
+      setLoadPage(false)
+      setCount(count + loadNumber)
+    }
+
+    window.addEventListener('scroll', loadMore)
+    return () => window.addEventListener('scroll', loadMore)
+  }, [loadPage])
 
   return (
     <div className='thread-container'>

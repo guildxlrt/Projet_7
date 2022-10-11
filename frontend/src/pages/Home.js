@@ -30,9 +30,6 @@ const Home = () => {
           </div>
         </div>
       )}
-      <a href="/profil">
-      <img src="./images/icon.png" alt="icon" />
-      </a>
     </>
   )
 }

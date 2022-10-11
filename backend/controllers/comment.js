@@ -9,11 +9,11 @@ const prisma = new PrismaClient();
 //========//CREER
 exports.commentPost = async (req, res, next) => {
     const auth = req.auth.userId
+    const postToComment = Number(req.params.id_post)
 
     // Recherche post 
-    await utils.findPost({id : Number(req.params.id_post)})
+    await utils.findPost({id : postToComment})
     .then( async post => {
-        console.log(post)
         if(post.isActive) {
             // Recherche utilisateur
             await utils.findUser({id : auth})
@@ -23,13 +23,13 @@ exports.commentPost = async (req, res, next) => {
                     await prisma.comment.create({
                         data : {
                             text : req.body.text,
-                            postId : Number(req.params.id_post),
+                            postId : postToComment,
                             userId : auth
                         }
                     })
-                    .then(async () => { await prisma.$disconnect() })
-                    .then(() => res.status(201).json({ message : 'commentaire publie !' }))
+                    .then((comment) => res.status(201).json(comment))
                     .catch(error =>  res.status(500).json(error))
+
                 } else {
                     return res.status(403).json(errMsg.authErr);
                 }

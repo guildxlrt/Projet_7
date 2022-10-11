@@ -5,7 +5,7 @@ import Profil from '../../pages/Profil';
 import Navbar from '../navbar';
 import LeftNav from '../LeftNav';
 import { UidContext } from '../appContext';
-import AdminAnAccount from '../../pages/AdminAnAccount';
+import ManageUsers from '../ManageUsers'
 
 
 
@@ -20,8 +20,7 @@ const Index = () => {
         <Routes>
             <Route path="/" exact element={<Home />} />
             <Route path="/profil" exact element={<Profil />} />
-            <Route path='/admin-user' exact element={<AdminAnAccount/>} />
-            {/* <Route path='/admin-user?id=103' exact element={<AdminAnAccount/>} /> */}
+            <Route path='/user' exact element={<ManageUsers/>} />
         </Routes>
     </BrowserRouter>
   )

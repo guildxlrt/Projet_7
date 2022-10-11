@@ -41,6 +41,13 @@ const LikeButton = ({post}) => {
     }
   }, [uid, post.Like, liked])
 
+  let count = 0
+  for(let like in post.Like) {
+    if(post.Like.hasOwnProperty(like)){
+      count++;
+    }
+}
+
   return (
     <div className='like-container'>
       {uid === null && (
@@ -51,12 +58,16 @@ const LikeButton = ({post}) => {
             <div>Connectez-vous pour aimer ce post !</div>
         </Popup>
       )}
+
       {((uid) && !(isTheAuthor) && (liked === false)) && (
         <img src="./images/icons/heart.svg" onClick={like} alt="like" />
       )}
       {((uid) && !(isTheAuthor) && (liked === true)) && (
         <img src="./images/icons/heart-filled.svg" onClick={unlike} alt="unlike" />
       )}
+
+      {isTheAuthor && <img src="./images/icons/heart-solid.svg" alt="like" /> }
+      <span>{count}</span>
     </div>
   )
 }

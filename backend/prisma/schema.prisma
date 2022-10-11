@@ -28,8 +28,8 @@ model User {
 
 model Post {
   id           Int       @id @default(autoincrement())
-  title        String
-  text         String?
+  title        String?   @db.VarChar(150)
+  text         String?   @db.VarChar(2000)
   imageUrl     String?
   video        String?
   creationDate DateTime  @default(now())
@@ -54,10 +54,9 @@ model Comment {
 }
 
 model Like {
-  id     Int      @id @default(autoincrement())
-  date   DateTime @default(now())
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
-  post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId Int
 }

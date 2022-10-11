@@ -12,7 +12,7 @@ router.delete('/logout', userCtrl.logout);
 router.get('/token', auth, userCtrl.userToken)
 router.get('/:id', userCtrl.userInfos)
 
-router.get('/', userCtrl.getAllUsers)
+router.get('/', auth, userCtrl.getAllUsers)
 
 //========//Manage
 router.put('/update', auth, userEdition.update);

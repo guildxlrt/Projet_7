@@ -1,14 +1,14 @@
 import React from 'react'
-import Block from '../components/Admin/Block'
+import ManageUser from '../components/Admin/ManageUser'
 
-const AdminAnAccount = () => {
+const Admin = () => {
     return (
         <div className="profil-page">
             <div className='profil-container'>
-                <Block/>
+                <ManageUser/>
             </div>
         </div>
     )
 }
 
-export default AdminAnAccount
+export default Admin

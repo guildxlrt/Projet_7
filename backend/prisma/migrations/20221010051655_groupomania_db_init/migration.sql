@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Post` MODIFY `text` VARCHAR(3000) NULL;

@@ -13,8 +13,8 @@ router.put('/:id', auth, multer, postsCtrl.modifyPost);
 router.delete('/:id', auth, postsCtrl.deletePost);
 
 //========//Likes
-router.post('/:id/like', auth, postsCtrl.likePost);
-router.delete('/:id/like', auth, postsCtrl.unlikePost);
+router.patch('/:id/like', auth, postsCtrl.likePost);
+router.patch('/:id/unlike', auth, postsCtrl.unlikePost);
 
 //========//EXPORT//========//
 module.exports = router;

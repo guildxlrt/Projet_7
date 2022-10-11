@@ -9,7 +9,7 @@ router.get('/:id', auth, commentCtrl.getOneComment);
 router.put('/:id', auth, commentCtrl.modifyComment);
 router.delete('/:id', auth, commentCtrl.delComment);
 
-//========//Post relation
+//========//create from post
 router.post('/:id_post', auth, commentCtrl.commentPost);
 
 //========//EXPORT//========//

@@ -14,7 +14,6 @@ exports.createPost = async (req, res, next) => {
     await utils.findUser({id : auth})
     .then( async user => {
         if (user.isActive) {
-            console.log(req.body)
             // Condition Fichier
             const content = req.file ? {
                 ...req.body,
@@ -29,6 +28,10 @@ exports.createPost = async (req, res, next) => {
             if (req.file) {
                 utils.fileMove('posts', req.file.filename)
             }
+
+            let text = ''
+            text = req.body.text
+            console.log(text.length)
 
             // Enregistrement
             await prisma.post.create({data : content})
@@ -249,18 +252,7 @@ exports.likePost = async (req, res, next) => {
                         userId : liker
                     }
                 })
-                .then(async () => { await prisma.$disconnect() })
-                
-
-                .then(async () => {
-                    await prisma.like.findFirst({
-                        where : {
-                            userId : liker,
-                            postId : postToLike
-                        }
-                    })
-                    .then((like) => res.status(201).json(like))
-                })
+                .then((like) => res.status(201).json(like))
                 .catch(error =>  res.status(500).json(error))
             }
             // empecher autolike

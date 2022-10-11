@@ -42,26 +42,37 @@ export const dateFormat = (value) => {
     const oneYear = 1000 * 60 * 60 * 24 * 365
     const oneMonth = 1000 * 60 * 60 * 24 * 30
     const oneDay = 1000 * 60 * 60 * 24
+    const oneHour = 1000 * 60 * 60
+    const oneMinute = 1000 * 60
 
+    function newFormat(time, scale, string) {
+        const i = String(time / scale).split('.')[0]
 
-    function newFormat (time, scale) {
-        return String(time / scale).split('.')[0]
+        if (i === "1" || string === " mois") {
+            return i + string
+        }
+        else {
+            return i + string + "s"
+        }
     }
 
     if (time >= oneYear) {
-        return newFormat(time, oneYear) + " ans";
+        return newFormat(time, oneYear, " ans");
     }
     if (time >= oneMonth) {
-        return newFormat(time, oneMonth) + " mois";
+        return newFormat(time, oneMonth, " mois");
     }
     if (time >= oneDay) {
-        return newFormat(time, oneDay) + " jours";
+        return newFormat(time, oneDay, " jour");
     }
-    if (time < (oneDay * 2)) {
-        return "Hier";
+    if (time >= oneHour) {
+        return newFormat(time, oneHour, " heure");
     }
-    if (time < oneDay) {
-        return "Aujourd'hui";
+    if (time >= oneMinute) {
+        return newFormat(time, oneMinute, " minute");
+    }
+    if (time < oneMinute) {
+        return  " moins d'une minute";
     }
 }
 

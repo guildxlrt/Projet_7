@@ -194,13 +194,38 @@ exports.userInfos = async (req, res, next) => {
 
 //========//TOUT LES UTILISATEURS
 exports.getAllUsers = async (req, res, next) => {
-    // recherche
-    await prisma.user.findMany({
-        where: {
-            isActive : true,
-        }
-    })
-    .then(users => res.status(200).json(users))
-    .then(async () => { await prisma.$disconnect() })
-    .catch(error =>  res.status(500).json(error));
+    const auth = req.auth
+
+    //---Quel utilisateur ?
+    //------ADMINISTRATEUR
+    if (auth.isAdmin) {
+        await utils.findUser({id : auth.userId})
+        //---Verifications
+        .then(async admin => {
+            // administrateur
+            if ((auth.userId === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
+                // RECHERCHE
+                await prisma.user.findMany()
+                .then(users => res.status(200).json(users))
+                .then(async () => { await prisma.$disconnect() })
+                .catch(error =>  res.status(500).json(error));
+            //non admin
+            } else {
+                res.status(403).json(errMsg.authErr);
+            }
+        })
+        .catch(error =>  res.status(500).json(error));
+    }
+    //------UTILISATEUR NORMAL
+    else {
+        // Recherche
+        await prisma.user.findMany({
+            where: {
+                isActive : true,
+            }
+        })
+        .then(users => res.status(200).json(users))
+        .then(async () => { await prisma.$disconnect() })
+        .catch(error =>  res.status(500).json(error));
+    }
 };

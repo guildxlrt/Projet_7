@@ -2,7 +2,10 @@
 const bcrypt = require('bcrypt');
 const utils = require('../utils/utils');
 const errMsg = require('../utils/errorMsg');
+const token = require('../utils/token');
 const { parse } = require('dotenv');
+const errorFileReq = require('../utils/errorFileReq')
+
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -53,7 +56,7 @@ exports.signup = (req, res, next) => {
                 .then(async () => {
                     await utils.findUser({email : req.body.email})
                     .then(newUser => {
-                        const ntk = utils.tokenGen(newUser.id, newUser.isAdmin)
+                        const ntk = token.tokenGen(newUser.id, newUser.isAdmin)
 
                         // Creation Cookie de connexion                        
                         res
@@ -69,13 +72,13 @@ exports.signup = (req, res, next) => {
                 .catch(error => {
                     if (error.code === "P2002") {
                         // EMAIL DEJA UTILISE
-                        res.status(405).json(errMsg.emailInUse)
+                        errorFileReq(errMsg.emailInUse, 405, req, res)
                     } else {
-                        console.log(error) || res.status(500).json(error)
+                        errorFileReq(error, 500, req, res)
                     }
                 })
             })
-            .catch(error =>  res.status(500).json(error));
+            .catch(error => errorFileReq(error, 500, req, res));
         }
         //---REJET
         else {
@@ -107,7 +110,7 @@ exports.signup = (req, res, next) => {
                 error.legal_age = errMsg.legalAgeErr
             }
 
-            return res.status(400).json({ error : error })
+            return errorFileReq({ error : error }, 400)
         }
     })();
 };
@@ -124,7 +127,7 @@ exports.login = async (req, res, next) => {
                 await bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (valid) {
-                        const ntk = utils.tokenGen(user.id, user.isAdmin)
+                        const ntk = token.tokenGen(user.id, user.isAdmin)
 
                         // Creation Cookie de connexion
                         res

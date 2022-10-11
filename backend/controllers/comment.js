@@ -54,7 +54,7 @@ exports.getOneComment = async (req, res, next) => {
 
 //========//MODIFIER
 exports.modifyComment = async (req, res, next) => {
-    const auth = auth
+    const auth = req.auth.userId
     const target = Number(req.params.id)
 
     // Recherche
@@ -74,9 +74,8 @@ exports.modifyComment = async (req, res, next) => {
                         text : req.body.text
                     }
                 })
-                .then(async () => { await prisma.$disconnect() })
-                .then(() => res.status(200).json({ message : 'Commentaire modifie !' }))
-                .catch(error =>  res.status(500).json(error));
+                .then((comment) => res.status(200).json(comment))
+                .catch(error =>  res.status(500).json(error))
     
             } else {
                 return res.status(403).json(errMsg.authErr)

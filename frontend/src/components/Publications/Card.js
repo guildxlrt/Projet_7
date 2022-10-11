@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { updatePost } from '../../actions/posts.actions'
+import { UkeyContext } from '../appContext'
 import { isEmpty, postTime } from '../utils'
 import Comments from './Comments'
 import DeleteCard from './DeleteCard'
@@ -11,6 +12,7 @@ const Card = ({post}) => {
   const userData = useSelector((state) => state.userReducer)
   const usersList = useSelector((state) => state.allUsersReducer)
   const dispatch = useDispatch()
+  const ukey = useContext(UkeyContext)
 
   const [isUpdated, setIsUpdated] = useState(false)
   const [titleUpdate, setTitleUpdate] = useState(null)
@@ -69,7 +71,6 @@ const Card = ({post}) => {
           </div>
           <div className='card-right'>
               <div className='card-header'>
-                <br/>
                 <div className='pseudo'>
                     <h3>
                       {
@@ -153,7 +154,7 @@ const Card = ({post}) => {
               </>
             )}
 
-            {(userData.isAdmin && !isAuthor) && (
+            {(ukey && !isAuthor) && (
               <>
                 <br/>
                 <div className='button-container'>

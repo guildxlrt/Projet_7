@@ -1,4 +1,4 @@
-import { ADD_COMMENT, DELETE_POST, GET_POSTS, LIKE_POST, UNLIKE_POST, UPDATE_POST } from "../actions/posts.actions";
+import { ADD_COMMENT, ADD_POST, DELETE_COMMENT, DELETE_POST, EDIT_COMMENT, GET_POSTS, LIKE_POST, UNLIKE_POST, UPDATE_POST } from "../actions/posts.actions";
 
 const initialState = [];
 
@@ -10,6 +10,7 @@ export default function postsReducer(state = initialState, action) {
 
         case LIKE_POST :
             return state.map((post) => {
+                //rechercher le post
                 if (post.id === action.payload.postId) {
                     return {
                         ...post,
@@ -17,11 +18,12 @@ export default function postsReducer(state = initialState, action) {
                         Like : [action.payload.datas, ...post.Like]
                     }
                 }
-                return post
+                else return post
             })
 
         case UNLIKE_POST :
             return state.map((post) => {
+                //rechercher le post
                 if (post.id === action.payload.postId) {
                     return {
                         ...post,
@@ -29,13 +31,14 @@ export default function postsReducer(state = initialState, action) {
                         Like : post.Like.filter((like) => like.userId !== action.payload.userId )
                     }
                 }
-                return post
+                else return post
             })
         
         case UPDATE_POST :
             return state.map((post) => {
+                //rechercher le post
                 if (post.id === action.payload.postId) {
-                    
+                    // modifier le post
                     return {
                         ...post,
                         ...action.payload.content
@@ -49,6 +52,7 @@ export default function postsReducer(state = initialState, action) {
             
             case ADD_COMMENT :
                 return state.map((post) => {
+                    //rechercher le post
                     if (post.id === action.payload.postId) {
                         return {
                             ...post,
@@ -56,8 +60,46 @@ export default function postsReducer(state = initialState, action) {
                             Comment : [ ...action.payload.datas, ...post.Comment]
                         }
                     }
-                    return post
+                    else return post
                 })
+
+            case EDIT_COMMENT :
+                return state.map((post) => {
+                    //rechercher le post
+                    if (post.id === action.payload.postId) {
+                        return {
+                            ...post,
+                            Comment : post.Comment.map((comment) => {
+                                // rechercher le commentaire
+                                if(comment.id === action.payload.id) {
+                                    // modifier le commentaire
+                                    return {...comment, text : action.payload.text}
+                                }
+                                else return comment
+                            })
+                        }
+                    }
+                    else return post
+                })
+            
+            case DELETE_COMMENT :
+                return state.map((post) => {
+                    console.log(action.payload)
+                    //rechercher le post
+                    if (post.id === action.payload.postId) {
+                        console.log(action.payload)
+                        return {
+                            ...post,
+                            // retirer le commentaire
+                            Comment : post.Comment.filter((comment) => comment.id !== action.payload.id)
+                        }
+                    }
+                    else return post
+                })
+
+            case ADD_POST :
+                console.log(action.payload)
+                return [action.payload.datas, ...state]
 
         default :
         return state;

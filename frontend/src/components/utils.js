@@ -57,7 +57,7 @@ export const dateFormat = (value) => {
     }
 
     if (time >= oneYear) {
-        return newFormat(time, oneYear, " ans");
+        return newFormat(time, oneYear, " an");
     }
     if (time >= oneMonth) {
         return newFormat(time, oneMonth, " mois");

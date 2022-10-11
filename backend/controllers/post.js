@@ -1,6 +1,8 @@
 //========//IMPORTS//========//
 const utils = require('../utils/utils');
 const errMsg = require('../utils/errorMsg')
+const errorFileReq = require('../utils/errorFileReq')
+
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -29,19 +31,19 @@ exports.createPost = async (req, res, next) => {
                 utils.fileMove('posts', req.file.filename)
             }
 
+            
             let text = ''
             text = req.body.text
-            console.log(text.length)
 
             // Enregistrement
             await prisma.post.create({data : content})
-            .then(async () => { await prisma.$disconnect() })
-            .then(() => res.status(201).json({ message : 'publication cree !'}))
-            .catch(error =>  res.status(500).json(error))
+            .then((post) => res.status(201).json(post))
+            .catch((error) => {errorFileReq(error, 500, req, res)})
         } else {
-            return res.status(403).json(errMsg.authErr)
+            return errorFileReq(errMsg.authErr, 403, req, res)
         }
     })
+    .catch((error) => {errorFileReq(error, 500, req, res)})
 };
 
 //========//TOUT AFFICHER
@@ -83,8 +85,8 @@ exports.modifyPost = async (req, res, next) => {
             data : datas
         })
         .then(async () => { await prisma.$disconnect() })
-        .then(() => res.status(200).json({ message : 'Publication modifie !' }))
-        .catch(error =>  res.status(500).json(error));
+        .then((post) => res.status(200).json(post))
+        .catch(error =>  errorFileReq(error, 500, req, res));
     }
 
     // Recherche
@@ -105,11 +107,10 @@ exports.modifyPost = async (req, res, next) => {
                 if (req.body.nofile === true) {
                     // Erreurs requete
                     if (req.file) {
-                        fileDel('/', req.file.filename)
-                        return res.status(400).json(errMsg.PostErrReq)
+                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
                     }
                     else if (post.imageUrl === null) {
-                        return res.status(400).json(errMsg.PostErrReq)
+                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
                     }
                     // Requete valide             
                     else {
@@ -142,10 +143,11 @@ exports.modifyPost = async (req, res, next) => {
                     if (!(post.imageUrl === null)) {
                         //----Suppression Ancient fichier
                         const oldFile = post.imageUrl.split('/images/posts/')[1];
-                        utils.fileDel('posts', oldFile)
+                        utils.fileDel(oldFile)
                     }
                     // redirection du nouveau fichier
                     utils.fileMove('posts', req.file.filename)
+                    .catch(error =>  errorFileReq(error, 500, req, res))
 
                     // enregistrer
                     delete content.nofile
@@ -153,11 +155,11 @@ exports.modifyPost = async (req, res, next) => {
                     update(content)
                 }
             } else {
-                return res.status(403).json(errMsg.authErr)
+                return errorFileReq(errMsg.authErr, 403, req, res)
             }
         })    
     })
-    .catch(error =>  res.status(500).json(error));
+    .catch(error =>  errorFileReq(error, 500, req, res));
 };
 
 //========//SUPPRIMER
@@ -175,7 +177,8 @@ exports.deletePost = async (req, res, next) => {
                 await utils.findPost({id : target})
                 .then(post => {
                     if (post.imageUrl != null) {
-                        utils.fileDel(post.imageUrl)
+                        const oldFile = post.imageUrl.split('/images/posts/')[1];
+                        utils.fileDel(oldFile)
                     }
                 })
 
@@ -202,7 +205,8 @@ exports.deletePost = async (req, res, next) => {
                 if ((post.userId === auth) && (user.isActive)) {
                     //---Suppression fichier
                     if (post.imageUrl != null) {
-                        utils.fileDel(post.imageUrl)
+                        const oldFile = post.imageUrl.split('/images/posts/')[1];
+                        utils.fileDel(oldFile)
                     }
                         
                     //---Suppression dans la BDD
@@ -221,91 +225,3 @@ exports.deletePost = async (req, res, next) => {
     }
 };
 
-//================// LIKER //================//
-exports.likePost = async (req, res, next) => {
-    const liker = req.auth.userId
-    const postToLike = Number(req.params.id)
-    
-    //---RECHERCHES
-    // utilisateur
-    const findUser = await utils.findUser({id : liker})
-    // publication
-    const findPost = await utils.findPost({id : postToLike})
-    // like doublon
-    const findLike = await prisma.like.findFirst({
-        where : {
-            userId : liker,
-            postId : postToLike
-        }
-    })
-    
-    // l'utilisateur et le post doivent etre actif
-    if ((findUser.isActive) && (findPost.isActive)) {
-        // CONDITIONS
-        //========//Aucun doublon : AJOUTER
-        if (!Boolean(findLike)) {
-            if (!(findPost.userId === liker)) {            
-                // enregistrement
-                await prisma.like.create({
-                    data : {
-                        postId : postToLike,
-                        userId : liker
-                    }
-                })
-                .then((like) => res.status(201).json(like))
-                .catch(error =>  res.status(500).json(error))
-            }
-            // empecher autolike
-            else {
-                return res.status(403).json(errMsg.autolikeErr)
-            }
-        }
-        //========//doublon
-        else {
-            return res.status(403).json(errMsg.likeErr)
-        }
-    // mauvais utilisateur
-    } else {
-        return res.status(403).json(errMsg.authErr);
-    }
-};
-
-//================// DISLIKE //================//
-exports.unlikePost = async (req, res, next) => {
-    const liker = req.auth.userId
-    const postToLike = Number(req.params.id)
-    
-    //---RECHERCHES
-    // utilisateur
-    const findUser = await utils.findUser({id : liker})
-    // publication
-    const findPost = await utils.findPost({id : postToLike})
-    // like doublon
-    const findLike = await prisma.like.findFirst({
-        where : {
-            userId : liker,
-            postId : postToLike
-        }
-    })
-
-    // l'utilisateur et le post doivent etre actif
-    if ((findUser.isActive) && (findPost.isActive)) {
-        // CONDITIONS
-        //========// RETIRER
-        if (Boolean(findLike)) {
-            await prisma.like.delete({
-                where : { id : findLike.id }
-            })
-            .then(async () => { await prisma.$disconnect() })
-            .then(() => res.status(200).json({ message : 'like supprime !' }))
-            .catch(error => res.status(500).json(error))
-        }
-        else {
-            return res.status(400).json(errMsg.unlikeErr);
-        }
-
-    // mauvais utilisateur
-    } else {
-        return res.status(403).json(errMsg.authErr);
-    }
-}

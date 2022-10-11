@@ -1,8 +1,8 @@
-const utils = require('../utils/utils');
+const token = require('../utils/token');
 
 module.exports = (req, res, next) => {
     try {
-        utils.tokenDec(req);
+        token.tokenDec(req);
         next();
     }
     catch (error) {

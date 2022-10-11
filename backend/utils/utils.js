@@ -1,34 +1,29 @@
 //================//IMPORTS//================//
 const fs = require('fs')
 const pwVal = require("password-validator");
-const jwt = require('jsonwebtoken');
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 //========//File Move
-exports.fileMove = (folder, filename) => {    
+exports.fileMove = (folder, filename) => {  
+    console.log(folder)  
     fs.rename(`images/${filename}`, `images/${folder}/${filename}`, (err) => {
-        if (err) {
-            console.log("Echec lors de la redirection du fichier : " + err)
-        } else {
-            console.log("le fichier a ete deplace")
-        }
+        if (!err) console.log(filename+" has been moved to "+folder)
     })
 }
 
-//========//File Suppressor
-exports.fileDel = (folder, filename) => {
-    let link = `images/${folder}/${filename}`
-    if (folder === '/') {link = `images/${filename}`}
+//=======// Clean store
+exports.fileDel = (filename) => {
+    const folders = [ `images/`, `images/users/`, `images/posts/`]
 
-    fs.unlink(link, (err) => {
-        if (err) {
-            console.log("Echec lors de la suppression du fichier : " + err)
-        } else {
-            console.log("le fichier a ete supprime")
-        }
+    folders.forEach((folder) => {
+        const link = `${folder}${filename}`
+        fs.unlink(link, (err) => {
+            if (!err) console.log(filename+" has been removed")
+        })
     })
+    
 }
 
 //========//Image URL
@@ -98,71 +93,3 @@ exports.passwdValid = (value) => new pwVal()
     .is().not().oneOf(['Passw0rd', 'Password123']) // Blacklist these value
     .validate(value);
 
-
-//===================================//
-//========//USER MANAGEMENT//========//
-
-//========//Update User Status
-exports.userBlocking = async (targetId, bolValue, req, res) => {
-    //---Utilisateur
-    await prisma.user.update({
-        where : { id : targetId },
-        data : { 
-            isActive : bolValue,
-            Post : {
-                updateMany : {
-                    where : { userId : targetId },
-                    data : { isActive : bolValue }
-                } 
-            },
-            Comment : {
-                updateMany : {
-                    where : { userId : targetId },
-                    data : { isActive : bolValue }
-                } 
-            }
-        },
-    })
-    .then(() => {
-        if (bolValue === false) {
-            console.log('Compte Desactive !') || res.status(200).json({ message : 'Compte Desactive !' })
-        } else {
-            console.log('Compte (re)active !') || res.status(200).json({ message : 'Compte (re)active !' })
-        }
-    })
-    .catch(error => res.status(500).json({ error : error }))
-}
-
-
-//==========================//
-//========//TOKENS//========//
-
-//========//Generator
-exports.tokenGen = (userId, adminStatus) => {
-    const exp = 1000 * 60 * 60 * 24 // cookie expiration : ms * sec * min * hr * days
-
-    const gen = jwt.sign(
-        {
-            userId : userId,
-            isAdmin : adminStatus
-        },
-        process.env.RANDOM_TOKEN,
-        { expiresIn : '24h'}
-    )
-
-    return {gen, exp}
-}
-
-//========//Decoder
-exports.tokenDec = (req) => {
-    const token = req.cookies.jwt;
-    const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN);
-
-    const userId = decodedToken.userId;
-    const isAdmin = decodedToken.isAdmin;
-        
-    req.auth = {
-        userId : userId,
-        isAdmin : isAdmin
-    }
-}

@@ -2,7 +2,10 @@
 const bcrypt = require('bcrypt');
 const utils = require('../utils/utils');
 const errMsg = require('../utils/errorMsg');
+const blockUser = require('../utils/blockUser')
 const { parse } = require('dotenv');
+const errorFileReq = require('../utils/errorFileReq')
+
 //----prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -164,11 +167,11 @@ exports.disable = async (req, res, next) => {
                 .then( async user => {
                     // DESACTIVER
                     if (user.isActive === true) {
-                        utils.userBlocking(user.id, false, req, res)
+                        blockUser(user.id, false, req, res)
                     }
                     // REACTIVER 
                     else {
-                        utils.userBlocking(user.id, true, req, res)
+                        blockUser(user.id, true, req, res)
                     }
                 })
             //non admin
@@ -192,7 +195,7 @@ exports.disable = async (req, res, next) => {
                         if (valid) {
                             // email
                             if (req.body.email === user.email) {
-                                utils.userBlocking(user.id, false, req, res)
+                                blockUser(user.id, false, req, res)
                             }
                             // mauvais
                             else {
@@ -228,8 +231,8 @@ exports.avatar = async (req, res, next) => {
      
             //----Suppression Ancient fichier
             if (!(oldFile === 'random-user.png')) {
-                const oldFile = user.avatarUrl.split('/images/users/')[1];
-                utils.fileDel('users', oldFile)
+                const fileToRm = user.avatarUrl.split('/images/users/')[1];
+                utils.fileDel(fileToRm)
             }
 
             //---- Nouveau fichier
@@ -250,11 +253,11 @@ exports.avatar = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : message }))
-                .catch(error =>  res.status(500).json(error))
+                .catch(error =>  errorFileReq(error, 500, req, res))
             }
         } else {
-            res.status(403).json(errMsg.authErr);
+            errorFileReq(errMsg.authErr, 403, req, res)
         }
     })
-    .catch(error =>  res.status(500).json(error));
+    .catch(error => errorFileReq(error, 500, req, res));
 }

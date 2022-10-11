@@ -3,6 +3,7 @@ import {useDispatch, useSelector} from "react-redux"
 import { getPosts } from '../../actions/posts.actions'
 import { isEmpty } from '../utils'
 import Card from './Card'
+import NewPost from './NewPost'
 
 
 const Publications = () => {
@@ -33,15 +34,19 @@ const Publications = () => {
   }, [loadPage])
 
   return (
-    <div className='thread-container'>
+
+    <>
+      <NewPost/>
+      <div className='thread-container'>
         <ul>
           {!(isEmpty(posts[0])) &&
             posts.map((post) => {
               return <Card post={post} key={post.id} />
             })}
         </ul>
-
-    </div>
+      </div>
+    </>
+    
   )
 }
 

@@ -6,11 +6,11 @@ const commentCtrl = require('../controllers/comment');
 
 //========//ENDPOINTS//========//
 router.get('/:id', auth, commentCtrl.getOneComment);
-router.put('/:id', auth, commentCtrl.modifyComment);
-router.delete('/:id', auth, commentCtrl.delComment);
+router.patch('/:id/edit', auth, commentCtrl.modifyComment);
+router.patch('/:id/del', auth, commentCtrl.delComment);
 
 //========//create from post
-router.post('/:id_post', auth, commentCtrl.commentPost);
+router.patch('/new/:id_post', auth, commentCtrl.commentPost);
 
 //========//EXPORT//========//
 module.exports = router;

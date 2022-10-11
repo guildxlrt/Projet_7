@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { addComment, getPosts } from '../../actions/posts.actions'
 import { isEmpty, postTime } from '../utils'
+import EditDeleteComment from './EditDeleteComment'
 
 const Comments = ({post}) => {
     const userData = useSelector((state) => state.userReducer)
@@ -24,7 +25,7 @@ const Comments = ({post}) => {
         <div className='comments-container'>
             {!isEmpty(post.Comment) && post.Comment.map((comment) => {
                 return (
-                    <div className={comment.userId === userData.id ?
+                    <div className={(comment.userId === userData.id) ?
                         "comment-container client" : "comment-container"}
                         key={comment.id}
                     >
@@ -57,6 +58,7 @@ const Comments = ({post}) => {
                                 <span>{postTime(comment.date)}</span>
                             </div>
                             <p>{comment.text}</p>
+                            <EditDeleteComment comment={comment}/>
                         </div>
                     </div>
                 )

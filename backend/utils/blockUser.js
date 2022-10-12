@@ -22,13 +22,16 @@ module.exports = async (targetId, bolValue, req, res) => {
             }
         },
     })
-    .then(() => {
-        if (bolValue === false) {
-            console.log('Compte Desactive !') || res.status(200).json({ message : 'Compte Desactive !' })
-        } 
-        else {
-            console.log('Compte (re)active !') || res.status(200).json({ message : 'Compte (re)active !' })
-        }
+    .then((user) => {
+        let message = ''
+        if (bolValue === false) message = "Compte Desactive !"
+        if (bolValue === true) message = "Compte (re)active !"
+
+        res.status(200).json({
+            message : message,
+            id : user.id,
+            isActive :  user.isActive
+        })
     })
     .catch(error => res.status(500).json({ error : error }))
 }

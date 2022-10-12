@@ -1,9 +1,11 @@
 import axios from 'axios'
 import React, { useContext } from 'react'
+import { useDispatch } from 'react-redux'
+import { blockUser } from '../../actions/user.actions'
 import { UkeyContext } from '../appContext'
-import { birthdayFormat, dateFormat } from '../utils'
 
 const UserInfos = ({user}) => {
+    const dispatch = useDispatch()
     const ukey = useContext(UkeyContext)
 
     const blockAccount = async (e) => {
@@ -20,7 +22,8 @@ const UserInfos = ({user}) => {
             url : `${process.env.REACT_APP_API_URL}/api/users/${user.id}/disable`,
             withCredentials : true
         })
-        .then((res) => {           
+        .then((res) => {
+            dispatch(blockUser(res.data))
             successMsg.innerHTML = res.data.message;
             messageDiv.removeAttribute('hidden')
         })

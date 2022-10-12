@@ -210,11 +210,11 @@ exports.getAllUsers = async (req, res, next) => {
                 // RECHERCHE
                 await prisma.user.findMany()
                 .then((users) => {
-                    const usersList = users.map((user) => {
+                    users.map((user) => {
                         delete user.password
                         return user
                     })
-                    res.status(200).json(usersList)
+                    res.status(200).json(users)
                 })
                 .catch(error =>  res.status(500).json(error));
             //non admin
@@ -233,7 +233,7 @@ exports.getAllUsers = async (req, res, next) => {
             }
         })
         .then((users) => {
-            const usersList = users.map((user) => {
+            users.map((user) => {
                 delete user.password
                 delete user.isActive
                 return user

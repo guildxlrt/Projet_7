@@ -6,6 +6,7 @@ export const UPDATE_BIRTHDAY = "UPDATE_BIRTHDAY";
 export const UPDATE_NAMES = "UPDATE_NAMES"
 
 export const ALL_USERS = "ALL_USERS"
+export const BLOCK_USER = "BLOCK_USER"
 
 export const getUser = (uid) => {
     return async (dispatch) => {
@@ -68,5 +69,11 @@ export const getAllUsers = () => {
             dispatch({type : ALL_USERS, payload : res.data})
         })
         .catch(error => console.log(error))
+    }
+}
+
+export const blockUser = (res) => {
+    return async (dispatch) => {
+        dispatch({type : BLOCK_USER, payload : res})
     }
 }

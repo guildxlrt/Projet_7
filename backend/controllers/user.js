@@ -209,8 +209,13 @@ exports.getAllUsers = async (req, res, next) => {
             if ((auth.userId === admin.id) && (admin.isAdmin === true) && (admin.isActive === true)) {
                 // RECHERCHE
                 await prisma.user.findMany()
-                .then(users => res.status(200).json(users))
-                .then(async () => { await prisma.$disconnect() })
+                .then((users) => {
+                    const usersList = users.map((user) => {
+                        delete user.password
+                        return user
+                    })
+                    res.status(200).json(usersList)
+                })
                 .catch(error =>  res.status(500).json(error));
             //non admin
             } else {
@@ -227,8 +232,14 @@ exports.getAllUsers = async (req, res, next) => {
                 isActive : true,
             }
         })
-        .then(users => res.status(200).json(users))
-        .then(async () => { await prisma.$disconnect() })
+        .then((users) => {
+            const usersList = users.map((user) => {
+                delete user.password
+                delete user.isActive
+                return user
+            })
+            res.status(200).json(users)
+        })
         .catch(error =>  res.status(500).json(error));
     }
 };

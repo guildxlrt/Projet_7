@@ -42,7 +42,8 @@ const Publications = () => {
           {!(isEmpty(posts[0])) &&
             posts.map((post) => {
               return <Card post={post} key={post.id} />
-            })}
+            }
+          )}
         </ul>
       </div>
     </>

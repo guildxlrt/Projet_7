@@ -7,16 +7,18 @@ const Profil = () => {
   const uid = useContext(UidContext)
 
   return (
-    <div className="profil-page">
+    <>
       {uid ? (
         <UserProfil/>
       ) : (
-        <div className="log-container">
-            <Log signin={false} signup={true} />
-            <div className="img-container"></div>
+        <div className="profil-page">
+          <div className="log-container">
+              <Log signin={false} signup={true} />
+          </div>
         </div>
+        
       ) }
-    </div>
+    </>
   )
 }
 

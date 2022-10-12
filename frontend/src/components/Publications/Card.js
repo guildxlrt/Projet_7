@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { updatePost } from '../../actions/posts.actions'
 import { UkeyContext } from '../appContext'
 import { isEmpty, postTime } from '../utils'
@@ -57,17 +58,29 @@ const Card = ({post}) => {
       ) : (
         <>
           <div className='card-left'>
-            <img src={
+            <Link to={`/users/:${
               !isEmpty(usersList[0]) &&
                 usersList.map((user) => {
                   if (user.id === post.userId) {
-                    return user.avatarUrl
+                    return user.id
                   }
                 })
                 .join("")
-              }
-            alt="user-pic"
-            />
+              }`}
+            >
+              <img src={
+                !isEmpty(usersList[0]) &&
+                  usersList.map((user) => {
+                    if (user.id === post.userId) {
+                      return user.avatarUrl
+                    }
+                  })
+                  .join("")
+                }
+              alt="user-pic"
+              />
+            </Link>
+            
           </div>
           <div className='card-right'>
               <div className='card-header'>

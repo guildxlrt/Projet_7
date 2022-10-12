@@ -1,14 +1,14 @@
 import React from 'react'
-import ManageUser from '../components/Admin/ManageUser'
+import UsersPage from '../components/UsersPage'
 
-const Admin = () => {
+const Users = () => {
     return (
         <div className="profil-page">
             <div className='profil-container'>
-                <ManageUser/>
+                <UsersPage/>
             </div>
         </div>
     )
 }
 
-export default Admin
+export default Users

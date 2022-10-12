@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom'
 import { isEmpty } from '../utils'
 import UserInfos from './UserInfos'
 
-const Users = () => {
+const UsersPage = () => {
     const users = useSelector((state) => state.allUsersReducer)
 
     const {id} = useParams()
@@ -26,4 +26,4 @@ const Users = () => {
   )
 }
 
-export default Users
+export default UsersPage

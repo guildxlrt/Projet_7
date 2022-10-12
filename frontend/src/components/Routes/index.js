@@ -5,7 +5,7 @@ import Profil from '../../pages/Profil';
 import Navbar from '../navbar';
 import LeftNav from '../LeftNav';
 import { UidContext } from '../appContext';
-import Users from '../Users'
+import Users from '../../pages/Users';
 
 
 

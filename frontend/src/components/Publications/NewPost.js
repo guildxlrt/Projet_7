@@ -13,6 +13,8 @@ const NewPost = () => {
   const [file, setFile]  = useState('')
   const userData = useSelector((state) => state.userReducer)
 
+  const [addTitle, setAddTitle] = useState(false)
+
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -21,13 +23,11 @@ const NewPost = () => {
     const handleVideo = () => {
       let findLink = text.split(" ");
       for (let i = 0; i < findLink.length; i++) {
-        if (
-          findLink[i].includes("https://")) {
+        if (findLink[i].includes("https://")) {
           let embed = findLink[i].replace("watch?v=", "embed/");
           setVideo(embed.split("&")[0]);
           findLink.splice(i, 1);
           setText(findLink.join(" "));
-          console.log(video)
           setPostPicture('');
         }
       }
@@ -65,16 +65,18 @@ const NewPost = () => {
       if(text) data.append('title', title)
       if(text) data.append('text', text)
       if(file) data.append('image', file)
-      if(file) data.append('video', video)
-
-      console.log(data)
-      console.log(file)
+      if(video) data.append('video', video)
 
       dispatch(addPost(data))
 
     } else {
       alert("Veuillez remplir une publication.")
     }
+  }
+
+  const titleButton = (e) => {
+    e.preventDefault()
+    setAddTitle(!addTitle)
   }
 
   return (
@@ -92,13 +94,32 @@ const NewPost = () => {
             </NavLink>
 
             <div className='post-form'>
-                <textarea 
-                    name="title"
-                    id="title"
-                    placeholder='Titre'
-                    onChange={(e) => {setTitle(e.target.value)}}
-                    value={title}
-                  />
+                  {addTitle ? (
+                      <>
+                        <div className='title-button'>
+                          <button onClick={titleButton}>
+                            Enlever le titre
+                          </button>
+                        </div>
+                        <textarea 
+                          name="title"
+                          id="title"
+                          placeholder='Titre'
+                          onChange={(e) => {setTitle(e.target.value)}}
+                          value={title}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <div className='title-button'>
+                          <button onClick={titleButton}>
+                            Titre
+                          </button>
+                        </div>
+                      </>
+                    )
+                  }
+                  
                   <textarea 
                     name="text"
                     id="text"
@@ -142,7 +163,7 @@ const NewPost = () => {
                   <div className='icon'>
                     {isEmpty(video) && (
                       <>
-                        <img src="./images/icons/picture.svg" alt="img"></img>
+                        <img src="./images/icons/picture.svg" alt="img"/>
                         <input
                           type="file" id="file-upload" name="file"
                           accept=".jpg,.jpeg,.png,.gif,.webp"
@@ -151,20 +172,24 @@ const NewPost = () => {
                       </>
                     )}
                     {video && (
-                      <button onClick={() => setVideo('')}>Supprimer video</button>
+                      <button onClick={() => setVideo('')}>
+                        Enlever
+                      </button>
                     )}
                 </div>
 
                 <div className='btn-send'>
                 {title || text || postPicture || video ? (
-                  <button className="cancel" onClick={cancelPost}>
-                    Annuler message
-                  </button>
+                  <>
+                    <button className="cancel" onClick={cancelPost}>
+                      Anuller
+                    </button>
+                    <button className='send' onClick={handlePost}>
+                      Envoyer
+                    </button>
+                  </>
                 ) : null}
                   
-                  <button className='send' onClick={handlePost}>
-                    Envoyer
-                  </button>
                 </div>
               </div>
 

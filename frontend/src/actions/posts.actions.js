@@ -90,6 +90,7 @@ export const updatePost = (postId, content) => {
 
 export const deletePost = (postId) => {
     return async (dispatch) => {
+        console.log(7777);
         return await axios({
             method : "delete",
             url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}`,

@@ -23,6 +23,8 @@ const EditDeleteComment = ({comment}) => {
     }
 
     const handleDelete = () => {
+        console.log(1111);
+
         dispatch(deleteComment(comment.id, comment.postId))
     } 
 
@@ -34,6 +36,18 @@ const EditDeleteComment = ({comment}) => {
 
   return (
     <div className='edit-comment'>
+        { (isAuthor || ukey ) && <div>
+            <span onClick={() => {
+                    if (
+                        window.confirm("Voulez-vous supprimer ce commentaire ?")
+                        ) {
+                            handleDelete()
+                        }
+                }}
+            >
+                <img src="./images/icons/trash.svg" alt="trash" />
+            </span>
+        </div>}
         {(isAuthor && (edit === false)) && (
             <span onClick={() => setEdit(!edit)}>
                 <img src="./images/icons/edit.svg" alt="edit-comment" />
@@ -52,15 +66,7 @@ const EditDeleteComment = ({comment}) => {
                 
             </form>
         )}
-        { (isAuthor || ukey ) && <div>
-            <span onClick={() => {
-                    if (window.confirm("Voulez-vous supprimer ce commentaire ?")) handleDelete()
-                    }
-                }
-            >
-                <img src="./images/icons/trash.svg" alt="trash" />
-            </span>
-        </div>}
+        
     </div>
   )
 }

@@ -8,9 +8,17 @@
 
   .log-container {
     margin: 0 auto;
+    margin-top: 100px;
+    margin-bottom: 100px;
+    min-height: 590px;
+
 
     @media screen and(max-width: 885px) {
       grid-template-columns: 1fr;
+      min-height: 90px;
+      margin-top: 50px;
+      margin-bottom: 50px;
+      min-height: 573px;
     }
   }
   

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {UidContext} from "../appContext"
 import Popup from 'reactjs-popup'
 import { useDispatch } from 'react-redux'
@@ -53,16 +53,16 @@ const LikeButton = ({post}) => {
       )}
 
       {((uid) && (liked === false) && (!isTheAuthor)) && (
-        <img src="./images/icons/heart.svg" onClick={like} alt="like" />
+        <img src="./images/icons/heart.svg" onClick={like} alt="like"/>
       )}
       {((uid) && (liked === true) && (!isTheAuthor)) && (
-        <img src="./images/icons/heart-filled.svg" onClick={unlike} alt="unlike" />
+        <img src="./images/icons/heart-filled.svg" onClick={unlike} alt="unlike"/>
       )}
       {(count > 0 && isTheAuthor) && (
-        <img src="./images/icons/heart-solid.svg" alt="heart-solid" />
+        <img src="./images/icons/heart-solid.svg" alt="heart-solid" className='author' />
       )}
       {(count === 0 && isTheAuthor) && (
-        <img src="./images/icons/heart.svg" alt="heart" />
+        <img src="./images/icons/heart.svg" alt="heart" className='author' />
       )}
       <span>{count}</span>
     </div>

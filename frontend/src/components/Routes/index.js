@@ -2,13 +2,10 @@ import React, { useContext } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from '../../pages/Home';
 import Profil from '../../pages/Profil';
-import Navbar from '../navbar';
+import Navbar from '../Navbar';
 import LeftNav from '../LeftNav';
 import { UidContext } from '../appContext';
 import Users from '../../pages/Users';
-
-
-
 
 const Index = () => {
   const uid = useContext(UidContext)

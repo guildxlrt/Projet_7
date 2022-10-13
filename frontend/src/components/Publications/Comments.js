@@ -13,7 +13,6 @@ const Comments = ({post}) => {
 
     const handleComment = (e) => {
         e.preventDefault()
-
         if(text) {
             dispatch(addComment(post.id, text))
             .then(() => dispatch(getPosts()))
@@ -65,7 +64,13 @@ const Comments = ({post}) => {
             })}
             {userData.id && (
                 <form action="comment-form" onSubmit={handleComment} className="comment-form">
-                    <input type="text" name="text"onChange={(e) => setText(e.target.value)} value={text} placeholder="Laisser un commentaire" />
+                    <input
+                        type="text"
+                        name="text"
+                        onChange={(e) => setText(e.target.value)}
+                        value={text}
+                        placeholder="Laisser un commentaire" maxLength="500"
+                    />
                     <br/>
                     <input type="submit" value="Envoyer" />
                 </form>

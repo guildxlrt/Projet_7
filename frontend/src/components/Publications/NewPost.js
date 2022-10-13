@@ -62,12 +62,15 @@ const NewPost = () => {
 
     if (title || text || postPicture || (video !== null)) {
       const data = new FormData()
-      if(text) data.append('title', title)
+      if(title) data.append('title', title)
       if(text) data.append('text', text)
       if(file) data.append('image', file)
       if(video) data.append('video', video)
 
+      console.log(text.length)
+
       dispatch(addPost(data))
+      cancelPost(e)
 
     } else {
       alert("Veuillez remplir une publication.")
@@ -107,13 +110,14 @@ const NewPost = () => {
                           placeholder='Titre'
                           onChange={(e) => {setTitle(e.target.value)}}
                           value={title}
+                          maxLength="150"
                         />
                       </>
                     ) : (
                       <>
                         <div className='title-button'>
                           <button onClick={titleButton}>
-                            Titre
+                            Ajouter un titre
                           </button>
                         </div>
                       </>
@@ -126,6 +130,7 @@ const NewPost = () => {
                     placeholder='Quoi de neuf ?'
                     onChange={(e) => {setText(e.target.value)}}
                     value={text}
+                    maxLength="2000"
                   />
 
                   {title || text || postPicture || video.length > 20 ? (
@@ -182,7 +187,7 @@ const NewPost = () => {
                 {title || text || postPicture || video ? (
                   <>
                     <button className="cancel" onClick={cancelPost}>
-                      Anuller
+                      Annuler
                     </button>
                     <button className='send' onClick={handlePost}>
                       Envoyer

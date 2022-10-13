@@ -54,7 +54,7 @@ const Card = ({post}) => {
   return (
     <li className='card-container' key={postMessage.id}>
       {isLoading ? (
-        <h3>Chargement...</h3>
+        <img src='./images/icons/spinner.svg' alt="spinner" className='card-spinner'/>
       ) : (
         <>
           <div className='card-left'>

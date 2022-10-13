@@ -50,10 +50,12 @@
           }
         }
         .active-btn {
-          background: $color-1;
+          background: $color-2;
 
           &:hover {
-            background: $color-2;
+            background: $color-1;
+            color : $color-2;
+            font-size: larger;
           }
         }
         li:not(.active-btn) {
@@ -123,6 +125,7 @@
   .update-container {
     display: grid;
     grid-template-columns: 50% 50%;
+    margin-bottom: 60px;
 
     &.admin{
       grid-template-columns: auto 670px auto;
@@ -235,6 +238,25 @@
 
       .avatar {
         margin-top: 10%;
+      }
+
+      .disactiv{
+        background-color: $color-2;
+        color: $color-1;
+        &:hover {
+          background-color: $color-1;
+          color: $color-2;
+          transform: scale(1.05);
+        }
+      }
+      .activ{
+        background-color: #e8d7ff;
+        color: #9801fd;
+        &:hover {
+          background-color: #6e01fd;
+          color: #e8d7ff;
+          transform: scale(1.05);
+        }
       }
     }
     .right-part {

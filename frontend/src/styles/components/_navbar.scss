@@ -1,3 +1,5 @@
+@import "../utils/_keyframes.scss";
+
 nav {
   position: fixed;
   width: 100%;
@@ -79,6 +81,10 @@ nav {
           height: 100%;
         }
       }
+    }
+
+    .logout:hover {
+      transform: scale(1.2);
     }
   }
 }

@@ -1,9 +1,6 @@
 import React from "react";
 import axios from "axios";
 import cookie from 'js-cookie';
-// fonts
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faRightFromBracket} from '@fortawesome/free-solid-svg-icons'
 
 const Logout = () => {
     const removecookie = (key) => {
@@ -25,8 +22,8 @@ const Logout = () => {
     }
 
   return (
-    <li onClick={logout}>
-        <FontAwesomeIcon icon={faRightFromBracket} />
+    <li onClick={logout} className="logout" >
+        <img src="./images/icons/logout.svg" alt="logout"/>
     </li>
   )
 }

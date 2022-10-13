@@ -5,6 +5,7 @@ import AppRoutes from './components/Routes'
 import axios from 'axios';
 import {getAllUsers, getUser} from "./actions/user.actions"
 import {useDispatch} from "react-redux"
+import Footer from "./components/Footer";
 
 function App() {
   const [uid, setUid] = useState(null)
@@ -29,12 +30,13 @@ function App() {
       dispatch(getUser(uid))
       dispatch(getAllUsers())
     }
-  }, [uid]);
+  }, [uid, dispatch]);
 
   return (
     <UidContext.Provider value={uid}>
       <UkeyContext.Provider value={ukey}>
         <AppRoutes />
+        <Footer/>
       </UkeyContext.Provider>
     </UidContext.Provider>
   );

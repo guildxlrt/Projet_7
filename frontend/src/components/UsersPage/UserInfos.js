@@ -53,12 +53,12 @@ const UserInfos = ({user}) => {
                     {!(user.isAdmin) ? (
                         ukey && (user.isActive ? (
                                 <>
-                                    <button onClick={blockAccount}>Désactiver</button>
+                                    <button onClick={blockAccount} className="block disactiv">Désactiver</button>
                                     <br/><br/>
                                 </>
                             ) : (
                                 <>
-                                    <button onClick={blockAccount}>Activer</button>
+                                    <button onClick={blockAccount} className="block activ">Activer</button>
                                     <br/><br/>
                                 </>
                             )

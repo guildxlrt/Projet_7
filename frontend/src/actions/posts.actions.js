@@ -153,13 +153,13 @@ export const deleteComment = (commentId, postId) => {
     }
 }
 
-export const addPost = (file) => {
+export const addPost = (datas) => {
     return async (dispatch) => {
         return await axios({
             method : "post",
             url : `${process.env.REACT_APP_API_URL}/api/posts`,
             withCredentials : true,
-            data : file
+            data : datas
         })
         .then((res) => dispatch({
                 type : ADD_POST,

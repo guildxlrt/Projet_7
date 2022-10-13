@@ -11,6 +11,7 @@ const Publications = () => {
   const posts = useSelector((state) => state.postsReducer)
 
   const [loadPage, setLoadPage] = useState(true)
+  const [bottomLoad, setBottomLoad] = useState(false)
 
   const loadNumber = 10
   const [count, setCount] =  useState(loadNumber)
@@ -19,6 +20,7 @@ const Publications = () => {
   const loadMore = () => {
     if((window.innerHeight + document.documentElement.scrollTop + 1) > document.documentElement.scrollHeight) {
       setLoadPage(true);
+      setBottomLoad(true)
     }
   }
 
@@ -26,12 +28,13 @@ const Publications = () => {
     if(loadPage) {
       dispatch(getPosts(count))
       setLoadPage(false)
+      setBottomLoad(false)
       setCount(count + loadNumber)
     }
 
     window.addEventListener('scroll', loadMore)
     return () => window.addEventListener('scroll', loadMore)
-  }, [loadPage])
+  }, [loadPage, dispatch, count])
 
   return (
 
@@ -45,6 +48,12 @@ const Publications = () => {
             }
           )}
         </ul>
+        {bottomLoad &&
+          <img src='./images/icons/spinner.svg'
+            alt="spinner"
+            id='bottom-spinner'
+          />
+        }
       </div>
     </>
     

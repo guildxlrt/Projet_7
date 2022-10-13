@@ -43,7 +43,7 @@ model Post {
 
 model Comment {
   id       Int      @id @default(autoincrement())
-  text     String
+  text     String   @db.VarChar(500)
   date     DateTime @default(now())
   updated  Boolean  @default(false)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)

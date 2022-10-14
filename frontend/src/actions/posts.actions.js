@@ -3,16 +3,18 @@ import axios from "axios";
 // Posts
 export const GET_POSTS = 'GET_POSTS'
 export const ADD_POST = 'ADD_POST'
-export const LIKE_POST = 'LIKE_POST'
-export const UNLIKE_POST = 'UNLIKE_POST'
 export const UPDATE_POST = 'UPDATE_POST'
 export const DELETE_POST = 'DELETE_POST'
-
+//Likes
+export const LIKE_POST = 'LIKE_POST'
+export const UNLIKE_POST = 'UNLIKE_POST'
 // Comments
 export const ADD_COMMENT = 'ADD_COMMENT'
 export const EDIT_COMMENT = 'EDIT_COMMENT'
 export const DELETE_COMMENT = 'DELETE_COMMENT'
 
+
+//========// POSTS //========//
 export const getPosts = (count) => {
     return async (dispatch) => {
         return await axios({
@@ -30,6 +32,65 @@ export const getPosts = (count) => {
         .catch(error => console.log(error))
     }
 }
+
+export const addPost = (content) => {
+    return async (dispatch) => {
+        return await axios({
+            method : "post",
+            url : `${process.env.REACT_APP_API_URL}/api/posts`,
+            withCredentials : true,
+            data : content
+        })
+        .then((res) => dispatch({
+                type : ADD_POST,
+                payload : {
+                    datas : {
+                        ...res.data,
+                        Comment : [],
+                        Like : []
+                    }
+                }}
+        ))
+        .catch(error => console.log(error))
+    }
+}
+
+export const updatePost = (postId, content) => {
+    return async (dispatch) => {
+        return await axios({
+            method : "put",
+            url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}`,
+            withCredentials : true,
+            data : content
+        })
+        .then((res) => {
+            dispatch({
+                type : UPDATE_POST, 
+                payload : {
+                    postId : postId,
+                    content : res.data
+                }})
+        })
+        .catch(error => console.log(error))
+    }
+}
+
+export const deletePost = (postId) => {
+    return async (dispatch) => {
+        return await axios({
+            method : "delete",
+            url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}`,
+            withCredentials : true
+        })
+        .then(() => dispatch({
+            type : DELETE_POST,
+            payload : postId
+        }))
+        .catch(error => console.log(error))
+    }
+}
+
+//========// LIKES //========//
 
 export const likePost = (postId, userId) => {
     return async (dispatch) => {
@@ -69,40 +130,8 @@ export const unlikePost = (postId, userId) => {
     }
 }
 
-export const updatePost = (postId, content) => {
-    return async (dispatch) => {
-        return await axios({
-            method : "put",
-            url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}`,
-            withCredentials : true,
-            data : content
-        })
-        .then(() => dispatch({
-            type : UPDATE_POST, 
-            payload : {
-                postId : postId,
-                content : content
-            }}
-        ))
-        .catch(error => console.log(error))
-    }
-}
+//========// COMMENT //========//
 
-export const deletePost = (postId) => {
-    return async (dispatch) => {
-        console.log(7777);
-        return await axios({
-            method : "delete",
-            url : `${process.env.REACT_APP_API_URL}/api/posts/${postId}`,
-            withCredentials : true
-        })
-        .then(() => dispatch({
-            type : DELETE_POST,
-            payload : postId
-        }))
-        .catch(error => console.log(error))
-    }
-}
 
 export const addComment = (postId, text) => {
     return async (dispatch) => {
@@ -154,24 +183,3 @@ export const deleteComment = (commentId, postId) => {
     }
 }
 
-export const addPost = (datas) => {
-    return async (dispatch) => {
-        return await axios({
-            method : "post",
-            url : `${process.env.REACT_APP_API_URL}/api/posts`,
-            withCredentials : true,
-            data : datas
-        })
-        .then((res) => dispatch({
-                type : ADD_POST,
-                payload : {
-                    datas : {
-                        ...res.data,
-                        Comment : [],
-                        Like : []
-                    }
-                }}
-        ))
-        .catch(error => console.log(error))
-    }
-}

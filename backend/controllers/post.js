@@ -38,12 +38,12 @@ exports.createPost = async (req, res, next) => {
             // Enregistrement
             await prisma.post.create({data : content})
             .then((post) => res.status(201).json(post))
-            .catch((error) => {errorFileReq(error, 500, req, res)})
+            .catch((error) => {errorFileReq(error, 500, req)})
         } else {
-            return errorFileReq(errMsg.authErr, 403, req, res)
+            return errorFileReq(errMsg.authErr, 403, req)
         }
     })
-    .catch((error) => {errorFileReq(error, 500, req, res)})
+    .catch((error) => {errorFileReq(error, 500, req)})
 };
 
 //========//TOUT AFFICHER
@@ -84,9 +84,8 @@ exports.modifyPost = async (req, res, next) => {
             where : { id : target },
             data : datas
         })
-        .then(async () => { await prisma.$disconnect() })
         .then((post) => res.status(200).json(post))
-        .catch(error =>  errorFileReq(error, 500, req, res));
+        .catch(error =>  errorFileReq(error, 500, req));
     }
 
     // Recherche
@@ -103,33 +102,44 @@ exports.modifyPost = async (req, res, next) => {
                 //========// TRAITEMENT DE LA REQUETE
                 let content = {...req.body, updated : true}
 
+                //----Suppression video
+                if (req.body.novideo === true) {
+                    // Erreurs requete
+                    if (post.video === null) {
+                        return errorFileReq(errMsg.PostErrReq, 400, req)
+                    }
+                    // Requete valide             
+                    else {
+                        content.video = null
+                        delete content.novideo
+                    }
+                }
+                
                 //----Suppression Image
                 if (req.body.nofile === true) {
                     // Erreurs requete
                     if (req.file) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
+                        return errorFileReq(errMsg.PostErrReq, 400, req)
                     }
                     else if (post.imageUrl === null) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
+                        return errorFileReq(errMsg.PostErrReq, 400, req)
                     }
                     // Requete valide             
                     else {
                         // suppression du fichier
                         const oldFile = post.imageUrl.split('/images/posts/')[1];
                         utils.fileDel('posts', oldFile)
-                        content.imageUrl = null
 
                         // enregistrer
+                        content.imageUrl = null
                         delete content.nofile
-                        if (content.text === "") delete content.text
                         update(content)
                     }                    
                 }
-                //----Texte seulement
+                //----Modifier que le text
                 else if (!req.file) {
                     // enregistrer
                     delete content.nofile
-                    if (content.text === "") delete content.text
                     update(content)
                 }
                 //---- Nouvelle image
@@ -145,13 +155,12 @@ exports.modifyPost = async (req, res, next) => {
                         const oldFile = post.imageUrl.split('/images/posts/')[1];
                         utils.fileDel(oldFile)
                     }
+
                     // redirection du nouveau fichier
                     utils.fileMove('posts', req.file.filename)
-                    .catch(error =>  errorFileReq(error, 500, req, res))
 
                     // enregistrer
                     delete content.nofile
-                    if (content.text === "") { delete content.text }
                     update(content)
                 }
             } else {

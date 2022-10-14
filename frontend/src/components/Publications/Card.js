@@ -21,20 +21,21 @@ const Card = ({post}) => {
   const [showComments, setShowComments] = useState(false)
   const [addTitle, setAddTitle] = useState(false)
 
-  const updateItem = async () => {
-    if (
-      ((titleUpdate === "") && (textUpdate === ""))
-      || ((titleUpdate === null) && (textUpdate === null))
-    ) {
-      setIsUpdated(false)
-    }
+  const [postPicture, setPostPicture] = useState(post.imageUrl)
+  const [noPicture, setNoPicture] = useState(false)
+  const [video, setVideo]  = useState(post.video)
+  const [file, setFile]  = useState('')
 
-    if (titleUpdate || textUpdate) {
-      let content = {}
+  const modifyPost = async () => {
+    const content = new FormData()
 
-      if (titleUpdate) content.title = titleUpdate
-      if (textUpdate) content.text = textUpdate
+    if(titleUpdate !== post.title) content.append('title', titleUpdate)
+    if(textUpdate !== post.text) content.append('text', textUpdate)
+    if(file) content.append('image', file)
+    //if(video) content.append('video', video)
 
+    const contentList = Array.from(content).length
+    if (contentList > 0) {
       dispatch(updatePost(post.id, content))
       .then(() => {
         setIsUpdated(false)
@@ -42,6 +43,7 @@ const Card = ({post}) => {
         setTextUpdate(null)
       })
     }
+    else setIsUpdated(false)
   }
 
   const date = postTime(post.creationDate)
@@ -60,6 +62,20 @@ const Card = ({post}) => {
 
   const updatePicture = (e) => {
     e.preventDefault()
+
+    setPostPicture(URL.createObjectURL(e.target.files[0]));
+    setFile(e.target.files[0]);
+    //setVideo('');
+  }
+
+  const backButton = (e) => {
+    setIsUpdated(!isUpdated)
+
+    setTitleUpdate('')
+    setTextUpdate('')
+
+    if (post.imageUrl) setPostPicture(post.imageUrl)
+    setFile('')
   }
 
   return (
@@ -160,25 +176,53 @@ const Card = ({post}) => {
                     
                     <div className='button-container'>
                       <div className='file-container'>
-                        <img src="./images/icons/picture.svg" alt="add-pic"/>
-                        <input
-                          type="file" 
-                          class="file-update"
-                          name="file"
-                          accept=".jpg,.jpeg,.png,.gif,.webp"
-                          onChange={(e) => updatePicture(e)}
-                        />
+                        {(!file && !postPicture) &&
+                          <>
+                            <img src="./images/icons/picture.svg" alt="add-pic"/>
+                            <input
+                              type="file" 
+                              class="file-update"
+                              name="file"
+                              accept=".jpg,.jpeg,.png,.gif,.webp"
+                              onChange={(e) => updatePicture(e)}
+                            />
+                          </>
+                        }
+                        {(file && postPicture) && 
+                          <>
+                            <div onClick={(e) => {
+                                setFile('')
+                                if(noPicture === false) setPostPicture(post.imageUrl)
+                                if(noPicture === true) setPostPicture('')
+                              }
+                            }>
+                                Enlever
+                            </div>
+                          </>
+                        }
+                        {(postPicture && !file) &&
+                          <>
+                            <div onClick={(e) => {
+                                setNoPicture(true)
+                                setFile('')
+                                setPostPicture('')
+                              }
+                            }>
+                                Retirer
+                            </div>
+                          </>
+                        }
                       </div>
-                      <button className='btn' onClick={updateItem}>Valider</button>
+                      <button className='btn' onClick={modifyPost}>Valider</button>
                     </div>
                   </div>
                 )}
               </div>
 
-              {post.imageUrl && (
+              {(postPicture) && (
                 <>
                   <br/>
-                  <img src={post.imageUrl}
+                  <img src={postPicture}
                     alt='card-pic'
                     className='card-pic'
                   />
@@ -201,7 +245,7 @@ const Card = ({post}) => {
               <>
                 <br/>
                 <div className='button-container'>
-                  <div onClick={(e) => setIsUpdated(!isUpdated)}>
+                  <div onClick={backButton}>
                     {(isUpdated === false) ? (
                       <img src="./images/icons/edit.svg" alt="edit" />
                     ) : (

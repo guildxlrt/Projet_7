@@ -8,7 +8,7 @@ const NewPost = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')
-  const [postPicture, setPostPicture] = useState()
+  const [postPicture, setPostPicture] = useState('')
   const [video, setVideo]  = useState('')
   const [file, setFile]  = useState('')
   const userData = useSelector((state) => state.userReducer)
@@ -61,15 +61,13 @@ const NewPost = () => {
     e.preventDefault()
 
     if (title || text || postPicture || (video !== null)) {
-      const data = new FormData()
-      if(title) data.append('title', title)
-      if(text) data.append('text', text)
-      if(file) data.append('image', file)
-      if(video) data.append('video', video)
+      const content = new FormData()
+      if(title) content.append('title', title)
+      if(text) content.append('text', text)
+      if(file) content.append('image', file)
+      if(video) content.append('video', video)
 
-      console.log(text.length)
-
-      dispatch(addPost(data))
+      dispatch(addPost(content))
       cancelPost(e)
 
     } else {
@@ -82,9 +80,6 @@ const NewPost = () => {
     setAddTitle(!addTitle)
     if(addTitle) setTitle('')
   }
-
-  console.log(postPicture)
-
 
   return (
     <div className='post-container'>

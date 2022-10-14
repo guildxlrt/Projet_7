@@ -253,11 +253,11 @@ exports.avatar = async (req, res, next) => {
                 })
                 .then(async () => { await prisma.$disconnect() })
                 .then(() => res.status(200).json({ message : message }))
-                .catch(error =>  errorFileReq(error, 500, req, res))
+                .catch(error =>  errorFileReq(error, 500, req))
             }
         } else {
-            errorFileReq(errMsg.authErr, 403, req, res)
+            errorFileReq(errMsg.authErr, 403, req)
         }
     })
-    .catch(error => errorFileReq(error, 500, req, res));
+    .catch(error => errorFileReq(error, 500, req));
 }

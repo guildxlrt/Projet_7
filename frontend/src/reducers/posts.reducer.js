@@ -8,6 +8,25 @@ export default function postsReducer(state = initialState, action) {
         case GET_POSTS :
             return action.payload;
 
+        case ADD_POST :
+            return [action.payload.datas, ...state]
+
+        case UPDATE_POST :
+            return state.map((post) => {
+                //rechercher le post
+                if (post.id === action.payload.postId) {
+                    // modifier le post
+                    return {
+                        ...post,
+                        ...action.payload.content
+                    }
+                }
+                else return post
+            })
+
+        case DELETE_POST :
+            return state.filter((post) => post.id !== action.payload )
+
         case LIKE_POST :
             return state.map((post) => {
                 //rechercher le post
@@ -34,22 +53,6 @@ export default function postsReducer(state = initialState, action) {
                 else return post
             })
         
-        case UPDATE_POST :
-            return state.map((post) => {
-                //rechercher le post
-                if (post.id === action.payload.postId) {
-                    // modifier le post
-                    return {
-                        ...post,
-                        ...action.payload.content
-                    }
-                }
-                else return post
-            })
-
-            case DELETE_POST :
-                return state.filter((post) => post.id !== action.payload )
-            
             case ADD_COMMENT :
                 return state.map((post) => {
                     //rechercher le post
@@ -95,9 +98,6 @@ export default function postsReducer(state = initialState, action) {
                     else return post
                 })
 
-            case ADD_POST :
-                console.log(action.payload)
-                return [action.payload.datas, ...state]
 
         default :
         return state;

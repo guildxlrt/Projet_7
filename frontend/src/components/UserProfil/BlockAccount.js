@@ -71,7 +71,7 @@ const BlockAccount = () => {
                 <>
                     <form form action="" onSubmit={handleBlockAccount}>
                         <h4>Attention, vous ne pourrez plus vous connecter au reseau Groupomania !</h4>
-                        <span>Vous pourrez cependant le reactiver à l’avenir.</span>
+                        <span>Contactez l'administrateur pour la reactivation du compte.</span>
                         <br/>
                         <br/>
 

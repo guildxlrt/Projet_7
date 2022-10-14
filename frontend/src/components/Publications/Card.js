@@ -19,7 +19,8 @@ const Card = ({post}) => {
   const [titleUpdate, setTitleUpdate] = useState(null)
   const [textUpdate, setTextUpdate] = useState(null)
   const [showComments, setShowComments] = useState(false)
-  
+  const [addTitle, setAddTitle] = useState(false)
+
   const updateItem = async () => {
     if (
       ((titleUpdate === "") && (textUpdate === ""))
@@ -31,8 +32,8 @@ const Card = ({post}) => {
     if (titleUpdate || textUpdate) {
       let content = {}
 
-      content.text = textUpdate
-      content.title = titleUpdate
+      if (titleUpdate) content.title = titleUpdate
+      if (textUpdate) content.text = textUpdate
 
       dispatch(updatePost(post.id, content))
       .then(() => {
@@ -50,6 +51,16 @@ const Card = ({post}) => {
   useEffect(() => {
     !isEmpty(usersList[0]) && setIsLoading(false)
   }, [usersList])
+
+  const titleButton = (e) => {
+    e.preventDefault()
+    setAddTitle(!addTitle)
+    if(addTitle) setTitleUpdate('')
+  }
+
+  const updatePicture = (e) => {
+    e.preventDefault()
+  }
 
   return (
     <li className='card-container' key={postMessage.id}>
@@ -114,17 +125,50 @@ const Card = ({post}) => {
                     <p>{post.text}</p>
                   </>
                 )}
+                
                 {isUpdated === true && (
                   <div className='update-post'>
-                    <textarea
+                    {!(post.title) && 
+                      addTitle ? (
+                        <>
+                          <button onClick={titleButton}>
+                            Enlever le titre
+                          </button>
+                          <textarea
+                            defaultValue={post.title}
+                            onChange={(e) => setTitleUpdate(e.target.value)}
+                            maxLength="150"
+                          />
+                        </>
+                      ) : (
+                        <button onClick={titleButton}>
+                          Ajouter un titre
+                        </button>
+                      )
+                    }
+
+                    {post.title && <textarea
                       defaultValue={post.title}
                       onChange={(e) => setTitleUpdate(e.target.value)}
-                    />
+                      maxLength="150"
+                    />}
                     <textarea
                       defaultValue={post.text}
                       onChange={(e) => setTextUpdate(e.target.value)}
+                      maxLength="2000"
                     />
+                    
                     <div className='button-container'>
+                      <div className='file-container'>
+                        <img src="./images/icons/picture.svg" alt="add-pic"/>
+                        <input
+                          type="file" 
+                          class="file-update"
+                          name="file"
+                          accept=".jpg,.jpeg,.png,.gif,.webp"
+                          onChange={(e) => updatePicture(e)}
+                        />
+                      </div>
                       <button className='btn' onClick={updateItem}>Valider</button>
                     </div>
                   </div>
@@ -134,7 +178,10 @@ const Card = ({post}) => {
               {post.imageUrl && (
                 <>
                   <br/>
-                  <img src={post.imageUrl} alt='card-pic' className='card-pic'/>
+                  <img src={post.imageUrl}
+                    alt='card-pic'
+                    className='card-pic'
+                  />
                 </>
               )}
 
@@ -186,7 +233,10 @@ const Card = ({post}) => {
                 <span>{post.Comment.length}</span>
               </div>
               <LikeButton post={post} />
-              <img src="./images/icons/share.svg" alt="share" />
+              <div>
+                {post.updated && <span className='updated'>Modifié</span>}
+              </div>
+              
             </div>
               {showComments && <Comments post={post}/>}
             </div>

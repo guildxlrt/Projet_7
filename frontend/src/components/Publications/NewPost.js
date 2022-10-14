@@ -55,7 +55,7 @@ const NewPost = () => {
     setPostPicture('')
     setFile('')
     setVideo('')
-  }
+  }  
   
   const handlePost = async (e) => {
     e.preventDefault()
@@ -80,7 +80,11 @@ const NewPost = () => {
   const titleButton = (e) => {
     e.preventDefault()
     setAddTitle(!addTitle)
+    if(addTitle) setTitle('')
   }
+
+  console.log(postPicture)
+
 
   return (
     <div className='post-container'>
@@ -166,18 +170,24 @@ const NewPost = () => {
                 
                 <div className='footer-form'>
                   <div className='icon'>
-                    {isEmpty(video) && (
+                    {(isEmpty(video) && !file) && (
                       <>
-                        <img src="./images/icons/picture.svg" alt="img"/>
+                        <img src="./images/icons/picture.svg" alt="add-pic"/>
                         <input
-                          type="file" id="file-upload" name="file"
+                          type="file"
+                          id="file-upload"
+                          name="file"
                           accept=".jpg,.jpeg,.png,.gif,.webp"
                           onChange={(e) => handlePicture(e)}
                         />
                       </>
                     )}
-                    {video && (
-                      <button onClick={() => setVideo('')}>
+                    {(video || file) && (
+                      <button onClick={() => {
+                        setVideo('')
+                        setFile('')
+                        setPostPicture('')
+                      }}>
                         Enlever
                       </button>
                     )}

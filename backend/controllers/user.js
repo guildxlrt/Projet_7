@@ -16,6 +16,7 @@ const prisma = new PrismaClient();
 //========//NOUVEAU
 exports.signup = (req, res, next) => {
     (function reqValidation() {
+        debugger;
         // formatage date
         const birthday = utils.birthdayFormat(req.body.birthday);
 
@@ -110,7 +111,7 @@ exports.signup = (req, res, next) => {
                 error.legal_age = errMsg.legalAgeErr
             }
 
-            return errorFileReq({ error : error }, 400)
+            return errorFileReq({ error : error }, 400, req, res)
         }
     })();
 };
@@ -229,13 +230,13 @@ exports.getAllUsers = async (req, res, next) => {
         // Recherche
         await prisma.user.findMany({
             where: {
-                isActive : true,
+                isActive : true
             }
         })
         .then((users) => {
             users.map((user) => {
-                delete user.password
-                delete user.isActive
+                // delete user.password
+                // delete user.isActive
                 return user
             })
             res.status(200).json(users)

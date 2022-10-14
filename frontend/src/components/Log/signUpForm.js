@@ -75,6 +75,7 @@ const SignUpForm = () => {
         window.location = '/'
       })
       .catch((err) => {
+        console.log(err)
         const error =  err.response.data.error
         if (error.surname) {surnameError.innerHTML = error.surname}
         if(error.name) {nameError.innerHTML = error.name}

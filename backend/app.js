@@ -20,7 +20,7 @@ const commentRoutes = require('./routes/comment');
 
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+	max: 10000, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
@@ -39,7 +39,7 @@ const corsOptions = {
   'methods' : 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   'preflightContinue' : false,
   'Strict-Transport-Security' : 'max-age=31536000; includeSubDomains',
-  'Cross-Origin-Resource-Policy' : 'same-site'
+  'Cross-Origin-Resource-Policy' : 'cross-origin'
 }
 
 //========//START//========//
@@ -47,11 +47,11 @@ app.use(express.json());
 app.use(cookieParser())
 app.use(cors(corsOptions));
 app.use(helmet());
-// //---expresss rate limit
-// app.use(limiter);
-// //---express slow down
-// // app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
-// app.use(speedLimiter);
+//---expresss rate limit
+app.use(limiter);
+//---express slow down
+// app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
+app.use(speedLimiter);
 
 //========//Autorisations
 app.use((req, res, next) => {
@@ -60,7 +60,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.setHeader('Access-Control-Expose-Headers', 'sessionId')
-  res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   next();
 });

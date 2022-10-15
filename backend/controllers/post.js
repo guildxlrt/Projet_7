@@ -80,6 +80,14 @@ exports.modifyPost = async (req, res, next) => {
 
     // Validation de la requete
     const update = async (datas) => {
+        console.log(datas)
+        if (datas.novideo) datas.video = null
+        if (datas.nopic) datas.imageUrl = null
+        delete datas.novideo
+        delete datas.nopic
+
+        console.log(datas)
+
         await prisma.post.update({
             where : { id : target },
             data : datas
@@ -102,44 +110,10 @@ exports.modifyPost = async (req, res, next) => {
                 //========// TRAITEMENT DE LA REQUETE
                 let content = {...req.body, updated : true}
 
-                //----Suppression video
-                if (req.body.novideo === true) {
-                    // Erreurs requete
-                    if (post.video === null) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req)
-                    }
-                    // Requete valide             
-                    else {
-                        content.video = null
-                        delete content.novideo
-                    }
-                }
                 
-                //----Suppression Image
-                if (req.body.nofile === true) {
-                    // Erreurs requete
-                    if (req.file) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req)
-                    }
-                    else if (post.imageUrl === null) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req)
-                    }
-                    // Requete valide             
-                    else {
-                        // suppression du fichier
-                        const oldFile = post.imageUrl.split('/images/posts/')[1];
-                        utils.fileDel('posts', oldFile)
-
-                        // enregistrer
-                        content.imageUrl = null
-                        delete content.nofile
-                        update(content)
-                    }                    
-                }
-                //----Modifier que le text
-                else if (!req.file) {
+                //----Sans modif sur l'image
+                if (!req.file) {
                     // enregistrer
-                    delete content.nofile
                     update(content)
                 }
                 //---- Nouvelle image
@@ -160,8 +134,26 @@ exports.modifyPost = async (req, res, next) => {
                     utils.fileMove('posts', req.file.filename)
 
                     // enregistrer
-                    delete content.nofile
                     update(content)
+                }
+                //----Suppression Image
+                else if (req.body.nopic === true) {
+                    // Erreurs requete
+                    if (req.file) {
+                        return errorFileReq(errMsg.PostErrReq, 400, req)
+                    }
+                    else if (post.imageUrl === null) {
+                        return errorFileReq(errMsg.PostErrReq, 400, req)
+                    }
+                    // Requete valide             
+                    else {
+                        // suppression du fichier
+                        const oldFile = post.imageUrl.split('/images/posts/')[1];
+                        utils.fileDel('posts', oldFile)
+
+                        // enregistrer
+                        update(content)
+                    }                    
                 }
             } else {
                 return errorFileReq(errMsg.authErr, 403, req, res)

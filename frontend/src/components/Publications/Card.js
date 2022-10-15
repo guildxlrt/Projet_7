@@ -22,29 +22,11 @@ const Card = ({post}) => {
   const [addTitle, setAddTitle] = useState(false)
 
   const [postPicture, setPostPicture] = useState(post.imageUrl)
-  const [noPicture, setNoPicture] = useState(false)
   const [video, setVideo]  = useState(post.video)
   const [file, setFile]  = useState('')
 
-  const modifyPost = async () => {
-    const content = new FormData()
-
-    if(titleUpdate !== post.title) content.append('title', titleUpdate)
-    if(textUpdate !== post.text) content.append('text', textUpdate)
-    if(file) content.append('image', file)
-    //if(video) content.append('video', video)
-
-    const contentList = Array.from(content).length
-    if (contentList > 0) {
-      dispatch(updatePost(post.id, content))
-      .then(() => {
-        setIsUpdated(false)
-        setTitleUpdate(null)
-        setTextUpdate(null)
-      })
-    }
-    else setIsUpdated(false)
-  }
+  const [noPic, setNoPic] = useState(false)
+  const [noVideo, setNoVideo] = useState(false)
 
   const date = postTime(post.creationDate)
 
@@ -65,7 +47,7 @@ const Card = ({post}) => {
 
     setPostPicture(URL.createObjectURL(e.target.files[0]));
     setFile(e.target.files[0]);
-    //setVideo('');
+    setVideo('');
   }
 
   const backButton = (e) => {
@@ -75,6 +57,7 @@ const Card = ({post}) => {
     setTextUpdate('')
 
     if (post.imageUrl) setPostPicture(post.imageUrl)
+    if (post.video) setVideo(post.video)
     setFile('')
   }
 
@@ -89,6 +72,39 @@ const Card = ({post}) => {
         setPostPicture('');
       }
       else setTextUpdate(text)
+    }
+  }
+
+  const modifyPost = async () => {
+    
+    if (
+      (titleUpdate === '' || titleUpdate === null) &&
+      (textUpdate === '' || textUpdate === null) &&
+      (file === '' || file === null) &&
+      (video === null || video === '')
+    ) {
+      setIsUpdated(false)
+    }
+    else {
+      const content = new FormData()
+      if(titleUpdate !== post.title) content.append('title', titleUpdate)
+      if(textUpdate !== post.text) content.append('text', textUpdate)
+      if(file) content.append('image', file)
+      if(video) content.append('video', video)
+      
+      const contentList = Array.from(content).length
+      if (contentList > 0) {
+        if(noPic) content.append('nopic', true)
+        if(noVideo) content.append('novideo', true)
+
+        dispatch(updatePost(post.id, content))
+        .then(() => {
+          setIsUpdated(false)
+          setTitleUpdate(null)
+          setTextUpdate(null)
+        })
+      }
+      else setIsUpdated(false)
     }
   }
 
@@ -190,7 +206,7 @@ const Card = ({post}) => {
                     
                     <div className='button-container'>
                       <div className='file-container'>
-                        {(!file && !postPicture) &&
+                        {(!file && !postPicture && !video) &&
                           <>
                             <img src="./images/icons/picture.svg" alt="add-pic"/>
                             <input
@@ -206,20 +222,32 @@ const Card = ({post}) => {
                           <>
                             <div onClick={(e) => {
                                 setFile('')
-                                if(noPicture === false) setPostPicture(post.imageUrl)
-                                if(noPicture === true) setPostPicture('')
+                                if(noPic === false) {
+                                  setPostPicture(post.imageUrl)
+                                }
+                                if(noPic === true) {
+                                  setPostPicture('')
+                                }
+                                if(noVideo === false) {
+                                  setVideo(post.imageUrl)
+                                }
+                                if(noVideo === true) {
+                                  setVideo('')
+                                }
                               }
                             }>
                                 Enlever
                             </div>
                           </>
                         }
-                        {(postPicture && !file) &&
+                        {((postPicture || video) && !file) &&
                           <>
                             <div onClick={(e) => {
-                                setNoPicture(true)
+                                setNoPic(true)
+                                setNoVideo(true)
                                 setFile('')
                                 setPostPicture('')
+                                setVideo('')
                               }
                             }>
                                 Retirer
@@ -233,7 +261,7 @@ const Card = ({post}) => {
                 )}
               </div>
 
-              {(postPicture) && (
+              {(postPicture && !video) && (
                 <>
                   <br/>
                   <img src={postPicture}

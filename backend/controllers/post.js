@@ -80,13 +80,10 @@ exports.modifyPost = async (req, res, next) => {
 
     // Validation de la requete
     const update = async (datas) => {
-        console.log(datas)
         if (datas.novideo) datas.video = null
         if (datas.nopic) datas.imageUrl = null
         delete datas.novideo
         delete datas.nopic
-
-        console.log(datas)
 
         await prisma.post.update({
             where : { id : target },

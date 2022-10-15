@@ -19,7 +19,8 @@ const Card = ({post}) => {
   const [titleUpdate, setTitleUpdate] = useState(null)
   const [textUpdate, setTextUpdate] = useState(null)
   const [showComments, setShowComments] = useState(false)
-  const [addTitle, setAddTitle] = useState(false)
+  const [addTitle, setAddTitle] = useState()
+  const [badTitle, setBadTitle] = useState(false)
 
   const [postPicture, setPostPicture] = useState(post.imageUrl)
   const [video, setVideo]  = useState(post.video)
@@ -34,6 +35,9 @@ const Card = ({post}) => {
   
   useEffect(() => {
     !isEmpty(usersList[0]) && setIsLoading(false)
+
+    if(post.title) setAddTitle(true)
+    if(!post.title) setAddTitle(false)
   }, [usersList])
 
   const titleButton = (e) => {
@@ -59,6 +63,24 @@ const Card = ({post}) => {
     if (post.imageUrl) setPostPicture(post.imageUrl)
     if (post.video) setVideo(post.video)
     setFile('')
+  }
+
+  const titleTreatment = (title) => {
+    let findLink = title.split(" ")
+    for (let i = 0; i < findLink.length; i++) {
+      if (
+        findLink[i].includes(("https://")) ||
+        findLink[i].includes(("http://"))
+      ) {
+        console.log('Les titres ne doivent pas comporter de lien')
+        setTitleUpdate(title)
+        setBadTitle(true)
+      }
+      else {
+        setTitleUpdate(title)
+        setBadTitle(false)
+      }
+    }
   }
 
   const textTreatment = (text) => {
@@ -159,6 +181,7 @@ const Card = ({post}) => {
               </div>
 
               <div>
+                
                 {(post.title && (isUpdated === false)) && (
                   <>
                     <br/>
@@ -174,15 +197,14 @@ const Card = ({post}) => {
                 
                 {isUpdated === true && (
                   <div className='update-post'>
-                    {!(post.title) && 
-                      addTitle ? (
+                    {addTitle ? (
                         <>
                           <button onClick={titleButton}>
                             Enlever le titre
                           </button>
                           <textarea
                             defaultValue={post.title}
-                            onChange={(e) => setTitleUpdate(e.target.value)}
+                            onChange={(e) => {titleTreatment(e.target.value)}}
                             maxLength="150"
                           />
                         </>
@@ -193,11 +215,10 @@ const Card = ({post}) => {
                       )
                     }
 
-                    {post.title && <textarea
-                      defaultValue={post.title}
-                      onChange={(e) => setTitleUpdate(e.target.value)}
-                      maxLength="150"
-                    />}
+                    {badTitle &&
+                      <p className='error'>Le titre ne doit pas contenir de lien</p> 
+                    }
+
                     <textarea
                       defaultValue={post.text}
                       onChange={(e) => textTreatment(e.target.value)}

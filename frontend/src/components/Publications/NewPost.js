@@ -14,8 +14,26 @@ const NewPost = () => {
   const userData = useSelector((state) => state.userReducer)
 
   const [addTitle, setAddTitle] = useState(false)
+  const [badTitle, setBadTitle] = useState(false)
 
   const dispatch = useDispatch()
+
+  const titleTreatment = (title) => {
+    let findLink = title.split(" ")
+    for (let i = 0; i < findLink.length; i++) {
+      if (
+        findLink[i].includes(("https://")) ||
+        findLink[i].includes(("http://"))
+      ) {
+        setTitle(title)
+        setBadTitle(true)
+      }
+      else {
+        setTitle(title)
+        setBadTitle(false)
+      }
+    }
+  }
 
   const textTreatment = (text) => {
     let findLink = text.split(" ");
@@ -56,7 +74,7 @@ const NewPost = () => {
   const handlePost = async (e) => {
     e.preventDefault()
 
-    if (title || text || postPicture || (video !== null)) {
+    if ((title || text || postPicture || (video !== null)) && !badTitle) {
       const content = new FormData()
       if(title) content.append('title', title)
       if(text) content.append('text', text)
@@ -76,6 +94,7 @@ const NewPost = () => {
     setAddTitle(!addTitle)
     if(addTitle) setTitle('')
   }
+
 
   return (
     <div className='post-container'>
@@ -103,7 +122,7 @@ const NewPost = () => {
                           name="title"
                           id="title"
                           placeholder='Titre'
-                          onChange={(e) => {setTitle(e.target.value)}}
+                          onChange={(e) => {titleTreatment(e.target.value)}}
                           value={title}
                           maxLength="150"
                         />
@@ -128,7 +147,11 @@ const NewPost = () => {
                     maxLength="2000"
                   />
 
-                  {title || text || postPicture || video.length > 20 ? (
+
+                  {badTitle &&
+                    <p className='error'>Le titre ne doit pas contenir de lien</p> 
+                  }
+                  {(title || text || postPicture || video.length > 20) && (badTitle === false) ? (
                     <li className='card-container'>
                       <div className='card-left'>
                         <img src={userData.avatarUrl} alt="userpic"/>

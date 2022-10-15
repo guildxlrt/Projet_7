@@ -78,6 +78,20 @@ const Card = ({post}) => {
     setFile('')
   }
 
+  const textTreatment = (text) => {
+    let findLink = text.split(" ");
+    for (let i = 0; i < findLink.length; i++) {
+      if (findLink[i].includes("https://")) {
+        let embed = findLink[i].replace("watch?v=", "embed/");
+        setVideo(embed.split("&")[0]);
+        findLink.splice(i, 1);
+        setTextUpdate(findLink.join(" "));
+        setPostPicture('');
+      }
+      else setTextUpdate(text)
+    }
+  }
+
   return (
     <li className='card-container' key={postMessage.id}>
       {isLoading ? (
@@ -170,7 +184,7 @@ const Card = ({post}) => {
                     />}
                     <textarea
                       defaultValue={post.text}
-                      onChange={(e) => setTextUpdate(e.target.value)}
+                      onChange={(e) => textTreatment(e.target.value)}
                       maxLength="2000"
                     />
                     
@@ -229,11 +243,11 @@ const Card = ({post}) => {
                 </>
               )}
 
-            {post.video && (
+            {video && (
               <iframe
                 width="500"
                 height="300"
-                src={post.video}
+                src={video}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

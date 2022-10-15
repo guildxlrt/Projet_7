@@ -17,23 +17,19 @@ const NewPost = () => {
 
   const dispatch = useDispatch()
 
-  useEffect(() => {
-    if (!isEmpty(userData)) setIsLoading(false);
-
-    const handleVideo = () => {
-      let findLink = text.split(" ");
-      for (let i = 0; i < findLink.length; i++) {
-        if (findLink[i].includes("https://")) {
-          let embed = findLink[i].replace("watch?v=", "embed/");
-          setVideo(embed.split("&")[0]);
-          findLink.splice(i, 1);
-          setText(findLink.join(" "));
-          setPostPicture('');
-        }
+  const textTreatment = (text) => {
+    let findLink = text.split(" ");
+    for (let i = 0; i < findLink.length; i++) {
+      if (findLink[i].includes("https://")) {
+        let embed = findLink[i].replace("watch?v=", "embed/");
+        setVideo(embed.split("&")[0]);
+        findLink.splice(i, 1);
+        setText(findLink.join(" "));
+        setPostPicture('');
       }
-    };
-    handleVideo();
-  }, [userData, text, video]);
+      else setText(text)
+    }
+  }
 
   useEffect(() => {
     if(!isEmpty(userData)) setIsLoading(false)
@@ -127,7 +123,7 @@ const NewPost = () => {
                     name="text"
                     id="text"
                     placeholder='Quoi de neuf ?'
-                    onChange={(e) => {setText(e.target.value)}}
+                    onChange={(e) => textTreatment(e.target.value)}
                     value={text}
                     maxLength="2000"
                   />

@@ -5,11 +5,9 @@ import { isEmpty } from '../utils'
 import UserInfos from './UserInfos'
 
 const UsersPage = () => {
-    const users = useSelector((state) => state.allUsersReducer)
-
     const {id} = useParams()
-
-
+    const users = useSelector((state) => state.allUsersReducer)
+    
   return (
     <>
         <div className="profil-page">

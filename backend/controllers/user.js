@@ -73,13 +73,16 @@ exports.signup = (req, res, next) => {
                 .catch(error => {
                     if (error.code === "P2002") {
                         // EMAIL DEJA UTILISE
-                        errorFileReq(errMsg.emailInUse, 405, req)
-                    } else {
-                        errorFileReq(error, 500, req)
+                        errorFileReq(errMsg.emailInUse, 405, req, res)
+                        // if(req.file) utils.fileDel(req.file.filename)
+                        // res.status(405).json(error)
+                    }
+                    else {
+                        errorFileReq(error, 500, req, res)
                     }
                 })
             })
-            .catch(error => errorFileReq(error, 500, req));
+            .catch(error => errorFileReq(error, 500, req, res));
         }
         //---REJET
         else {
@@ -111,7 +114,7 @@ exports.signup = (req, res, next) => {
                 error.legal_age = errMsg.legalAgeErr
             }
 
-            return errorFileReq({ error : error }, 400, req)
+            return errorFileReq({ error : error }, 400, req, res)
         }
     })();
 };

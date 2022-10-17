@@ -38,12 +38,12 @@ exports.createPost = async (req, res, next) => {
             // Enregistrement
             await prisma.post.create({data : content})
             .then((post) => res.status(201).json(post))
-            .catch((error) => {errorFileReq(error, 500, req)})
+            .catch((error) => {errorFileReq(error, 500, req, res)})
         } else {
-            return errorFileReq(errMsg.authErr, 403, req)
+            return errorFileReq(errMsg.authErr, 403, req, res)
         }
     })
-    .catch((error) => {errorFileReq(error, 500, req)})
+    .catch((error) => {errorFileReq(error, 500, req, res)})
 };
 
 //========//TOUT AFFICHER
@@ -90,7 +90,7 @@ exports.modifyPost = async (req, res, next) => {
             data : datas
         })
         .then((post) => res.status(200).json(post))
-        .catch(error =>  errorFileReq(error, 500, req));
+        .catch(error =>  errorFileReq(error, 500, req, res));
     }
 
     // Recherche
@@ -137,10 +137,10 @@ exports.modifyPost = async (req, res, next) => {
                 else if (req.body.nopic === true) {
                     // Erreurs requete
                     if (req.file) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req)
+                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
                     }
                     else if (post.imageUrl === null) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req)
+                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
                     }
                     // Requete valide             
                     else {

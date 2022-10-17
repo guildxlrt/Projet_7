@@ -57,12 +57,16 @@ const Card = ({post}) => {
   const backButton = (e) => {
     setIsUpdated(!isUpdated)
 
-    setTitleUpdate('')
     setTextUpdate('')
+    setTitleUpdate('')
+    setFile('')
+
+    if(post.title) setAddTitle(true)
+    if(!post.title) setAddTitle(false)
 
     if (post.imageUrl) setPostPicture(post.imageUrl)
     if (post.video) setVideo(post.video)
-    setFile('')
+    
   }
 
   const titleTreatment = (title) => {
@@ -92,42 +96,39 @@ const Card = ({post}) => {
         findLink.splice(i, 1);
         setTextUpdate(findLink.join(" "));
         setPostPicture('');
+        setFile('')
       }
       else setTextUpdate(text)
     }
   }
 
   const modifyPost = async () => {
-    
-    if (
-      (titleUpdate === '' || titleUpdate === null) &&
-      (textUpdate === '' || textUpdate === null) &&
-      (file === '' || file === null) &&
-      (video === null || video === '')
-    ) {
-      setIsUpdated(false)
-    }
-    else {
-      const content = new FormData()
-      if(titleUpdate !== post.title) content.append('title', titleUpdate)
-      if(textUpdate !== post.text) content.append('text', textUpdate)
+    const content = new FormData()
+      content.append('text', textUpdate)
+
+      if(titleUpdate) content.append('title', titleUpdate)
+      if(addTitle === false) content.append('notitle', true)
+      
       if(file) content.append('image', file)
+      else if(noPic) content.append('nopic', true)
+
       if(video) content.append('video', video)
+      else if(noVideo) content.append('novideo', true)
       
       const contentList = Array.from(content).length
       if (contentList > 0) {
-        if(noPic) content.append('nopic', true)
-        if(noVideo) content.append('novideo', true)
-
         dispatch(updatePost(post.id, content))
         .then(() => {
           setIsUpdated(false)
           setTitleUpdate(null)
           setTextUpdate(null)
+          setAddTitle(!addTitle)
         })
       }
-      else setIsUpdated(false)
-    }
+      else {
+        setIsUpdated(false)
+        setAddTitle(!addTitle)
+      }
   }
 
   return (

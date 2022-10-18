@@ -138,11 +138,14 @@ const Card = ({post}) => {
       ) : (
         <>
           <div className='card-left'>
-            <Link to={`/users/:${
+            <Link to={`${
               !isEmpty(usersList[0]) &&
                 usersList.map((user) => {
-                  if (user.id === post.userId) {
-                    return user.id
+                  if ((user.id === post.userId) && (user.id === userData.id)) {
+                    return '/profil'
+                  }
+                  else if (user.id === post.userId) {
+                    return '/users/:' + user.id
                   }
                 })
                 .join("")
@@ -151,8 +154,11 @@ const Card = ({post}) => {
               <img src={
                 !isEmpty(usersList[0]) &&
                   usersList.map((user) => {
-                    if (user.id === post.userId) {
+                    if ((user.id === post.userId) && (user.id === userData.id)) {
                       return userData.avatarUrl
+                    }
+                    else if (user.id === post.userId) {
+                      return user.avatarUrl
                     }
                   })
                   .join("")
@@ -170,8 +176,11 @@ const Card = ({post}) => {
                         !isEmpty(usersList[0]) &&
                           usersList
                             .map((user) => {
-                              if (user.id === post.userId) {
+                              if ((user.id === post.userId) && (user.id === userData.id)) {
                                 return userData.surname +' '+ userData.name
+                              }
+                              else if (user.id === post.userId) {
+                                return user.surname +' '+ user.name
                               }
                             })
                             .join("")

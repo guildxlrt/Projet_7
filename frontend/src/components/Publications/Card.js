@@ -152,7 +152,7 @@ const Card = ({post}) => {
                 !isEmpty(usersList[0]) &&
                   usersList.map((user) => {
                     if (user.id === post.userId) {
-                      return user.avatarUrl
+                      return userData.avatarUrl
                     }
                   })
                   .join("")
@@ -171,7 +171,7 @@ const Card = ({post}) => {
                           usersList
                             .map((user) => {
                               if (user.id === post.userId) {
-                                return user.surname +' '+ user.name
+                                return userData.surname +' '+ userData.name
                               }
                             })
                             .join("")

@@ -58,7 +58,6 @@ const BlockAccount = () => {
             errorDiv.removeAttribute('hidden')
 
             const err =  error.response.data.error;
-            console.log(err)
             if (err) {errorReport.innerHTML = err} 
         })
     }

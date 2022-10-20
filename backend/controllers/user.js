@@ -238,8 +238,8 @@ exports.getAllUsers = async (req, res, next) => {
         })
         .then((users) => {
             users.map((user) => {
-                // delete user.password
-                // delete user.isActive
+                delete user.password
+                delete user.isActive
                 return user
             })
             res.status(200).json(users)

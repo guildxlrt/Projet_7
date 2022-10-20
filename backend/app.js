@@ -17,7 +17,7 @@ const app = express();
 //========//Autorisations
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL);
-  res.setHeader('Access-Control-Allow-Credentials', true)
+  res.setHeader('Access-Control-Allow-Credentials', "true")
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.setHeader('Access-Control-Expose-Headers', 'sessionId')
@@ -30,18 +30,18 @@ const userRoutes = require('./routes/user');
 const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
 
-// const limiter = rateLimit({
-// 	windowMs: 15 * 60 * 1000, // 15 minutes
-// 	max: 10000, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-// 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-// 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-// })
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 10000, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
 
-// const speedLimiter = slowDown({
-//     windowMs: 1000 * 60 * 15, //15 minutes
-//     delayAfter: 100,
-//     delayMs: 500
-//   });
+const speedLimiter = slowDown({
+    windowMs: 1000 * 60 * 15, //15 minutes
+    delayAfter: 100,
+    delayMs: 500
+  });
 
 const corsOptions = {
   origin : process.env.CLIENT_URL,
@@ -58,12 +58,12 @@ const corsOptions = {
 app.use(express.json());
 app.use(cookieParser())
 app.use(cors(corsOptions));
-// app.use(helmet());
-// //---expresss rate limit
-// app.use(limiter);
-// //---express slow down
-// // app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
-// app.use(speedLimiter);
+//app.use(helmet());
+//---expresss rate limit
+app.use(limiter);
+//---express slow down
+// app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
+app.use(speedLimiter);
 
 
 

@@ -76,7 +76,6 @@ const Card = ({post}) => {
         findLink[i].includes(("https://")) ||
         findLink[i].includes(("http://"))
       ) {
-        console.log('Les titres ne doivent pas comporter de lien')
         setTitleUpdate(title)
         setBadTitle(true)
       }

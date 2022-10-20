@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { addComment, getPosts } from '../../actions/posts.actions'
 import { isEmpty, postTime } from '../utils'
 import EditDeleteComment from './EditDeleteComment'
@@ -29,18 +30,34 @@ const Comments = ({post}) => {
                         key={comment.id}
                     >
                         <div className='left-part'>
-                        <img src={
-                            !isEmpty(usersList[0]) &&
-                                usersList
-                                    .map((user) => {
-                                    if (user.id === comment.userId) {
-                                        return user.avatarUrl
+                            <Link to={`${
+                                !isEmpty(usersList[0]) &&
+                                    usersList.map((user) => {
+                                    if ((user.id === comment.userId) && (user.id === userData.id)) {
+                                        return '/profil'
+                                    }
+                                    else if (user.id === comment.userId) {
+                                        return '/users/:' + user.id
                                     }
                                     })
                                     .join("")
-                            }
-                            alt="commenter-pic"
+                                }`}
+                                >
+                                <img src={
+                                    !isEmpty(usersList[0]) &&
+                                    usersList.map((user) => {
+                                        if ((user.id === post.userId) && (user.id === userData.id)) {
+                                        return userData.avatarUrl
+                                        }
+                                        else if (user.id === comment.userId) {
+                                        return user.avatarUrl
+                                        }
+                                    })
+                                    .join("")
+                                    }
+                                alt="user-pic"
                             />
+                            </Link>
                         </div>
                         <div className='right-part'>
                             <div className='comment-header'>

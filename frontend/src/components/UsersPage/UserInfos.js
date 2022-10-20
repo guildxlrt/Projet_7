@@ -1,12 +1,14 @@
 import axios from 'axios'
 import React, { useContext } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { blockUser } from '../../actions/user.actions'
 import { UkeyContext } from '../appContext'
+import { isEmpty } from '../utils'
 
 const UserInfos = ({user}) => {
     const dispatch = useDispatch()
     const ukey = useContext(UkeyContext)
+    const posts = useSelector((state) => state.postsReducer)
 
 
     const blockAccount = async (e) => {
@@ -40,15 +42,21 @@ const UserInfos = ({user}) => {
                 <br/>
                 <div className='left-part'>
                     <img src={user.avatarUrl} alt="user-pic"/>
-                    <h3>{user.surname}</h3>
+                    <h3>Prénom : {user.surname}</h3>
                     <br/>
-                    <h3>{user.name}</h3>
+                    <h3>Nom : {user.name}</h3>
                     <br/>
                     <h3>{user.age}</h3>
                     <br/>
                     <h3>{user.birthday}</h3>
-                    
                     <br/>
+
+                    <h3>{!(isEmpty(posts[0])) &&
+                            posts.filter(post => post.userId === user.id).length
+                        } Publication(s)
+                    </h3>
+                    <br/>
+                    
                     <h3>Membre depuis {user.signupDate}</h3>
                     <br/>
                     {!(user.isAdmin) ? (

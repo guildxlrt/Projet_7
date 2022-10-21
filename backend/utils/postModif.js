@@ -1,7 +1,11 @@
 //========//FORMATAGE DATES
 const utils = require('../utils/utils');
 
-module.exports = (target, req, res) => {
+//----prisma
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+module.exports = (target, post, req, res) => {
 
     // Validation de la requete
     const update = async (datas) => {

@@ -102,32 +102,34 @@ const Card = ({post}) => {
   }
 
   const modifyPost = async () => {
+
     const content = new FormData()
-      content.append('text', textUpdate)
+    if(textUpdate) content.append('text', textUpdate)
 
-      if(titleUpdate) content.append('title', titleUpdate)
-      if(addTitle === false) content.append('notitle', true)
+    if(titleUpdate) content.append('title', titleUpdate)
+    if(addTitle === false) content.append('notitle', true)
       
-      if(file) content.append('image', file)
-      else if(noPic) content.append('nopic', true)
+    if(file) content.append('image', file)
+    else if(noPic) content.append('nopic', true)
 
-      if(video) content.append('video', video)
-      else if(noVideo) content.append('novideo', true)
+    if(video) content.append('video', video)
+    else if(noVideo) content.append('novideo', true)
       
-      const contentList = Array.from(content).length
-      if (contentList > 0) {
-        dispatch(updatePost(post.id, content))
-        .then(() => {
-          setIsUpdated(false)
-          setTitleUpdate(null)
-          setTextUpdate(null)
-          setAddTitle(!addTitle)
-        })
-      }
-      else {
+    const contentList = Array.from(content).length
+
+    if (contentList > 0) {
+      dispatch(updatePost(post.id, content))
+      .then(() => {
         setIsUpdated(false)
+        setTitleUpdate(null)
+        setTextUpdate(null)
         setAddTitle(!addTitle)
-      }
+      })
+    }
+    else {
+      setIsUpdated(false)
+      setAddTitle(!addTitle)
+    }
   }
 
   return (

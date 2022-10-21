@@ -9,6 +9,8 @@ module.exports = (target, post, req, res) => {
 
     // Validation de la requete
     const update = async (datas) => {
+        console.log(datas)
+        if (datas.text === '') datas.title = null
         if (datas.novideo) datas.video = null
         if (datas.nopic) datas.imageUrl = null
         if (datas.notitle) datas.title = null

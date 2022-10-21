@@ -313,7 +313,7 @@ const Card = ({post}) => {
               ></iframe>
             )}
             
-            {isAuthor && (
+            {(isAuthor || (ukey && !isAuthor)) && (
               <>
                 <br/>
                 <div className='button-container'>
@@ -330,14 +330,14 @@ const Card = ({post}) => {
               </>
             )}
 
-            {(ukey && !isAuthor) && (
+            {/* {(ukey && !isAuthor) && (
               <>
                 <br/>
                 <div className='button-container'>
                   <DeleteCard id={post.id}/>
                 </div>
               </>
-            )}
+            )} */}
 
             <div className="card-footer">
               <div className="comment-icon">

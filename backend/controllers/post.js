@@ -95,71 +95,137 @@ exports.modifyPost = async (req, res, next) => {
         .catch(error =>  errorFileReq(error, 500, req, res));
     }
 
-    // Recherche
-    await utils.findPost({id : target})
-    .then(async (post) => {
-
-        // utilisateur
+    
+    //------ADMINISTRATEUR
+    if (req.auth.isAdmin) {
         await utils.findUser({id : auth})
-        .then(async user => {
+        .then(async admin => {
+            // verification administrateur
+            if ((auth === admin.id) && (admin.isActive) && (admin.isAdmin)) {
+                // Recherche du post
+                await utils.findPost({id : target})
+                .then(async (post) => {
+                    //========// TRAITEMENT DE LA REQUETE
+                    let content = {...req.body, updated : true}
 
-            // verification
-            if ((post.userId === auth) && (user.isActive)) {
-
-                //========// TRAITEMENT DE LA REQUETE
-                let content = {...req.body, updated : true}
-
-                
-                //----Sans modif sur l'image
-                if (!req.file) {
-                    // enregistrer
-                    update(content)
-                }
-                //---- Nouvelle image
-                else if (req.file) {
-                    content = {
-                        ...(req.body),
-                        imageUrl : utils.newImageUrl(req)
+                        
+                    //----Sans modif sur l'image
+                    if (!req.file) {
+                        // enregistrer
+                        update(content)
                     }
+                    //---- Nouvelle image
+                    else if (req.file) {
+                        content = {
+                            ...(req.body),
+                            imageUrl : utils.newImageUrl(req)
+                        }
 
-                    // //----Nouvelle image
-                    if (!(post.imageUrl === null)) {
-                        //----Suppression Ancient fichier
-                        const oldFile = post.imageUrl.split('/images/posts/')[1];
-                        utils.fileDel(oldFile)
-                    }
+                        // //----Nouvelle image
+                        if (!(post.imageUrl === null)) {
+                            //----Suppression Ancient fichier
+                            const oldFile = post.imageUrl.split('/images/posts/')[1];
+                            utils.fileDel(oldFile)
+                        }
 
-                    // redirection du nouveau fichier
-                    utils.fileMove('posts', req.file.filename)
-
-                    // enregistrer
-                    update(content)
-                }
-                //----Suppression Image
-                else if (req.body.nopic === true) {
-                    // Erreurs requete
-                    if (req.file) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
-                    }
-                    else if (post.imageUrl === null) {
-                        return errorFileReq(errMsg.PostErrReq, 400, req, res)
-                    }
-                    // Requete valide             
-                    else {
-                        // suppression du fichier
-                        const oldFile = post.imageUrl.split('/images/posts/')[1];
-                        utils.fileDel('posts', oldFile)
+                        // redirection du nouveau fichier
+                        utils.fileMove('posts', req.file.filename)
 
                         // enregistrer
                         update(content)
-                    }                    
-                }
-            } else {
-                return errorFileReq(errMsg.authErr, 403, req, res)
+                    }
+                    //----Suppression Image
+                    else if (req.body.nopic === true) {
+                        // Erreurs requete
+                        if (req.file) {
+                            return errorFileReq(errMsg.PostErrReq, 400, req, res)
+                        }
+                        else if (post.imageUrl === null) {
+                            return errorFileReq(errMsg.PostErrReq, 400, req, res)
+                        }
+                        // Requete valide             
+                        else {
+                            // suppression du fichier
+                            const oldFile = post.imageUrl.split('/images/posts/')[1];
+                            utils.fileDel('posts', oldFile)
+
+                            // enregistrer
+                            update(content)
+                        }                    
+                    }
+                })
             }
-        })    
-    })
-    .catch(error =>  errorFileReq(error, 500, req, res));
+        })
+    }
+
+    //------UTILISATEUR NORMAL
+    else {
+        // Recherche du post
+        await utils.findPost({id : target})
+        .then(async (post) => {
+
+            // verification utilisateur
+            await utils.findUser({id : auth})
+            .then(async user => {
+                if ((post.userId === auth) && (user.isActive)) {
+
+                    //========// TRAITEMENT DE LA REQUETE
+                    let content = {...req.body, updated : true}
+
+                    
+                    //----Sans modif sur l'image
+                    if (!req.file) {
+                        // enregistrer
+                        update(content)
+                    }
+                    //---- Nouvelle image
+                    else if (req.file) {
+                        content = {
+                            ...(req.body),
+                            imageUrl : utils.newImageUrl(req)
+                        }
+
+                        // //----Nouvelle image
+                        if (!(post.imageUrl === null)) {
+                            //----Suppression Ancient fichier
+                            const oldFile = post.imageUrl.split('/images/posts/')[1];
+                            utils.fileDel(oldFile)
+                        }
+
+                        // redirection du nouveau fichier
+                        utils.fileMove('posts', req.file.filename)
+
+                        // enregistrer
+                        update(content)
+                    }
+                    //----Suppression Image
+                    else if (req.body.nopic === true) {
+                        // Erreurs requete
+                        if (req.file) {
+                            return errorFileReq(errMsg.PostErrReq, 400, req, res)
+                        }
+                        else if (post.imageUrl === null) {
+                            return errorFileReq(errMsg.PostErrReq, 400, req, res)
+                        }
+                        // Requete valide             
+                        else {
+                            // suppression du fichier
+                            const oldFile = post.imageUrl.split('/images/posts/')[1];
+                            utils.fileDel('posts', oldFile)
+
+                            // enregistrer
+                            update(content)
+                        }                    
+                    }
+                } else {
+                    return errorFileReq(errMsg.authErr, 403, req, res)
+                }
+            })    
+        })
+        .catch(error =>  errorFileReq(error, 500, req, res));
+    }
+
+    
 };
 
 //========//SUPPRIMER
